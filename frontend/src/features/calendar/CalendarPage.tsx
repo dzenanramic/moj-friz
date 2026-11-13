@@ -14,10 +14,8 @@ import {
   capitalizeFirst,
   dayRange,
   formatDateCompact,
-  formatDateKey,
   formatDateLong,
   formatTime,
-  formatTimeRange,
   formatWeekday,
   isValidDateKey,
   todayDateKey,
@@ -126,13 +124,13 @@ export function CalendarPage() {
         title="Kalendar"
         description={
           <>
-            <span className="font-medium text-ink">{dayLabel}</span>
-            <span className="mx-2 text-line-strong" aria-hidden="true">
-              /
+            {dayLabel}
+            <span className="text-line-strong" aria-hidden="true">
+              {' · '}
             </span>
             {appointments.isPending
               ? 'Učitavanje…'
-              : `${formatTerminCount(dayAppointments.length)} · ${visibleHairdressers.length} ${
+              : `${formatTerminCount(dayAppointments.length)}, ${visibleHairdressers.length} ${
                   visibleHairdressers.length === 1 ? 'frizer' : 'frizera'
                 }`}
           </>
@@ -153,36 +151,33 @@ export function CalendarPage() {
         }
       />
 
-      <Panel className="mb-5 p-3 sm:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-7">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
+              type="button"
               aria-label="Prethodni dan"
               onClick={() => updateParams(addDaysToDateKey(dateKey, -1), filter)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink"
             >
               <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-            </Button>
+            </button>
+            <button
+              type="button"
+              aria-label="Sljedeći dan"
+              onClick={() => updateParams(addDaysToDateKey(dateKey, 1), filter)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink"
+            >
+              <ChevronRight aria-hidden="true" className="h-4 w-4" />
+            </button>
             <Button
-              variant="secondary"
+              variant="quiet"
               size="sm"
               onClick={() => updateParams(today, filter)}
               disabled={dateKey === today}
             >
               Danas
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Sljedeći dan"
-              onClick={() => updateParams(addDaysToDateKey(dateKey, 1), filter)}
-            >
-              <ChevronRight aria-hidden="true" className="h-4 w-4" />
-            </Button>
-            <p className="ml-2 hidden text-sm font-medium text-ink sm:block">
-              {formatDateKey(dateKey)}
-            </p>
           </div>
           <p className="text-xs text-muted">
             {filter === 'all'
@@ -191,7 +186,7 @@ export function CalendarPage() {
           </p>
         </div>
 
-        <div className="mt-3 grid grid-cols-7 gap-1">
+        <div className="mt-3 grid grid-cols-7 gap-1 sm:gap-1.5">
           {week.map((day) => {
             const selected = day === dateKey
             const isToday = day === today
@@ -202,21 +197,14 @@ export function CalendarPage() {
                 onClick={() => updateParams(day, filter)}
                 aria-current={selected ? 'date' : undefined}
                 className={cn(
-                  'group flex min-h-[62px] flex-col items-center justify-center rounded-md border px-1 py-2 transition-colors',
-                  selected
-                    ? 'border-pine bg-pine text-white'
-                    : 'border-line bg-surface text-ink hover:border-line-strong hover:bg-paper',
+                  'flex min-h-[58px] flex-col items-center justify-center rounded-md py-2 transition-colors',
+                  selected ? 'bg-pine text-white' : 'text-ink hover:bg-surface',
                 )}
               >
-                <span
-                  className={cn(
-                    'text-[0.65rem] font-medium',
-                    selected ? 'text-white/70' : 'text-muted',
-                  )}
-                >
+                <span className={cn('text-xs', selected ? 'text-white' : 'text-muted')}>
                   {formatWeekday(day, true)}
                 </span>
-                <span className="time-gutter-label mt-0.5 text-sm font-semibold">
+                <span className="tabular mt-0.5 text-sm font-semibold">
                   {formatDateCompact(day).slice(0, 5)}
                 </span>
                 <span
@@ -231,7 +219,7 @@ export function CalendarPage() {
           })}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-1">
           <FilterChip active={filter === 'all'} onClick={() => updateParams(dateKey, 'all')}>
             Svi
           </FilterChip>
@@ -246,15 +234,13 @@ export function CalendarPage() {
             </FilterChip>
           ))}
         </div>
-      </Panel>
+      </div>
 
       {pending ? (
-        <div className="space-y-2">
-          <Skeleton className="h-[420px] w-full rounded-lg" />
-        </div>
+        <Skeleton className="h-[420px] w-full rounded-lg" />
       ) : appointments.isError || blocks.isError || workingHours.isError ? (
         <ErrorState
-          title="Raspored se nije učitao."
+          title="Raspored se nije učitao"
           message="Osvježite prikaz ili pokušajte ponovo."
           onRetry={() => {
             void appointments.refetch()
@@ -266,7 +252,7 @@ export function CalendarPage() {
       ) : isClosed ? (
         <EmptyState
           icon={Coffee}
-          title="Nema radnog vremena."
+          title="Nema radnog vremena"
           description={`${dayLabel} izabrani frizeri ne rade. Izaberite drugi dan u sedmici iznad.`}
           action={
             <Button
@@ -290,7 +276,7 @@ export function CalendarPage() {
               onOpenAppointment={openAppointment}
               onCreateAt={(hairdresserId, time) => openCreate({ hairdresserId, time })}
             />
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-3 text-xs leading-relaxed text-muted">
               Klik na slobodno vrijeme otvara novi termin. Promjena termina je uvijek kroz formu,
               bez prevlačenja.
             </p>
@@ -298,7 +284,7 @@ export function CalendarPage() {
 
           <div className="lg:hidden">
             {agenda.length > 0 ? (
-              <Panel className="px-1">
+              <Panel className="py-1">
                 {agenda.map((entry) =>
                   entry.kind === 'appointment' ? (
                     <AppointmentListItem
@@ -320,7 +306,7 @@ export function CalendarPage() {
             ) : (
               <EmptyState
                 icon={Coffee}
-                title="Nema termina za ovaj dan."
+                title="Nema termina za ovaj dan"
                 description="Slobodno vrijeme je dostupno za novi termin ili pauzu."
                 action={
                   <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => openCreate()}>
@@ -371,16 +357,14 @@ function FilterChip({
       onClick={onClick}
       data-staff={colorKey}
       className={cn(
-        'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors',
-        active
-          ? 'border-pine bg-pine text-white'
-          : 'border-line bg-surface text-muted hover:border-line-strong hover:text-ink',
+        'inline-flex min-h-9 items-center gap-2 rounded-sm px-2.5 text-sm transition-colors',
+        active ? 'bg-ink font-medium text-paper' : 'text-muted hover:bg-surface hover:text-ink',
       )}
     >
       {colorKey ? (
         <span
           aria-hidden="true"
-          className={cn('h-1.5 w-1.5 rounded-full', active ? 'bg-white' : 'staff-bar')}
+          className={cn('h-1.5 w-1.5 rounded-full', active ? 'bg-paper' : 'staff-bar')}
         />
       ) : null}
       {children}
@@ -390,21 +374,17 @@ function FilterChip({
 
 function BreakRow({ block, member }: { block: TimeBlock; member?: Hairdresser }) {
   return (
-    <div className="flex items-stretch gap-3 border-b border-line px-2 py-3 last:border-b-0 sm:gap-4 sm:px-3">
-      <span className="w-[52px] shrink-0 pt-0.5">
-        <span className="time-gutter-label block text-[0.95rem] font-semibold text-muted">
+    <div className="flex items-stretch gap-3 px-2 py-3 sm:gap-4 sm:px-3">
+      <span className="w-[46px] shrink-0 pt-0.5">
+        <span className="tabular block text-[0.95rem] font-semibold text-muted">
           {formatTime(block.startsAt)}
         </span>
-        <span className="time-gutter-label mt-0.5 block text-[0.7rem] text-muted">
-          {formatTime(block.endsAt)}
-        </span>
+        <span className="tabular mt-0.5 block text-xs text-muted">{formatTime(block.endsAt)}</span>
       </span>
-      <span className="w-[3px] shrink-0 rounded-full bg-line-strong" aria-hidden="true" />
+      <span className="w-[3px] shrink-0 rounded-xs bg-line-strong" aria-hidden="true" />
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-muted">{block.reason}</p>
-        <p className="mt-0.5 text-xs text-muted">
-          {formatTimeRange(block.startsAt, block.endsAt)} · {member?.displayName ?? 'Frizer'}
-        </p>
+        <p className="text-sm font-medium text-muted">{block.reason}</p>
+        <p className="mt-0.5 text-xs text-muted">{member?.displayName ?? 'Frizer'}</p>
       </div>
     </div>
   )

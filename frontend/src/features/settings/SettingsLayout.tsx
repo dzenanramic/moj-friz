@@ -1,4 +1,3 @@
-import { Clock3, Package, Scissors, UsersRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
 
 import { PageHeader } from '@/components/ui/Layout'
@@ -6,10 +5,10 @@ import { cn } from '@/lib/cn'
 import { usePageTitle } from '@/lib/hooks'
 
 const TABS = [
-  { to: '/postavke', label: 'Paket', icon: Package, end: true },
-  { to: '/postavke/usluge', label: 'Usluge', icon: Scissors, end: false },
-  { to: '/postavke/frizeri', label: 'Frizeri', icon: UsersRound, end: false },
-  { to: '/postavke/radno-vrijeme', label: 'Radno vrijeme', icon: Clock3, end: false },
+  { to: '/postavke', label: 'Paket', end: true },
+  { to: '/postavke/usluge', label: 'Usluge', end: false },
+  { to: '/postavke/frizeri', label: 'Frizeri', end: false },
+  { to: '/postavke/radno-vrijeme', label: 'Radno vrijeme', end: false },
 ]
 
 export function SettingsLayout() {
@@ -19,11 +18,11 @@ export function SettingsLayout() {
     <div>
       <PageHeader
         title="Postavke"
-        description="Paket, usluge, frizeri i radno vrijeme. U demou su ove stranice prikaz; uređivanje usluga i frizera dolazi uz pilot."
+        description="Paket, usluge, frizeri i radno vrijeme. Ove stranice su u demou prikaz; uređivanje dolazi uz pilot."
       />
 
-      <nav aria-label="Postavke" className="mb-7 border-b border-line">
-        <ul className="-mb-px flex gap-1 overflow-x-auto">
+      <nav aria-label="Postavke" className="mb-9">
+        <ul className="flex gap-5 overflow-x-auto border-b border-line">
           {TABS.map((tab) => (
             <li key={tab.to}>
               <NavLink
@@ -31,14 +30,13 @@ export function SettingsLayout() {
                 end={tab.end}
                 className={({ isActive }) =>
                   cn(
-                    'inline-flex min-h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm font-medium transition-colors',
+                    'inline-flex min-h-11 items-center whitespace-nowrap border-b-2 text-sm transition-colors',
                     isActive
-                      ? 'border-pine text-pine'
-                      : 'border-transparent text-muted hover:border-line-strong hover:text-ink',
+                      ? 'border-pine font-medium text-ink'
+                      : 'border-transparent text-muted hover:text-ink',
                   )
                 }
               >
-                <tab.icon aria-hidden="true" className="h-4 w-4" />
                 {tab.label}
               </NavLink>
             </li>

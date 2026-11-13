@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { ConfirmDialog } from '@/components/ui/Modal'
-import { useResetDemo, useSalon, useSetDemoLevel } from '@/data/queries'
 import { gatewayErrorMessage } from '@/data/gateway'
+import { useResetDemo, useSalon, useSetDemoLevel } from '@/data/queries'
 import { cn } from '@/lib/cn'
 
 import type { PlanLevel } from '@/data/types'
@@ -30,12 +30,11 @@ function LevelButton({
       disabled={pending}
       onClick={onClick}
       className={cn(
-        'min-h-8 rounded-sm px-2.5 text-xs font-semibold transition-colors sm:px-3',
-        active ? 'bg-paper text-pine' : 'text-paper/75 hover:bg-paper/10 hover:text-paper',
+        'min-h-8 rounded-sm px-2.5 text-xs font-medium transition-colors',
+        active ? 'bg-paper text-pine-strong' : 'text-paper hover:bg-pine-strong',
       )}
     >
-      <span className="sm:hidden">{level === 'level_1' ? '1' : '2'}</span>
-      <span className="hidden sm:inline">{label}</span>
+      {label}
     </button>
   )
 }
@@ -60,37 +59,31 @@ export function DemoBanner() {
 
   return (
     <>
-      <div className="border-b border-ink/10 bg-pine text-paper">
-        <div className="mx-auto flex min-h-11 w-full max-w-[1600px] items-center gap-2 px-3 sm:gap-3 sm:px-5">
-          <span className="inline-flex min-w-0 items-center gap-2 text-xs font-semibold tracking-[0.01em] sm:text-[0.8rem]">
-            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-amber" />
-            <span className="truncate">Demo — podaci nisu stvarni</span>
-          </span>
+      <div className="bg-pine text-paper">
+        <div className="mx-auto flex min-h-10 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
+          <p className="min-w-0 truncate text-xs font-semibold">
+            <span className="sm:hidden">Demo</span>
+            <span className="hidden sm:inline">Demo · podaci nisu stvarni</span>
+          </p>
 
-          <div className="ml-auto flex items-center gap-1.5">
-            <span className="hidden text-xs text-paper/60 md:inline">Prikaz paketa</span>
-            <div
-              role="group"
-              aria-label="Demo prikaz paketa"
-              className="flex items-center gap-0.5 rounded-md border border-paper/25 p-0.5"
-            >
-              <LevelButton
-                level="level_1"
-                active={level === 'level_1'}
-                pending={setLevel.isPending}
-                onClick={() => changeLevel('level_1')}
-              />
-              <LevelButton
-                level="level_2"
-                active={level === 'level_2'}
-                pending={setLevel.isPending}
-                onClick={() => changeLevel('level_2')}
-              />
-            </div>
+          <div className="ml-auto flex items-center gap-1">
+            <span className="mr-1.5 hidden text-xs text-paper md:inline">Prikaz paketa</span>
+            <LevelButton
+              level="level_1"
+              active={level === 'level_1'}
+              pending={setLevel.isPending}
+              onClick={() => changeLevel('level_1')}
+            />
+            <LevelButton
+              level="level_2"
+              active={level === 'level_2'}
+              pending={setLevel.isPending}
+              onClick={() => changeLevel('level_2')}
+            />
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
-              className="inline-flex min-h-8 items-center gap-1.5 rounded-sm px-2 text-xs font-medium text-paper/80 transition-colors hover:bg-paper/10 hover:text-paper sm:px-2.5"
+              className="ml-2 inline-flex min-h-8 items-center gap-1.5 rounded-sm px-2 text-xs font-medium text-paper transition-colors hover:bg-pine-strong"
               aria-label="Resetuj demo"
             >
               <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
@@ -123,13 +116,12 @@ export function DemoBanner() {
 
 export function PublicDemoBar() {
   return (
-    <div className="border-b border-ink/10 bg-pine text-paper">
-      <div className="mx-auto flex min-h-10 w-full max-w-5xl items-center gap-2 px-4 py-2 text-xs sm:px-6">
-        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-amber" />
-        <span className="font-semibold">Demo — podaci nisu stvarni</span>
+    <div className="bg-pine text-paper">
+      <div className="mx-auto flex min-h-10 w-full max-w-5xl items-center gap-3 px-4 py-2 text-xs sm:px-8">
+        <span className="font-semibold">Demo · podaci nisu stvarni</span>
         <a
           href="/"
-          className="ml-auto inline-flex min-h-8 items-center rounded-sm px-2 font-medium text-paper/80 underline decoration-paper/30 underline-offset-4 hover:text-paper"
+          className="ml-auto inline-flex min-h-8 items-center px-1 font-medium text-paper underline decoration-paper underline-offset-4 hover:no-underline"
         >
           Demo početna
         </a>

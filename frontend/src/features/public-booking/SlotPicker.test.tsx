@@ -69,7 +69,7 @@ describe('SlotPicker', () => {
         error={null}
       />,
     )
-    expect(screen.getByText('Salon ne radi tog dana.')).toBeInTheDocument()
+    expect(screen.getByText('Salon ne radi tog dana')).toBeInTheDocument()
   })
 
   it('shows a full-day message and an error state', () => {
@@ -82,7 +82,7 @@ describe('SlotPicker', () => {
         error={null}
       />,
     )
-    expect(screen.getByText('Nema slobodnih termina.')).toBeInTheDocument()
+    expect(screen.getByText('Nema slobodnih termina')).toBeInTheDocument()
 
     rerender(
       <SlotPicker

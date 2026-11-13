@@ -24,7 +24,7 @@ test('guest books, reschedules and cancels a Level 2 appointment', async ({ page
   await page.getByRole('button', { name: 'Potvrdi termin' }).click()
 
   await expect(page).toHaveURL(/\/potvrda#t=/)
-  await expect(page.getByRole('heading', { name: 'Vidimo se u salonu.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Vidimo se u salonu' })).toBeVisible()
   await expect(page.getByText(/Nismo poslali SMS ni e-mail/)).toBeVisible()
 
   await page.getByRole('link', { name: /Upravljaj terminom/ }).click()

@@ -26,11 +26,8 @@ export class AppErrorBoundary extends Component<Props, State> {
 
     return (
       <div className="flex min-h-dvh items-center justify-center bg-paper px-4 py-10">
-        <div className="w-full max-w-lg rounded-lg border border-line bg-surface p-6 sm:p-8">
-          <p className="text-sm font-medium text-danger">Demo je naišao na grešku</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">
-            Prikaz se nije mogao učitati.
-          </h1>
+        <div className="w-full max-w-lg rounded-lg bg-surface p-6 sm:p-8">
+          <h1 className="text-2xl text-ink">Prikaz se nije mogao učitati</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted">
             Osvježite stranicu ili se vratite na demo početnu. Podaci u ovom pregledniku nisu
             izgubljeni.

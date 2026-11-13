@@ -10,7 +10,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-pine text-white hover:bg-pine-strong',
-  secondary: 'border border-line-strong bg-surface text-ink hover:bg-paper',
+  secondary: 'bg-surface text-ink ring-1 ring-inset ring-line hover:ring-line-strong',
   ghost: 'text-ink hover:bg-pine-soft',
   quiet: 'text-pine hover:bg-pine-soft',
   danger: 'bg-danger text-white hover:bg-danger-strong',

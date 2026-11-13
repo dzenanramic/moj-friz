@@ -43,7 +43,7 @@ export function DateStrip({
         type="button"
         onClick={() => shift(-240)}
         aria-label="Prethodni datumi"
-        className="hidden h-10 w-9 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-muted transition-colors hover:text-ink sm:flex"
+        className="hidden h-10 w-9 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-ink sm:flex"
       >
         <ChevronLeft aria-hidden="true" className="h-4 w-4" />
       </button>
@@ -51,7 +51,7 @@ export function DateStrip({
         ref={scrollerRef}
         role="group"
         aria-label={label}
-        className="hide-scrollbar flex w-full min-w-0 max-w-full gap-1.5 overflow-x-auto pb-1"
+        className="hide-scrollbar flex w-full min-w-0 max-w-full gap-1 overflow-x-auto px-1 pb-1"
       >
         {dates.map((dateKey) => {
           const active = dateKey === selected
@@ -64,29 +64,17 @@ export function DateStrip({
               data-date-key={dateKey}
               onClick={() => onSelect(dateKey)}
               className={cn(
-                'flex min-h-[64px] min-w-[62px] shrink-0 flex-col items-center justify-center rounded-md border px-1.5 py-2 transition-colors',
-                active
-                  ? 'border-pine bg-pine text-white'
-                  : 'border-line bg-surface text-ink hover:border-line-strong hover:bg-paper',
+                'flex min-h-[62px] min-w-[68px] shrink-0 flex-col items-center justify-center rounded-md px-2 py-2 transition-colors',
+                active ? 'bg-pine text-white' : 'bg-paper text-ink hover:bg-pine-soft',
               )}
             >
-              <span
-                className={cn(
-                  'text-[0.65rem] font-medium',
-                  active ? 'text-white/70' : 'text-muted',
-                )}
-              >
+              <span className={cn('text-xs', active ? 'text-white' : 'text-muted')}>
                 {formatWeekday(dateKey, true)}
               </span>
-              <span className="time-gutter-label mt-0.5 text-sm font-semibold">
+              <span className="tabular mt-0.5 text-sm font-semibold whitespace-nowrap">
                 {formatDateCompact(dateKey)}
               </span>
-              <span
-                className={cn(
-                  'mt-1 text-[0.6rem] leading-none',
-                  active ? 'text-amber' : 'text-muted',
-                )}
-              >
+              <span className="mt-1 text-[0.65rem] leading-none">
                 {dateKey === today ? 'Danas' : '\u00A0'}
               </span>
             </button>
@@ -97,7 +85,7 @@ export function DateStrip({
         type="button"
         onClick={() => shift(240)}
         aria-label="Sljedeći datumi"
-        className="hidden h-10 w-9 shrink-0 items-center justify-center rounded-sm border border-line bg-surface text-muted transition-colors hover:text-ink sm:flex"
+        className="hidden h-10 w-9 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-ink sm:flex"
       >
         <ChevronRight aria-hidden="true" className="h-4 w-4" />
       </button>

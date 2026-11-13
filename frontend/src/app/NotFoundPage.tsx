@@ -10,10 +10,7 @@ export function NotFoundPage() {
     <div className="min-h-dvh bg-paper">
       <PublicDemoBar />
       <main className="mx-auto flex min-h-[70dvh] w-full max-w-3xl flex-col justify-center px-4 py-12 sm:px-6">
-        <p className="text-sm font-medium text-muted">404</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink">
-          Ova stranica ne postoji.
-        </h1>
+        <h1 className="text-ink">Ova stranica ne postoji</h1>
         <p className="mt-3 max-w-prose text-sm leading-relaxed text-muted">
           Link je možda pogrešan ili je demo podatak u međuvremenu resetovan. Vratite se na početak
           demo prikaza.

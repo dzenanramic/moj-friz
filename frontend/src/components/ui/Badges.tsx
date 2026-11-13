@@ -1,39 +1,5 @@
-import type { ReactNode } from 'react'
-
-import type { AppointmentStatus, PlanLevel, StaffColor } from '@/data/types'
+import type { AppointmentStatus, StaffColor } from '@/data/types'
 import { cn } from '@/lib/cn'
-
-type BadgeTone = 'neutral' | 'pine' | 'amber' | 'danger' | 'outline'
-
-const badgeTones: Record<BadgeTone, string> = {
-  neutral: 'bg-paper text-muted',
-  pine: 'bg-pine-soft text-pine',
-  amber: 'bg-amber-soft text-amber-ink',
-  danger: 'bg-danger-soft text-danger',
-  outline: 'border border-line-strong bg-transparent text-muted',
-}
-
-export function Badge({
-  children,
-  tone = 'neutral',
-  className,
-}: {
-  children: ReactNode
-  tone?: BadgeTone
-  className?: string
-}) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs leading-none font-medium whitespace-nowrap',
-        badgeTones[tone],
-        className,
-      )}
-    >
-      {children}
-    </span>
-  )
-}
 
 export const STATUS_LABELS: Record<AppointmentStatus, string> = {
   confirmed: 'Potvrđen',
@@ -42,33 +8,60 @@ export const STATUS_LABELS: Record<AppointmentStatus, string> = {
   no_show: 'Nedolazak',
 }
 
-const statusTones: Record<AppointmentStatus, BadgeTone> = {
-  confirmed: 'pine',
-  completed: 'neutral',
-  cancelled: 'outline',
-  no_show: 'amber',
+const statusDotColors: Record<AppointmentStatus, string> = {
+  confirmed: 'bg-pine',
+  completed: 'bg-line-strong',
+  cancelled: 'bg-line-strong',
+  no_show: 'bg-amber',
 }
 
-export function StatusBadge({ status }: { status: AppointmentStatus }) {
+/**
+ * Status is a coloured dot plus plain text. No pill, no tinted background:
+ * the dot carries the state, the word carries the meaning.
+ */
+export function StatusIndicator({
+  status,
+  className,
+}: {
+  status: AppointmentStatus
+  className?: string
+}) {
   return (
-    <Badge tone={statusTones[status]}>
+    <span
+      className={cn(
+        'inline-flex items-center gap-2 text-xs font-medium whitespace-nowrap',
+        status === 'no_show' ? 'text-amber-ink' : 'text-muted',
+        className,
+      )}
+    >
       <span
         aria-hidden="true"
-        className={cn(
-          'h-1.5 w-1.5 rounded-full',
-          status === 'confirmed' && 'bg-pine',
-          status === 'completed' && 'bg-muted',
-          status === 'cancelled' && 'bg-line-strong',
-          status === 'no_show' && 'bg-amber',
-        )}
+        className={cn('h-1.5 w-1.5 rounded-full', statusDotColors[status])}
       />
       {STATUS_LABELS[status]}
-    </Badge>
+    </span>
   )
 }
 
-export function LevelBadge({ level }: { level: PlanLevel }) {
-  return <Badge tone="outline">{level === 'level_1' ? 'Paket 1' : 'Paket 2'}</Badge>
+/** Active or inactive, stated as a dot and a word rather than a filled chip. */
+export function ActiveState({
+  active,
+  labelOn = 'Aktivno',
+  labelOff = 'Neaktivno',
+}: {
+  active: boolean
+  labelOn?: string
+  labelOff?: string
+}) {
+  return (
+    <span className="inline-flex items-center gap-2 text-xs font-medium text-muted">
+      <span
+        aria-hidden="true"
+        className={cn('h-1.5 w-1.5 rounded-full', active ? 'bg-pine' : 'bg-line-strong')}
+      />
+      {active ? labelOn : labelOff}
+    </span>
+  )
 }
 
 export function StaffName({

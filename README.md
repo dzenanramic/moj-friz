@@ -4,9 +4,14 @@ A calm, mobile-first digital appointment book for an independent salon in Banja 
 **frontend-only visual demo**. The fictional demo salon is **Studio Lana**; all names, phone numbers,
 appointments and notes are invented.
 
-> **Status: Milestone A only.** There is no backend, database, authentication, real booking or
-> deployment account. Nothing in this demo proves production tenancy, concurrency or security.
-> Read [docs/known-limitations.md](docs/known-limitations.md) before showing it.
+> **Status: Milestone A only.** There is no backend, database, authentication or real booking. The
+> static demo is deployed on Vercel, but nothing in it proves production tenancy, concurrency or
+> security. Read [docs/known-limitations.md](docs/known-limitations.md) before showing it.
+
+## Live demo
+
+The demo is deployed from `main` on Vercel. Setup and the known preview-toolbar limitation are
+described in [docs/deployment.md](docs/deployment.md).
 
 ## Run it
 

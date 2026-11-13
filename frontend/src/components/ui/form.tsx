@@ -11,7 +11,7 @@ import {
 import { cn } from '@/lib/cn'
 
 const controlBase =
-  'block w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink placeholder:text-muted/70 transition-colors focus:border-pine disabled:bg-paper disabled:text-muted aria-invalid:border-danger'
+  'block w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink placeholder:text-muted transition-colors focus:border-pine focus:ring-1 focus:ring-pine disabled:bg-paper disabled:text-muted aria-invalid:border-danger aria-invalid:focus:ring-danger'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...props }, ref) {
@@ -245,7 +245,7 @@ export function FormError({ children }: { children: ReactNode }) {
   return (
     <div
       role="alert"
-      className="flex items-start gap-2.5 rounded-md border border-danger/25 bg-danger-soft px-3.5 py-3 text-sm leading-relaxed text-danger-strong"
+      className="flex items-start gap-2.5 rounded-md bg-danger-soft px-3.5 py-3 text-sm leading-relaxed text-danger-strong"
     >
       <TriangleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
       <span>{children}</span>

@@ -1,19 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Check, ChevronRight, Clock3, MapPin, Phone } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Clock3, MapPin, Phone } from 'lucide-react'
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 
-import { Avatar, Skeleton } from '@/components/ui/Layout'
+import { Avatar, Panel, Skeleton } from '@/components/ui/Layout'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { CheckboxField, FormError, TextField } from '@/components/ui/form'
 import { gatewayErrorMessage, isGatewayError } from '@/data/gateway'
 import { useCreatePublicBooking, usePublicAvailability, usePublicCatalog } from '@/data/queries'
 import type { PublicHairdresserView, PublicSalonCatalog, PublicServiceView } from '@/data/types'
-import { cn } from '@/lib/cn'
 import { formatDuration, formatKM } from '@/lib/format'
 import { usePageTitle } from '@/lib/hooks'
-import { formatDateLong, formatTime, todayDateKey } from '@/lib/time'
+import { capitalizeFirst, formatDateLong, formatTime, todayDateKey } from '@/lib/time'
 import { publicBookingFormSchema, type PublicBookingFormValues } from '@/lib/validation'
 import { confirmationPath } from '@/demo/token'
 import { publicDateWindow } from '@/lib/scheduling'
@@ -75,10 +74,7 @@ export function PublicBookingPage() {
     }
     return (
       <div className="mx-auto max-w-xl">
-        <p className="text-sm font-medium text-danger">Greška</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight text-ink">
-          Rezervacija trenutno nije dostupna.
-        </h1>
+        <h1 className="text-ink">Rezervacija trenutno nije dostupna</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           {gatewayErrorMessage(catalog.error)}
         </p>
@@ -160,13 +156,10 @@ export function PublicBookingPage() {
 
   return (
     <div>
-      <header className="border-b border-line pb-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <header className="pb-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-medium text-muted">Demo salon</p>
-            <h1 className="mt-2 font-display text-4xl leading-none font-semibold tracking-[-0.03em] text-ink sm:text-5xl">
-              {salon.name}
-            </h1>
+            <h1 className="text-ink">{salon.name}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
               <span className="inline-flex items-center gap-1.5">
                 <MapPin aria-hidden="true" className="h-4 w-4" />
@@ -178,17 +171,15 @@ export function PublicBookingPage() {
               </span>
             </div>
           </div>
-          <span className="rounded-full border border-line-strong bg-surface px-3 py-1.5 text-xs font-medium text-muted">
-            Bez korisničkog naloga
-          </span>
+          <p className="text-sm text-muted">Rezervacija bez korisničkog naloga</p>
         </div>
       </header>
 
-      <div className="mt-7 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
         <div className="min-w-0">
           <Stepper step={step} />
 
-          <div className="mt-6 min-w-0 rounded-lg border border-line bg-surface p-4 sm:p-6">
+          <Panel className="mt-7 min-w-0 px-4 py-5 sm:px-7 sm:py-7">
             {step === 0 ? (
               <section aria-labelledby="booking-step-title">
                 <StepTitle
@@ -197,31 +188,35 @@ export function PublicBookingPage() {
                   title="Izaberite uslugu"
                   description="Cijena i trajanje su isti za sve frizere."
                 />
-                <div className="mt-4 space-y-2">
+                <ul className="mt-3">
                   {services.map((service) => (
-                    <button
-                      key={service.id}
-                      type="button"
-                      onClick={() => chooseService(service)}
-                      className="flex min-h-[68px] w-full items-center justify-between gap-4 rounded-md border border-line bg-paper/30 px-4 py-3 text-left transition-colors hover:border-pine/40 hover:bg-pine-soft/50"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-ink">{service.name}</span>
-                        <span className="mt-0.5 block text-xs text-muted">
-                          {formatDuration(service.durationMinutes)}
+                    <li key={service.id}>
+                      <button
+                        type="button"
+                        onClick={() => chooseService(service)}
+                        className="group flex min-h-[60px] w-full items-center justify-between gap-4 rounded-sm px-3 py-3 text-left transition-colors hover:bg-paper"
+                      >
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-ink">
+                            {service.name}
+                          </span>
+                          <span className="tabular mt-0.5 block text-xs text-muted">
+                            {formatDuration(service.durationMinutes)}
+                          </span>
                         </span>
-                      </span>
-                      <span className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-ink">
-                          {formatKM(service.priceMinor)}
+                        <span className="flex items-center gap-3">
+                          <span className="tabular text-sm font-semibold text-ink">
+                            {formatKM(service.priceMinor)}
+                          </span>
+                          <ChevronRight
+                            aria-hidden="true"
+                            className="h-4 w-4 text-line-strong transition-colors group-hover:text-pine"
+                          />
                         </span>
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-muted">
-                          <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                        </span>
-                      </span>
-                    </button>
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
                 {services.length === 0 ? (
                   <p className="text-sm text-muted">Salon trenutno nema aktivnih usluga.</p>
                 ) : null}
@@ -234,28 +229,33 @@ export function PublicBookingPage() {
                   id="booking-step-title"
                   headingRef={headingRef}
                   title="Izaberite frizera"
-                  description={`Za uslugu ${selectedService?.name ?? ''}.`}
+                  description={`Usluga ${selectedService?.name ?? ''}`}
                 />
-                <div className="mt-4 space-y-2">
+                <ul className="mt-3">
                   {eligibleHairdressers.map((member) => (
-                    <button
-                      key={member.id}
-                      type="button"
-                      onClick={() => chooseHairdresser(member)}
-                      className="flex min-h-[68px] w-full items-center gap-3 rounded-md border border-line bg-paper/30 px-4 py-3 text-left transition-colors hover:border-pine/40 hover:bg-pine-soft/50"
-                    >
-                      <Avatar name={member.displayName} colorKey={member.colorKey} />
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-ink">
-                          {member.displayName}
+                    <li key={member.id}>
+                      <button
+                        type="button"
+                        onClick={() => chooseHairdresser(member)}
+                        className="group flex min-h-[60px] w-full items-center gap-3 rounded-sm px-3 py-3 text-left transition-colors hover:bg-paper"
+                      >
+                        <Avatar name={member.displayName} colorKey={member.colorKey} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-ink">
+                            {member.displayName}
+                          </span>
+                          <span className="block text-xs text-muted">
+                            Slobodni termini po rasporedu
+                          </span>
                         </span>
-                        <span className="block text-xs text-muted">
-                          Slobodni termini po rasporedu
-                        </span>
-                      </span>
-                    </button>
+                        <ChevronRight
+                          aria-hidden="true"
+                          className="h-4 w-4 text-line-strong transition-colors group-hover:text-pine"
+                        />
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
                 {eligibleHairdressers.length === 0 ? (
                   <p className="text-sm text-muted">
                     Nijedan aktivni frizer trenutno ne radi ovu uslugu. Vratite se i izaberite drugu
@@ -280,10 +280,10 @@ export function PublicBookingPage() {
                   id="booking-step-title"
                   headingRef={headingRef}
                   title="Izaberite termin"
-                  description={`${selectedService?.name ?? ''} · ${selectedHairdresser?.displayName ?? ''}`}
+                  description={`${selectedService?.name ?? ''} i ${selectedHairdresser?.displayName ?? ''}`}
                 />
                 <div className="mt-4">
-                  <p className="mb-2 text-xs font-medium text-muted">Datum</p>
+                  <p className="mb-2 text-sm font-medium text-ink">Datum</p>
                   <DateStrip dates={dates} selected={dateKey} onSelect={chooseDate} />
                   <p className="mt-3 text-xs leading-relaxed text-muted">
                     Rezervacija je moguća najkasnije {formatLead(salon.bookingLeadMinutes)} prije
@@ -298,7 +298,7 @@ export function PublicBookingPage() {
                 ) : null}
 
                 <div className="mt-5">
-                  <p className="mb-2 text-xs font-medium text-muted">Slobodni termini</p>
+                  <p className="mb-2 text-sm font-medium text-ink">Slobodni termini</p>
                   <SlotPicker
                     availability={availability.data}
                     selected={startsAt ?? undefined}
@@ -330,22 +330,24 @@ export function PublicBookingPage() {
                   description="Termin se potvrđuje odmah. Potvrdu ne šaljemo SMS-om ni e-mailom."
                 />
 
-                <div className="mt-4 rounded-md border border-line bg-paper/40 p-3.5 text-sm">
-                  <p className="font-semibold text-ink">
-                    {selectedService?.name} · {selectedHairdresser?.displayName}
-                  </p>
-                  <p className="mt-1 text-muted">
-                    {selectedSlot
-                      ? `${formatDateLong(dateKey)}, ${formatTime(selectedSlot.startsAt)}–${formatTime(selectedSlot.endsAt)}`
-                      : 'Termin nije izabran.'}
-                  </p>
-                  {selectedService ? (
-                    <p className="mt-1 text-xs text-muted">
-                      {formatDuration(selectedService.durationMinutes)} ·{' '}
-                      {formatKM(selectedService.priceMinor)}
-                    </p>
-                  ) : null}
-                </div>
+                <dl className="mt-5 rounded-md bg-paper px-4 py-3 text-sm">
+                  <div className="flex flex-wrap justify-between gap-x-4">
+                    <dt className="text-muted">{selectedService?.name}</dt>
+                    <dd className="tabular font-medium text-ink">
+                      {selectedService
+                        ? `${formatDuration(selectedService.durationMinutes)} · ${formatKM(selectedService.priceMinor)}`
+                        : null}
+                    </dd>
+                  </div>
+                  <div className="mt-1 flex flex-wrap justify-between gap-x-4">
+                    <dt className="text-muted">{selectedHairdresser?.displayName}</dt>
+                    <dd className="tabular font-medium text-ink">
+                      {selectedSlot
+                        ? `${capitalizeFirst(formatDateLong(dateKey))}, ${formatTime(selectedSlot.startsAt)}–${formatTime(selectedSlot.endsAt)}`
+                        : 'Termin nije izabran'}
+                    </dd>
+                  </div>
+                </dl>
 
                 <form onSubmit={onSubmit} className="mt-5 space-y-4" noValidate>
                   {bookingError ? <FormError>{bookingError}</FormError> : null}
@@ -414,7 +416,7 @@ export function PublicBookingPage() {
                     vlasništva broja telefona.
                   </p>
 
-                  <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:justify-between">
+                  <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
                     <Button
                       variant="quiet"
                       onClick={goBack}
@@ -435,7 +437,7 @@ export function PublicBookingPage() {
                 </form>
               </section>
             ) : null}
-          </div>
+          </Panel>
         </div>
 
         <aside className="hidden lg:block">
@@ -472,7 +474,7 @@ function StepTitle({
         id={id}
         ref={headingRef}
         tabIndex={-1}
-        className="font-display text-2xl font-semibold tracking-tight text-ink outline-none"
+        className="text-xl font-semibold text-ink outline-none"
       >
         {title}
       </h2>
@@ -485,44 +487,17 @@ function StepTitle({
 
 function Stepper({ step }: { step: number }) {
   return (
-    <ol className="flex flex-wrap items-center gap-y-2" aria-label="Koraci rezervacije">
-      {STEPS.map((label, index) => {
-        const active = index === step
-        const complete = index < step
-        return (
-          <li key={label} className="flex items-center">
-            <span
-              aria-current={active ? 'step' : undefined}
-              className={cn(
-                'inline-flex items-center gap-1.5 text-xs font-medium',
-                active ? 'text-pine' : complete ? 'text-ink' : 'text-muted',
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={cn(
-                  'flex h-6 w-6 items-center justify-center rounded-full border text-[0.65rem] font-semibold',
-                  active
-                    ? 'border-pine bg-pine text-white'
-                    : complete
-                      ? 'border-pine bg-pine-soft text-pine'
-                      : 'border-line bg-surface text-muted',
-                )}
-              >
-                {complete ? <Check aria-hidden="true" className="h-3 w-3" /> : index + 1}
-              </span>
-              {label}
-            </span>
-            {index < STEPS.length - 1 ? (
-              <span
-                aria-hidden="true"
-                className="mx-1.5 hidden h-px w-4 bg-line-strong sm:block sm:w-6"
-              />
-            ) : null}
-          </li>
-        )
-      })}
-    </ol>
+    <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+      <span className="text-muted">
+        Korak {step + 1} od {STEPS.length}
+      </span>
+      <span aria-hidden="true" className="text-line-strong">
+        ·
+      </span>
+      <span aria-current="step" className="font-medium text-ink">
+        {STEPS[step]}
+      </span>
+    </p>
   )
 }
 
@@ -540,12 +515,10 @@ function BookingSummary({
   slot?: { startsAt: string; endsAt: string }
 }) {
   return (
-    <div className="sticky top-6 rounded-lg border border-line bg-surface p-5">
-      <p className="text-xs font-medium text-muted">Vaš termin</p>
-      <p className="mt-1 font-display text-2xl font-semibold tracking-tight text-ink">
-        {salon.name}
-      </p>
-      <dl className="mt-4 space-y-3 border-t border-line pt-4 text-sm">
+    <div className="sticky top-6 rounded-lg bg-surface px-5 py-5">
+      <p className="text-sm text-muted">Vaš termin</p>
+      <p className="mt-0.5 text-xl font-semibold text-ink">{salon.name}</p>
+      <dl className="mt-4 space-y-3 text-sm">
         <SummaryRow label="Usluga" value={service?.name ?? 'Nije izabrana'} />
         <SummaryRow label="Frizer" value={hairdresser?.displayName ?? 'Nije izabran'} />
         <SummaryRow label="Datum" value={slot ? formatDateLong(dateKey) : 'Nije izabran'} />
@@ -560,7 +533,7 @@ function BookingSummary({
           </>
         ) : null}
       </dl>
-      <div className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-muted">
+      <div className="mt-5 text-xs leading-relaxed text-muted">
         <p className="flex items-start gap-1.5">
           <Clock3 aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           Rezervacija najkasnije {formatLead(salon.bookingLeadMinutes)} prije termina, najviše{' '}
@@ -605,10 +578,7 @@ function BookingSkeleton() {
 function PublicLockedState() {
   return (
     <div className="mx-auto max-w-xl py-8">
-      <p className="text-sm font-medium text-pine">Online rezervacije</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink">
-        Online rezervacije su isključene u ovom prikazu.
-      </h1>
+      <h1 className="text-ink">Online rezervacije su isključene u ovom prikazu</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         Javna stranica salona dio je Paketa 2. U demou možete prebaciti prikaz paketa na početnoj
         strani i zatim otvoriti online rezervacije.
@@ -626,9 +596,7 @@ function PublicLockedState() {
 function PublicUnavailableState() {
   return (
     <div className="mx-auto max-w-xl py-8">
-      <h1 className="font-display text-4xl font-semibold tracking-tight text-ink">
-        Salonska stranica nije dostupna.
-      </h1>
+      <h1 className="text-ink">Salonska stranica nije dostupna</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         Provjerite link ili se vratite na demo početnu. Ovo je demo i linkovi se resetuju zajedno sa
         podacima.

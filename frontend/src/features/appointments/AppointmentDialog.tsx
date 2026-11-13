@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { Avatar, Skeleton } from '@/components/ui/Layout'
 import { Button } from '@/components/ui/Button'
-import { StatusBadge } from '@/components/ui/Badges'
+import { StatusIndicator } from '@/components/ui/Badges'
 import { FormError, Input, SelectField, TextField, TextareaField } from '@/components/ui/form'
 import { ConfirmDialog, Modal } from '@/components/ui/Modal'
 import { gatewayErrorMessage } from '@/data/gateway'
@@ -284,7 +284,7 @@ export function AppointmentDialog({
         description={
           mode === 'edit' && appointment ? (
             <span className="inline-flex flex-wrap items-center gap-2">
-              <StatusBadge status={appointment.status} />
+              <StatusIndicator status={appointment.status} />
               <span>
                 {appointment.clientName} · {formatDateKey(dateKeyFromInstant(appointment.startsAt))}
               </span>
@@ -320,7 +320,7 @@ export function AppointmentDialog({
             </div>
 
             {selectedClient ? (
-              <div className="flex flex-wrap items-center gap-3 rounded-md border border-line bg-paper/70 px-3 py-2.5">
+              <div className="flex flex-wrap items-center gap-3 rounded-md bg-paper px-3 py-2.5">
                 <Avatar name={selectedClient.name} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">{selectedClient.name}</p>
@@ -340,7 +340,7 @@ export function AppointmentDialog({
                 </Button>
               </div>
             ) : isNewClient ? (
-              <div className="space-y-3 rounded-md border border-line bg-paper/50 p-3.5">
+              <div className="space-y-3 rounded-md bg-paper p-3.5">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <TextField
                     label="Ime i prezime"
@@ -381,7 +381,7 @@ export function AppointmentDialog({
                     onChange={(event) => setClientSearch(event.target.value)}
                   />
                 </div>
-                <div className="rounded-md border border-line bg-paper/50 p-1.5">
+                <div className="rounded-md bg-paper p-1.5">
                   {clients.isPending ? (
                     <div className="space-y-1.5 p-2">
                       <Skeleton className="h-9 w-full" />
@@ -417,7 +417,7 @@ export function AppointmentDialog({
                   <button
                     type="button"
                     onClick={startNewClient}
-                    className="flex min-h-10 w-full items-center gap-2 rounded-sm border-t border-line px-2.5 py-2 text-sm font-medium text-pine transition-colors hover:bg-surface"
+                    className="flex min-h-10 w-full items-center gap-2 rounded-sm px-2.5 py-2 text-sm font-medium text-pine transition-colors hover:bg-surface"
                   >
                     <UserPlus aria-hidden="true" className="h-4 w-4" />
                     Novi klijent
@@ -480,7 +480,7 @@ export function AppointmentDialog({
 
           <fieldset>
             <legend className="text-sm font-medium text-ink">Vrijeme</legend>
-            <div className="mt-2 rounded-md border border-line bg-paper/40 p-3">
+            <div className="mt-2 rounded-md bg-paper p-3">
               {!hairdresserId || !serviceId || !dateKey ? (
                 <p className="text-sm text-muted">Izaberite frizera, uslugu i datum.</p>
               ) : availability.isPending ? (
@@ -509,10 +509,8 @@ export function AppointmentDialog({
                           setValue('time', slotTime, { shouldValidate: true })
                         }}
                         className={cn(
-                          'time-gutter-label min-h-9 rounded-sm border px-1 text-sm font-medium transition-colors',
-                          active
-                            ? 'border-pine bg-pine text-white'
-                            : 'border-line bg-surface text-ink hover:border-pine/50 hover:bg-pine-soft',
+                          'tabular min-h-9 rounded-sm px-1 text-sm font-medium transition-colors',
+                          active ? 'bg-pine text-white' : 'bg-surface text-ink hover:bg-pine-soft',
                         )}
                       >
                         {slotTime}
@@ -547,8 +545,8 @@ export function AppointmentDialog({
           />
 
           {mode === 'edit' && appointment ? (
-            <div className="border-t border-line pt-4">
-              <p className="text-xs font-medium text-muted">Brze radnje</p>
+            <div>
+              <p className="text-sm font-medium text-ink">Brze radnje</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button
                   type="button"
@@ -638,14 +636,14 @@ function ReadOnlyAppointmentDialog({
         </Button>
       }
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
         <div>
           <p className="text-sm font-semibold text-ink">{appointment.clientName}</p>
           <p className="mt-0.5 text-xs text-muted">{appointment.clientPhone}</p>
         </div>
-        <StatusBadge status={appointment.status} />
+        <StatusIndicator status={appointment.status} />
       </div>
-      <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+      <dl className="mt-1 grid gap-3 sm:grid-cols-2">
         <div>
           <dt className="text-xs text-muted">Datum</dt>
           <dd className="mt-0.5 text-sm font-medium text-ink">
@@ -682,8 +680,8 @@ function ReadOnlyAppointmentDialog({
         </div>
       </dl>
       {appointment.internalNote ? (
-        <div className="mt-4 rounded-md border border-line bg-paper/60 p-3">
-          <p className="text-xs font-medium text-muted">Interna napomena</p>
+        <div className="mt-4 rounded-md bg-paper p-3">
+          <p className="text-xs text-muted">Interna napomena</p>
           <p className="mt-1 text-sm leading-relaxed text-ink">{appointment.internalNote}</p>
         </div>
       ) : null}

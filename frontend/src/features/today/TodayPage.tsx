@@ -6,17 +6,17 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { ErrorState, EmptyState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
 import { useAppointments } from '@/data/queries'
 import type { AppointmentView } from '@/data/types'
+import { cn } from '@/lib/cn'
 import { formatHairdresserCount, formatKM, formatTerminCount } from '@/lib/format'
 import { useNow, usePageTitle } from '@/lib/hooks'
 import {
   capitalizeFirst,
   dayRange,
-  formatDateLong,
   formatDateKey,
+  formatDateLong,
   formatTime,
   todayDateKey,
 } from '@/lib/time'
-import { cn } from '@/lib/cn'
 
 import { AppointmentDialog } from '../appointments/AppointmentDialog'
 import { AppointmentListItem } from '../appointments/AppointmentListItem'
@@ -42,6 +42,7 @@ export function TodayPage() {
   const finished = active.filter((item) => item.status === 'completed' || item.status === 'no_show')
   const next = upcoming[0]
   const staffCount = new Set(active.map((item) => item.hairdresserId)).size
+  const valueMinor = active.reduce((sum, item) => sum + (item.priceMinorSnapshot ?? 0), 0)
 
   const openAppointment = (appointment: AppointmentView) => setDialog({ mode: 'edit', appointment })
 
@@ -51,13 +52,13 @@ export function TodayPage() {
         title="Danas"
         description={
           <>
-            <span className="font-medium text-ink">{capitalizeFirst(formatDateLong(today))}</span>
-            <span className="mx-2 text-line-strong" aria-hidden="true">
-              /
+            {capitalizeFirst(formatDateLong(today))}
+            <span className="text-line-strong" aria-hidden="true">
+              {' · '}
             </span>
             {appointments.isPending
               ? 'Učitavanje rasporeda…'
-              : `${formatTerminCount(active.length)} · ${formatHairdresserCount(staffCount)}`}
+              : `${formatTerminCount(active.length)}, ${formatHairdresserCount(staffCount)}`}
           </>
         }
         actions={
@@ -81,49 +82,40 @@ export function TodayPage() {
 
       {appointments.isError ? (
         <ErrorState
-          title="Raspored se nije učitao."
+          title="Raspored se nije učitao"
           message="Pokušajte ponovo. Demo podaci su i dalje u ovom pregledniku."
           onRetry={() => void appointments.refetch()}
         />
       ) : null}
 
       {next ? (
-        <Panel className="mb-6 overflow-hidden">
-          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="w-14 shrink-0 text-center sm:w-16">
-                <p className="time-gutter-label font-display text-2xl font-semibold tracking-tight text-pine">
-                  {formatTime(next.startsAt)}
-                </p>
-                <p className="mt-0.5 text-[0.65rem] font-medium text-muted">Sljedeće</p>
-              </div>
+        <section
+          aria-label="Sljedeći termin"
+          className="relative overflow-hidden rounded-lg bg-pine-soft"
+        >
+          <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-pine" />
+          <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:px-7 sm:py-6">
+            <div className="flex min-w-0 flex-1 items-center gap-5">
+              <p className="tabular text-3xl leading-none font-semibold text-pine-strong sm:text-4xl">
+                {formatTime(next.startsAt)}
+              </p>
               <div className="min-w-0">
-                <p className="truncate text-base font-semibold text-ink">{next.clientName}</p>
+                <p className="text-xs font-medium text-pine-strong">Sljedeći termin</p>
+                <p className="mt-1 truncate text-lg font-semibold text-ink">{next.clientName}</p>
                 <p className="mt-0.5 truncate text-sm text-muted">
-                  {next.serviceName} · {next.hairdresserName}
+                  {next.serviceName} · {next.hairdresserName} · do {formatTime(next.endsAt)}
                 </p>
               </div>
             </div>
-            <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
-              <span className="text-sm text-muted">
-                {formatTime(next.startsAt)}–{formatTime(next.endsAt)}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => openAppointment(next)}
-                className="sm:ml-2"
-              >
-                Detalji
-              </Button>
-            </div>
+            <Button variant="secondary" size="sm" onClick={() => openAppointment(next)}>
+              Detalji
+            </Button>
           </div>
-          <div className="h-1 bg-pine/80" aria-hidden="true" />
-        </Panel>
+        </section>
       ) : null}
 
       {appointments.isPending ? (
-        <Panel className="p-4">
+        <Panel className="mt-7">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className="flex items-center gap-4">
@@ -135,8 +127,9 @@ export function TodayPage() {
         </Panel>
       ) : appointments.isError ? null : active.length === 0 ? (
         <EmptyState
+          className="mt-7"
           icon={Sun}
-          title="Danas je mirno."
+          title="Danas je mirno"
           description={
             isSunday(today)
               ? 'Salon je nedjeljom zatvoren. Otvorite kalendar za naredne dane.'
@@ -157,18 +150,18 @@ export function TodayPage() {
           }
         />
       ) : (
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-          <div className="space-y-8">
+        <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
+          <div className="space-y-10">
             <section aria-labelledby="upcoming-heading">
-              <div className="mb-2 flex items-baseline justify-between gap-3">
-                <h2 id="upcoming-heading" className="text-sm font-semibold text-ink">
+              <div className="mb-1 flex items-baseline justify-between gap-3">
+                <h2 id="upcoming-heading" className="text-base font-semibold text-ink">
                   Predstojeći
                 </h2>
                 <span className="text-xs text-muted">
                   {upcoming.length > 0 ? formatTerminCount(upcoming.length) : 'Nema preostalih'}
                 </span>
               </div>
-              <Panel className="px-1 sm:px-2">
+              <Panel className="py-1">
                 {upcoming.length > 0 ? (
                   upcoming.map((appointment) => (
                     <AppointmentListItem
@@ -188,13 +181,13 @@ export function TodayPage() {
 
             {finished.length > 0 ? (
               <section aria-labelledby="finished-heading">
-                <div className="mb-2 flex items-baseline justify-between gap-3">
-                  <h2 id="finished-heading" className="text-sm font-semibold text-ink">
+                <div className="mb-1 flex items-baseline justify-between gap-3">
+                  <h2 id="finished-heading" className="text-base font-semibold text-ink">
                     Završeno danas
                   </h2>
                   <span className="text-xs text-muted">{formatTerminCount(finished.length)}</span>
                 </div>
-                <Panel className="px-1 sm:px-2">
+                <Panel className="py-1">
                   {finished.map((appointment) => (
                     <AppointmentListItem
                       key={appointment.id}
@@ -208,64 +201,62 @@ export function TodayPage() {
             ) : null}
           </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-6">
-            <Panel className="p-4">
-              <h2 className="text-sm font-semibold text-ink">Smjena danas</h2>
-              <dl className="mt-3 space-y-2.5">
-                <div className="flex items-center justify-between gap-3 text-sm">
+          <aside className="space-y-8 lg:sticky lg:top-6">
+            <section>
+              <h2 className="text-base font-semibold text-ink">Smjena danas</h2>
+              <dl className="mt-3 space-y-2.5 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
                   <dt className="text-muted">Termini</dt>
-                  <dd className="font-medium text-ink">{formatTerminCount(active.length)}</dd>
+                  <dd className="tabular font-medium text-ink">{active.length}</dd>
                 </div>
-                <div className="flex items-center justify-between gap-3 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
                   <dt className="text-muted">Frizeri sa terminima</dt>
-                  <dd className="font-medium text-ink">{staffCount}</dd>
+                  <dd className="tabular font-medium text-ink">{staffCount}</dd>
                 </div>
-                <div className="flex items-center justify-between gap-3 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
                   <dt className="text-muted">Online rezervacije</dt>
-                  <dd className="font-medium text-ink">
+                  <dd className="tabular font-medium text-ink">
                     {active.filter((item) => item.source === 'online').length}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between gap-3 border-t border-line pt-2.5 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
                   <dt className="text-muted">Vrijednost termina</dt>
-                  <dd className="font-medium text-ink">
-                    {formatKM(
-                      active.reduce((sum, item) => sum + (item.priceMinorSnapshot ?? 0), 0),
-                    )}
-                  </dd>
+                  <dd className="tabular font-medium text-ink">{formatKM(valueMinor)}</dd>
                 </div>
               </dl>
-              <p className="mt-3 text-[0.7rem] leading-relaxed text-muted">
+              <p className="mt-3 text-xs leading-relaxed text-muted">
                 Računa se iz prikazanih termina. Demo podaci, bez naplate.
               </p>
-            </Panel>
+            </section>
 
-            <Panel className="p-4">
-              <h2 className="text-sm font-semibold text-ink">Prečice</h2>
-              <div className="mt-3 space-y-1.5">
+            <section>
+              <h2 className="text-base font-semibold text-ink">Prečice</h2>
+              <div className="mt-2">
                 <Link
                   to={`/kalendar?datum=${today}`}
-                  className="flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm text-muted transition-colors hover:bg-paper hover:text-ink"
+                  className="flex min-h-10 items-center gap-2 rounded-sm px-2 -mx-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
                 >
                   <CalendarDays aria-hidden="true" className="h-4 w-4" />
                   Cijeli raspored dana
                 </Link>
                 <Link
                   to="/klijenti"
-                  className="flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm text-muted transition-colors hover:bg-paper hover:text-ink"
+                  className="flex min-h-10 items-center gap-2 rounded-sm px-2 -mx-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
                 >
                   <Clock3 aria-hidden="true" className="h-4 w-4" />
                   Pretraži klijente
                 </Link>
               </div>
-            </Panel>
+            </section>
           </aside>
         </div>
       )}
 
-      <div className="mt-8 flex items-center justify-between border-t border-line pt-4 text-xs text-muted lg:hidden">
+      <div
+        className={cn('mt-10 flex items-center justify-between pb-2 text-xs text-muted lg:hidden')}
+      >
         <span>{formatDateKey(today)}</span>
-        <span className={cn('inline-flex items-center gap-1.5')}>
+        <span className="inline-flex items-center gap-1.5">
           <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
           {formatTime(now.toISOString())}
         </span>

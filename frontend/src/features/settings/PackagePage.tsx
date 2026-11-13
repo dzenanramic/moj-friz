@@ -1,7 +1,6 @@
-import { Check, ExternalLink, Info, UsersRound } from 'lucide-react'
+import { Check, ExternalLink, Info } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { LevelBadge } from '@/components/ui/Badges'
 import { Button } from '@/components/ui/Button'
 import { ErrorState, Panel, Skeleton } from '@/components/ui/Layout'
 import { gatewayErrorMessage } from '@/data/gateway'
@@ -35,7 +34,7 @@ const PACKAGES: Array<{
     level: 'level_2',
     name: 'Paket 2',
     priceMinor: 2900,
-    description: 'Sve iz Paketa 1 + online rezervacije',
+    description: 'Sve iz Paketa 1 i online rezervacije',
     features: [
       'Javna stranica salona',
       'Klijent bira uslugu, frizera i termin',
@@ -73,7 +72,7 @@ export function PackagePage() {
   if (packageInfo.isError || salon.isError) {
     return (
       <ErrorState
-        title="Podaci o paketu se nisu učitali."
+        title="Podaci o paketu se nisu učitali"
         onRetry={() => {
           void packageInfo.refetch()
           void salon.refetch()
@@ -83,78 +82,55 @@ export function PackagePage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <section aria-labelledby="package-summary">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2
-              id="package-summary"
-              className="font-display text-2xl font-semibold tracking-tight text-ink"
-            >
-              Pretplata i paket
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              Cijena je po aktivnom frizeru mjesečno. Prikaz je informativan; naplata se u pilotu
-              obavlja ručno.
-            </p>
-          </div>
-          <LevelBadge level={level} />
-        </div>
+        <h2 id="package-summary" className="text-xl font-semibold text-ink">
+          Pretplata i paket
+        </h2>
+        <p className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-muted">
+          {level === 'level_1'
+            ? 'Knjiga termina bez javne stranice.'
+            : 'Knjiga termina sa online rezervacijama.'}{' '}
+          Cijena je po aktivnom frizeru mjesečno; naplata se u pilotu obavlja ručno.
+        </p>
 
-        <Panel className="mt-4 p-4 sm:p-5">
-          {packageInfo.isPending ? (
-            <div className="space-y-3">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-10 w-64" />
+        {packageInfo.isPending ? (
+          <div className="mt-5 grid gap-6 sm:grid-cols-2">
+            <Skeleton className="h-24 w-full rounded-lg" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+        ) : packageInfo.data ? (
+          <div className="mt-6 grid items-end gap-8 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-16">
+            <div>
+              <p className="text-sm text-muted">
+                {level === 'level_1' ? 'Paket 1' : 'Paket 2'} u demou
+              </p>
+              <p className="mt-1 text-5xl font-semibold text-ink">
+                {formatKM(packageInfo.data.pricePerHairdresserMinor)}
+                <span className="ml-1.5 text-sm font-normal text-muted">/ frizer / mj.</span>
+              </p>
             </div>
-          ) : packageInfo.data ? (
-            <div className="grid gap-6 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
               <div>
-                <p className="text-xs font-medium text-muted">Trenutni demo prikaz</p>
-                <p className="mt-1 font-display text-3xl font-semibold tracking-tight text-ink">
-                  {level === 'level_1' ? 'Paket 1' : 'Paket 2'}
-                </p>
-                <p className="mt-2 text-sm text-muted">
-                  {level === 'level_1'
-                    ? 'Digitalna knjiga termina bez javne stranice.'
-                    : 'Digitalna knjiga termina sa online rezervacijama.'}
-                </p>
+                <dt className="text-muted">Aktivni frizeri</dt>
+                <dd className="mt-0.5 font-medium text-ink">{activeCount}</dd>
               </div>
-              <dl className="space-y-2.5 text-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-muted">Cijena po frizeru</dt>
-                  <dd className="font-semibold text-ink">
-                    {formatKM(packageInfo.data.pricePerHairdresserMinor)} / mjesec
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-muted">Aktivni frizeri</dt>
-                  <dd className="font-semibold text-ink">{activeCount}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-4 border-t border-line pt-2.5">
-                  <dt className="text-muted">Procjena mjesečno</dt>
-                  <dd className="font-semibold text-ink">
-                    {formatKM(packageInfo.data.monthlyTotalMinor)}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          ) : null}
-        </Panel>
+              <div>
+                <dt className="text-muted">Procjena mjesečno</dt>
+                <dd className="tabular mt-0.5 font-medium text-ink">
+                  {formatKM(packageInfo.data.monthlyTotalMinor)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        ) : null}
       </section>
 
       <section aria-labelledby="package-trial">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 id="package-trial" className="text-base font-semibold text-ink">
-              Probni period
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              {packageInfo.data?.subscriptionStatus === 'trial'
-                ? 'Probni period je aktivan.'
-                : 'Pretplata je trenutno van probnog perioda.'}
-            </p>
-          </div>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <h2 id="package-trial" className="text-xl font-semibold text-ink">
+            Probni period
+          </h2>
           {packageInfo.data?.trialEndsAt ? (
             <p className="text-sm text-muted">
               Završava{' '}
@@ -162,12 +138,12 @@ export function PackagePage() {
                 {formatDateKey(dateKeyFromInstant(packageInfo.data.trialEndsAt))}
               </span>
               {remainingDays !== null
-                ? ` · još ${remainingDays} ${terminology(remainingDays, 'dan', 'dana', 'dana')}`
+                ? `, još ${remainingDays} ${terminology(remainingDays, 'dan', 'dana', 'dana')}`
                 : ''}
             </p>
           ) : null}
         </div>
-        <div className="mt-3 flex items-start gap-2.5 rounded-md border border-amber/25 bg-amber-soft/70 px-4 py-3 text-sm leading-relaxed text-amber-ink">
+        <div className="mt-4 flex items-start gap-3 rounded-lg bg-amber-soft px-4 py-3.5 text-sm leading-relaxed text-amber-ink">
           <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
             Kad probni period istekne, prikazuje se obavještenje. Pristup se ne blokira automatski;
@@ -177,36 +153,34 @@ export function PackagePage() {
       </section>
 
       <section aria-labelledby="package-options">
-        <h2 id="package-options" className="text-base font-semibold text-ink">
+        <h2 id="package-options" className="text-xl font-semibold text-ink">
           Uporedi pakete
         </h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
           {PACKAGES.map((item) => {
             const active = item.level === level
             return (
               <div
                 key={item.level}
                 className={cn(
-                  'flex flex-col rounded-lg border bg-surface p-5',
-                  active ? 'border-pine shadow-[inset_0_0_0_1px_var(--color-pine)]' : 'border-line',
+                  'flex flex-col rounded-lg px-5 py-6 sm:px-7',
+                  active ? 'bg-pine-soft' : 'bg-surface',
                 )}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-baseline justify-between gap-3">
                   <div>
-                    <p className="font-display text-2xl font-semibold tracking-tight text-ink">
-                      {item.name}
-                    </p>
+                    <h3 className="text-lg font-semibold text-ink">{item.name}</h3>
                     <p className="mt-0.5 text-sm text-muted">{item.description}</p>
                   </div>
                   {active ? (
-                    <span className="rounded-full bg-pine-soft px-2.5 py-1 text-xs font-semibold text-pine">
+                    <span className="shrink-0 text-xs font-medium text-pine-strong">
                       Prikazuje se
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-4 font-display text-3xl font-semibold tracking-tight text-ink">
+                <p className="mt-5 text-3xl font-semibold text-ink">
                   {formatKM(item.priceMinor)}
-                  <span className="ml-1 font-sans text-xs font-normal text-muted">
+                  <span className="ml-1.5 align-baseline text-sm font-normal text-muted">
                     / frizer / mj.
                   </span>
                 </p>
@@ -214,16 +188,22 @@ export function PackagePage() {
                   {item.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-start gap-2 text-sm leading-relaxed text-ink"
+                      className="flex items-start gap-2.5 text-sm leading-relaxed text-ink"
                     >
-                      <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-pine" />
+                      <Check
+                        aria-hidden="true"
+                        className={cn(
+                          'mt-0.5 h-4 w-4 shrink-0',
+                          active ? 'text-pine-strong' : 'text-pine',
+                        )}
+                      />
                       {feature}
                     </li>
                   ))}
                 </ul>
-                <div className="mt-6 border-t border-line pt-4">
+                <div className="mt-auto pt-6">
                   {active ? (
-                    <p className="text-sm font-medium text-pine">Trenutni demo prikaz</p>
+                    <p className="text-sm text-muted">Ovo je trenutni demo prikaz.</p>
                   ) : (
                     <Button
                       variant="secondary"
@@ -241,9 +221,9 @@ export function PackagePage() {
       </section>
 
       <section aria-labelledby="package-public">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-surface px-5 py-4">
           <div>
-            <h2 id="package-public" className="text-sm font-semibold text-ink">
+            <h2 id="package-public" className="text-base font-semibold text-ink">
               Javna stranica
             </h2>
             <p className="mt-1 text-sm text-muted">
@@ -257,31 +237,26 @@ export function PackagePage() {
               href={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-line-strong bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-paper"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-medium text-pine transition-colors hover:text-pine-strong"
             >
               Otvori javnu stranicu
-              <ExternalLink aria-hidden="true" className="h-4 w-4 text-muted" />
+              <ExternalLink aria-hidden="true" className="h-4 w-4" />
             </a>
           ) : (
-            <span className="inline-flex min-h-11 items-center rounded-md border border-line bg-paper px-4 text-sm text-muted">
-              Dostupno u Paketu 2
-            </span>
+            <span className="text-sm text-muted">Dostupno u Paketu 2</span>
           )}
         </div>
       </section>
 
       <section aria-labelledby="salon-details">
-        <h2
-          id="salon-details"
-          className="font-display text-2xl font-semibold tracking-tight text-ink"
-        >
+        <h2 id="salon-details" className="text-xl font-semibold text-ink">
           Salon
         </h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted">
+        <p className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-muted">
           Osnovni podaci salona. U demou su samo prikaz; uređivanje profila dolazi uz pilot.
         </p>
-        <Panel className="mt-4 p-4 sm:p-5">
-          <dl className="grid gap-4 text-sm sm:grid-cols-2">
+        <Panel className="mt-4">
+          <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-xs text-muted">Naziv</dt>
               <dd className="mt-0.5 font-medium text-ink">{salon.data?.name ?? 'Studio Lana'}</dd>
@@ -294,7 +269,9 @@ export function PackagePage() {
             </div>
             <div>
               <dt className="text-xs text-muted">Telefon</dt>
-              <dd className="mt-0.5 font-medium text-ink">{salon.data?.phone ?? '051 000 000'}</dd>
+              <dd className="tabular mt-0.5 font-medium text-ink">
+                {salon.data?.phone ?? '051 000 000'}
+              </dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Vremenska zona</dt>
@@ -306,8 +283,7 @@ export function PackagePage() {
         </Panel>
       </section>
 
-      <p className="flex items-start gap-2 text-xs leading-relaxed text-muted">
-        <UsersRound aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
+      <p className="max-w-[70ch] text-xs leading-relaxed text-muted">
         Promjena paketa u stvarnoj pilot verziji obavlja se ručno, kroz administrativni alat. Demo
         prekidač služi samo za prikaz.
       </p>

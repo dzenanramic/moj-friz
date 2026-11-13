@@ -48,7 +48,7 @@ export function Modal({
         >
           <div className="flex shrink-0 items-start justify-between gap-4 pr-8">
             <div>
-              <Dialog.Title className="font-display text-2xl leading-tight font-semibold tracking-tight text-ink">
+              <Dialog.Title className="text-xl leading-snug font-semibold text-ink">
                 {title}
               </Dialog.Title>
               {description ? (
@@ -73,7 +73,7 @@ export function Modal({
           </Dialog.Close>
           <div className="dialog-sheet-body mt-5 pr-1">{children}</div>
           {footer ? (
-            <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-line pt-4 mt-4 sm:flex-row sm:justify-end">
+            <div className="mt-6 flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               {footer}
             </div>
           ) : null}
@@ -111,13 +111,13 @@ export function ConfirmDialog({
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="dialog-overlay" />
         <AlertDialog.Content className="dialog-content w-full p-5 sm:w-[min(92vw,28rem)] sm:p-6">
-          <AlertDialog.Title className="font-display text-2xl leading-tight font-semibold tracking-tight text-ink">
+          <AlertDialog.Title className="text-xl leading-snug font-semibold text-ink">
             {title}
           </AlertDialog.Title>
           <AlertDialog.Description className="mt-2 text-sm leading-relaxed text-muted">
             {description}
           </AlertDialog.Description>
-          <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-6 flex flex-col-reverse gap-2 border-t border-line bg-surface px-5 py-4 sm:-mx-6 sm:-mb-6 sm:flex-row sm:justify-end sm:px-6">
+          <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-6 flex flex-col-reverse gap-2 bg-surface px-5 py-4 sm:-mx-6 sm:-mb-6 sm:flex-row sm:justify-end sm:px-6">
             <AlertDialog.Cancel asChild>
               <Button variant="secondary" disabled={pending}>
                 {cancelLabel}

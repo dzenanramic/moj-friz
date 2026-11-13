@@ -1,7 +1,7 @@
-import { Phone, StickyNote } from 'lucide-react'
+import { Phone } from 'lucide-react'
 import { useParams } from 'react-router'
 
-import { Avatar, BackLink, ErrorState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
+import { BackLink, ErrorState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
 import { useClient } from '@/data/queries'
 import { formatKM, formatTerminCount } from '@/lib/format'
 import { usePageTitle } from '@/lib/hooks'
@@ -16,9 +16,9 @@ export function ClientDetailPage() {
 
   if (client.isPending) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
         <BackLink to="/klijenti">Klijenti</BackLink>
-        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-20 w-full rounded-lg" />
         <Skeleton className="h-48 w-full rounded-lg" />
       </div>
     )
@@ -30,7 +30,7 @@ export function ClientDetailPage() {
         <BackLink to="/klijenti">Klijenti</BackLink>
         <div className="mt-4">
           <ErrorState
-            title="Klijent nije pronađen."
+            title="Klijent nije pronađen"
             message="Link je možda pogrešan ili je demo resetovan."
             onRetry={() => void client.refetch()}
           />
@@ -45,74 +45,65 @@ export function ClientDetailPage() {
   const totalValue = appointments
     .filter((appointment) => appointment.status !== 'cancelled')
     .reduce((sum, appointment) => sum + (appointment.priceMinorSnapshot ?? 0), 0)
+  const callHref = `tel:${person.phoneOriginal.replace(/\s+/g, '')}`
 
   return (
     <div>
       <BackLink to="/klijenti">Klijenti</BackLink>
 
-      <div className="mt-3">
+      <div className="mt-2">
         <PageHeader
           title={person.name}
           description={
-            <span className="inline-flex items-center gap-2">
-              <Phone aria-hidden="true" className="h-3.5 w-3.5" />
+            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
               <a
-                href={`tel:${person.phoneOriginal.replace(/\s+/g, '')}`}
-                className="underline decoration-line-strong underline-offset-4 hover:text-ink"
+                href={callHref}
+                className="inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line-strong underline-offset-4 hover:text-pine"
               >
+                <Phone aria-hidden="true" className="h-3.5 w-3.5" />
                 {person.phoneOriginal}
               </a>
-              <span aria-hidden="true" className="text-line-strong">
-                /
-              </span>
-              Klijent od {formatDateKey(dateKeyFromInstant(person.createdAt))}
+              <span>Klijent od {formatDateKey(dateKeyFromInstant(person.createdAt))}</span>
             </span>
           }
-          className="pb-4"
+          className="pb-6"
         />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-        <div className="space-y-4">
-          <Panel className="p-4 sm:p-5">
-            <div className="flex items-center gap-3">
-              <Avatar name={person.name} size="lg" />
-              <div>
-                <p className="text-sm font-semibold text-ink">{person.name}</p>
-                <p className="text-xs text-muted">Osnovni podaci i historija termina</p>
-              </div>
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
+        <div className="space-y-8">
+          <dl className="grid grid-cols-3 gap-4 rounded-lg bg-surface px-5 py-4">
+            <div>
+              <dt className="text-xs text-muted">Termini</dt>
+              <dd className="tabular mt-1 text-lg font-semibold text-ink">{appointments.length}</dd>
             </div>
-            <dl className="mt-4 grid gap-3 border-t border-line pt-4 sm:grid-cols-3">
-              <div>
-                <dt className="text-xs text-muted">Termini ukupno</dt>
-                <dd className="mt-0.5 text-sm font-semibold text-ink">{appointments.length}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted">Zadnji dolazak</dt>
-                <dd className="mt-0.5 text-sm font-semibold text-ink">
-                  {lastVisit ? formatDateKey(dateKeyFromInstant(lastVisit.startsAt)) : '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted">Vrijednost termina</dt>
-                <dd className="mt-0.5 text-sm font-semibold text-ink">{formatKM(totalValue)}</dd>
-              </div>
-            </dl>
-          </Panel>
+            <div>
+              <dt className="text-xs text-muted">Zadnji dolazak</dt>
+              <dd className="tabular mt-1 text-lg font-semibold text-ink">
+                {lastVisit ? formatDateKey(dateKeyFromInstant(lastVisit.startsAt)) : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Vrijednost termina</dt>
+              <dd className="tabular mt-1 text-lg font-semibold text-ink">
+                {formatKM(totalValue)}
+              </dd>
+            </div>
+          </dl>
 
           <section aria-labelledby="client-history">
-            <div className="mb-2 flex items-baseline justify-between gap-3">
-              <h2 id="client-history" className="text-sm font-semibold text-ink">
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <h2 id="client-history" className="text-base font-semibold text-ink">
                 Historija termina
               </h2>
               <span className="text-xs text-muted">{formatTerminCount(appointments.length)}</span>
             </div>
             {appointments.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-line-strong px-4 py-6 text-sm text-muted">
-                Ovaj klijent još nema termina.
-              </p>
+              <Panel>
+                <p className="text-sm text-muted">Ovaj klijent još nema termina.</p>
+              </Panel>
             ) : (
-              <Panel className="px-1 sm:px-2">
+              <Panel className="py-1">
                 {appointments.map((appointment) => (
                   <AppointmentListItem key={appointment.id} appointment={appointment} showPrice />
                 ))}
@@ -121,37 +112,34 @@ export function ClientDetailPage() {
           </section>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-6">
-          <Panel className="p-4">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-              <StickyNote aria-hidden="true" className="h-4 w-4 text-muted" />
-              Napomena
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
+        <aside className="space-y-7 lg:sticky lg:top-6">
+          <section>
+            <h2 className="text-base font-semibold text-ink">Napomena</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink">
               {person.notes ?? 'Nema napomene.'}
             </p>
-            <p className="mt-3 border-t border-line pt-3 text-[0.7rem] leading-relaxed text-muted">
-              Samo osnovne poslovne napomene. Ne unosite zdravstvene ili druge osjetljive podatke.
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Samo poslovne napomene. Ne unosite zdravstvene ni druge osjetljive podatke.
             </p>
-          </Panel>
+          </section>
 
-          <Panel className="p-4">
-            <h2 className="text-sm font-semibold text-ink">Kontakt</h2>
+          <section>
+            <h2 className="text-base font-semibold text-ink">Kontakt</h2>
             <a
-              href={`tel:${person.phoneOriginal.replace(/\s+/g, '')}`}
-              className="mt-3 flex min-h-11 items-center gap-2 rounded-md border border-line bg-paper/60 px-3 text-sm font-medium text-ink transition-colors hover:border-line-strong"
+              href={callHref}
+              className="tabular mt-2 inline-flex min-h-11 items-center gap-2 rounded-md bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-pine-soft"
             >
               <Phone aria-hidden="true" className="h-4 w-4 text-pine" />
               {person.phoneOriginal}
             </a>
-            <p className="mt-2 text-[0.7rem] leading-relaxed text-muted">
+            <p className="mt-2 text-xs leading-relaxed text-muted">
               Broj nije verifikovan; prikaz je iz demo podataka.
             </p>
-          </Panel>
+          </section>
         </aside>
       </div>
 
-      <p className="mt-6 text-xs leading-relaxed text-muted">
+      <p className="mt-9 max-w-[70ch] text-xs leading-relaxed text-muted">
         Historija je vidljiva samo salonu. Nikada se ne prikazuje na javnoj stranici ni preko
         privatnog linka za upravljanje terminom.
       </p>

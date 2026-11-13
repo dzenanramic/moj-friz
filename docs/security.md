@@ -21,35 +21,27 @@ security claim about the pilot must wait for Milestone B/C tests and review.
   extension. It is not evidence for production.
 - The public booking form includes a honeypot field. It is a demo-quality abuse deterrent, not a
   substitute for server-side rate limiting or phone verification.
-- The static deployment includes `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, a
+- The static deployment includes `Referrer-Policy: no-referrer`, `X-Frame-Options: SAMEORIGIN`, a
   restrictive CSP and other basic headers. Those headers do not secure an absent backend.
 
-## Privacy posture
+## Deployed CSP
 
-- Collect only name, phone, service, appointment time and optional non-sensitive salon notes.
-- The demo warns owners not to record health or other sensitive data.
-- The privacy page is a draft marked for owner/legal review. It is not a compliance claim.
-- Real export/deletion procedures, backup-retention implications and a retention policy belong to
-  the pilot and are not implemented.
+`frontend/vercel.json` sends this policy on every response:
 
-## Planned pilot controls (not built)
+```text
+default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;
+font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+```
 
-- Argon2id password hashing; opaque server-side sessions with hashed tokens; HttpOnly cookies.
-- CSRF protection plus Origin checks for cookie-authenticated changes.
-- Explicit CORS allowlist; same-origin deployment preferred.
-- Every protected query scoped by authenticated salon membership; no trust in caller-supplied salon
-  IDs.
-- PostgreSQL composite tenant foreign keys and server-side plan enforcement.
-- Database exclusion constraints for overlapping schedule entries; transactional locking for schedule
-  changes.
-- Hashed guest tokens, expiry/revocation, body-only token transport, public-safe response schemas.
-- Configurable login/public booking rate limits. If they remain process-local, that limitation must
-  be documented.
-- Structured logs with request IDs and redaction; no raw tokens, passwords or unnecessary PII.
-- Backups encrypted and stored off-host, with a tested restore procedure.
-- No SMS/email/payment provider until explicitly approved.
-
-## Reporting
-
-Never state that security, concurrency or backups are proven because the demo looks correct. The
-approval gates require tests against real PostgreSQL and a documented operational drill.
+- Vercel overrides the `Content-Security-Policy` key from a `vercel.json` header rule with its own
+  default policy, so the CSP must stay in `vercel.json` even when the app stops being a plain static
+  site. `frontend/e2e/browser/` checks the header exactly as served.
+- `script-src 'self'`: the app is bundled locally with no inline script. Vite’s module-preload
+  polyfill is an inline script extension, so `build.modulePreload.polyfill` is disabled in
+  `vite.config.ts` to keep this directive strict.
+- `style-src 'unsafe-inline'`: React inline `style` attributes require it.
+- `frame-ancestors 'self'` plus `X-Frame-Options: SAMEORIGIN` allow framing by the same origin only.
+  This keeps the Vercel dashboard’s preview frame working. The app stores no credentials and its data
+  is fictional, so same-origin framing is not a meaningful risk here.
+- Versioned asset URLs make the SPA rewrite safe: the app does not define a `/assets/*` route, so it
+  never requests a missing asset as HTML.

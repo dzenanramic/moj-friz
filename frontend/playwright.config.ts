@@ -1,4 +1,7 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
+
+/** Browser override, e.g. `PW_CHANNEL=chrome pnpm exec playwright test`. */
+const channel = process.env.PW_CHANNEL || undefined
 
 export default defineConfig({
   testDir: './e2e',
@@ -21,22 +24,41 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop',
-      use: { browserName: 'chromium', viewport: { width: 1440, height: 1000 } },
+      testIgnore: /browser\//,
+      use: { ...devices['Desktop Chrome'], channel, viewport: { width: 1440, height: 1000 } },
     },
     {
       name: 'mobile',
+      testIgnore: /browser\//,
       use: {
-        browserName: 'chromium',
+        ...devices['Desktop Chrome'],
+        channel,
         viewport: { width: 390, height: 844 },
         isMobile: true,
         hasTouch: true,
       },
     },
+    {
+      // Opt-in check of the built site served with frontend/vercel.json (see
+      // e2e/browser/vercel-config.spec.ts). Starts its own server for `dist`; not part of the
+      // default `pnpm e2e` run.
+      name: 'browser',
+      testMatch: /browser\/.*\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], channel, baseURL: 'http://127.0.0.1:4174' },
+    },
   ],
-  webServer: {
-    command: 'pnpm dev --host 127.0.0.1 --port 5173',
-    url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'pnpm dev --host 127.0.0.1 --port 5173',
+      url: 'http://127.0.0.1:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      command: 'node e2e/browser/serve-vercel-json.mjs',
+      url: 'http://127.0.0.1:4174',
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+  ],
 })

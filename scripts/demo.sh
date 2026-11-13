@@ -42,4 +42,5 @@ echo
 echo "Moj Friz demo: http://127.0.0.1:5173"
 echo "Demo podaci su izmišljeni. Ne unosite stvarne podatke."
 echo
+export pnpm_config_verify_deps_before_run=false
 exec pnpm dev --host 127.0.0.1

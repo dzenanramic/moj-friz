@@ -1,5 +1,4 @@
 import '@fontsource-variable/instrument-sans/wght.css'
-import '@fontsource-variable/fraunces/wght.css'
 import './styles/index.css'
 
 import { StrictMode } from 'react'

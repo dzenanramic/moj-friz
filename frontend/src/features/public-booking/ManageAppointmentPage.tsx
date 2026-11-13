@@ -3,12 +3,11 @@ import { useState } from 'react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 
-import { StatusBadge } from '@/components/ui/Badges'
+import { StatusIndicator } from '@/components/ui/Badges'
 import { Button, buttonClassName } from '@/components/ui/Button'
-import { Skeleton } from '@/components/ui/Layout'
+import { Skeleton, Surface } from '@/components/ui/Layout'
 import { FormError } from '@/components/ui/form'
 import { ConfirmDialog } from '@/components/ui/Modal'
-import { readTokenFromFragment } from '@/demo/token'
 import { gatewayErrorMessage } from '@/data/gateway'
 import {
   useCancelManaged,
@@ -16,6 +15,7 @@ import {
   usePublicAvailability,
   useRescheduleManaged,
 } from '@/data/queries'
+import { readTokenFromFragment } from '@/demo/token'
 import { formatKM } from '@/lib/format'
 import { usePageTitle } from '@/lib/hooks'
 import { publicDateWindow } from '@/lib/scheduling'
@@ -75,6 +75,7 @@ export function ManageAppointmentPage() {
   const isCancelled = data.status === 'cancelled'
   const isClosed = data.status === 'completed' || data.status === 'no_show'
   const hasActions = data.canCancel || data.canReschedule
+  const callHref = `tel:${data.salonPhone.replace(/\s+/g, '')}`
 
   const startEditing = () => {
     setDateKey(dateKeyFromInstant(data.startsAt))
@@ -106,59 +107,54 @@ export function ManageAppointmentPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <p className="text-sm font-medium text-pine">Privatni link</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-        Upravljanje terminom
-      </h1>
+      <h1 className="text-ink">Upravljanje terminom</h1>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
         Ovo je jedini termin na koji ovaj link daje pristup. Ne prikazujemo podatke drugih klijenata
         niti interne napomene salona.
       </p>
 
-      <section className="mt-6 min-w-0 rounded-xl border border-line bg-surface">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line p-5">
+      <Surface className="mt-7 overflow-hidden">
+        <div className="flex flex-wrap items-start justify-between gap-3 px-6 py-6 sm:px-8">
           <div>
-            <p className="font-display text-2xl font-semibold tracking-tight text-ink">
-              {data.salonName}
-            </p>
-            <p className="mt-1 text-sm text-muted">
+            <p className="text-lg font-semibold text-ink">{data.salonName}</p>
+            <p className="mt-0.5 text-sm text-muted">
               {data.salonAddress}, {data.salonCity}
             </p>
           </div>
-          <StatusBadge status={data.status} />
+          <StatusIndicator status={data.status} />
         </div>
 
-        <dl className="grid gap-4 p-5 sm:grid-cols-2">
+        <dl className="grid gap-x-8 gap-y-4 px-6 pb-6 text-sm sm:grid-cols-2 sm:px-8">
           <div>
             <dt className="text-xs text-muted">Datum</dt>
-            <dd className="mt-0.5 text-sm font-medium text-ink">
+            <dd className="mt-0.5 font-medium text-ink">
               {formatDateLong(dateKeyFromInstant(data.startsAt))}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Vrijeme</dt>
-            <dd className="time-gutter-label mt-0.5 text-sm font-medium text-ink">
+            <dd className="tabular mt-0.5 text-base font-semibold text-ink">
               {formatTimeRange(data.startsAt, data.endsAt)}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Usluga</dt>
-            <dd className="mt-0.5 text-sm font-medium text-ink">{data.serviceName}</dd>
+            <dd className="mt-0.5 font-medium text-ink">{data.serviceName}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Frizer</dt>
-            <dd className="mt-0.5 text-sm font-medium text-ink">{data.hairdresserName}</dd>
+            <dd className="mt-0.5 font-medium text-ink">{data.hairdresserName}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Cijena</dt>
-            <dd className="mt-0.5 text-sm font-medium text-ink">{formatKM(data.priceMinor)}</dd>
+            <dd className="tabular mt-0.5 font-medium text-ink">{formatKM(data.priceMinor)}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Salon</dt>
-            <dd className="mt-0.5 text-sm font-medium text-ink">
+            <dd className="mt-0.5 font-medium text-ink">
               <a
-                href={`tel:${data.salonPhone.replace(/\s+/g, '')}`}
-                className="inline-flex items-center gap-1.5 underline decoration-line-strong underline-offset-4"
+                href={callHref}
+                className="inline-flex items-center gap-1.5 underline decoration-line-strong underline-offset-4 hover:text-pine"
               >
                 <Phone aria-hidden="true" className="h-3.5 w-3.5" />
                 {data.salonPhone}
@@ -168,15 +164,15 @@ export function ManageAppointmentPage() {
         </dl>
 
         {isCancelled ? (
-          <div className="border-t border-line bg-paper/60 px-5 py-4 text-sm leading-relaxed text-muted">
+          <p className="bg-paper px-6 py-4 text-sm leading-relaxed text-muted sm:px-8">
             Termin je otkazan. Ako želite novi termin, otvorite javnu stranicu salona.
-          </div>
+          </p>
         ) : isClosed ? (
-          <div className="border-t border-line bg-paper/60 px-5 py-4 text-sm leading-relaxed text-muted">
+          <p className="bg-paper px-6 py-4 text-sm leading-relaxed text-muted sm:px-8">
             Ovaj termin je završen i više se ne može mijenjati.
-          </div>
+          </p>
         ) : hasActions ? (
-          <div className="border-t border-line p-5">
+          <div className="bg-paper px-6 py-5 sm:px-8">
             {!editing ? (
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button
@@ -190,12 +186,10 @@ export function ManageAppointmentPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
-                      Izaberite novi termin
-                    </h2>
+                    <h2 className="text-lg font-semibold text-ink">Izaberite novi termin</h2>
                     <p className="mt-1 text-sm text-muted">
                       Promjena je moguća do {data.rescheduleCutoffMinutes / 60} sata prije termina.
                     </p>
@@ -226,7 +220,7 @@ export function ManageAppointmentPage() {
                   error={availability.error}
                 />
 
-                <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
+                <div className="flex flex-wrap items-center gap-3 pt-1">
                   <Button
                     onClick={submitReschedule}
                     disabled={!newStartsAt}
@@ -235,8 +229,8 @@ export function ManageAppointmentPage() {
                     Potvrdi promjenu
                   </Button>
                   {newStartsAt ? (
-                    <span className="text-xs text-muted">
-                      Novo vrijeme: {formatDateKey(dateKey)} u {formatTime(newStartsAt)}
+                    <span className="tabular text-xs text-muted">
+                      Novo: {formatDateKey(dateKey)} u {formatTime(newStartsAt)}
                     </span>
                   ) : null}
                 </div>
@@ -244,19 +238,16 @@ export function ManageAppointmentPage() {
             )}
           </div>
         ) : (
-          <div className="border-t border-line bg-paper/60 px-5 py-4 text-sm leading-relaxed text-muted">
+          <p className="bg-paper px-6 py-4 text-sm leading-relaxed text-muted sm:px-8">
             Izmjene su zatvorene {data.cancellationCutoffMinutes / 60} sata prije termina. Za hitne
-            promjene kontaktirajte salon na{' '}
-            <a
-              href={`tel:${data.salonPhone.replace(/\s+/g, '')}`}
-              className="font-medium text-pine underline underline-offset-4"
-            >
+            promjene pozovite salon na{' '}
+            <a href={callHref} className="font-medium text-pine underline underline-offset-4">
               {data.salonPhone}
             </a>
             .
-          </div>
+          </p>
         )}
-      </section>
+      </Surface>
 
       <p className="mt-4 text-xs leading-relaxed text-muted">
         Privatni link važi do {formatDateKey(dateKeyFromInstant(data.managementExpiresAt))}. Nismo
@@ -298,9 +289,8 @@ export function ManageAppointmentPage() {
 function ManagementLinkError({ expired = false }: { expired?: boolean }) {
   return (
     <div className="mx-auto max-w-xl py-8">
-      <p className="text-sm font-medium text-danger">Privatni link</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink">
-        {expired ? 'Link nije važeći ili je istekao.' : 'Nedostaje privatni link.'}
+      <h1 className="text-ink">
+        {expired ? 'Link nije važeći ili je istekao' : 'Nedostaje privatni link'}
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         Ako ste rezervisali termin, koristite link koji ste sačuvali nakon potvrde. Za novi link ili

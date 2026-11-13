@@ -21,12 +21,12 @@ export function ClientsPage() {
         title="Klijenti"
         description={
           clients.data
-            ? `${formatClientCount(clients.data.total)} · pretraga po imenu ili telefonu`
+            ? `${formatClientCount(clients.data.total)}, pretraga po imenu ili telefonu`
             : 'Pretraga po imenu ili telefonu'
         }
       />
 
-      <div className="relative mb-4 max-w-xl">
+      <div className="relative mb-5 max-w-md">
         <Search
           aria-hidden="true"
           className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
@@ -45,13 +45,13 @@ export function ClientsPage() {
       </div>
 
       {clients.isError ? (
-        <ErrorState title="Klijenti se nisu učitali." onRetry={() => void clients.refetch()} />
+        <ErrorState title="Klijenti se nisu učitali" onRetry={() => void clients.refetch()} />
       ) : clients.isPending ? (
-        <Panel className="p-2">
+        <Panel>
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="flex items-center gap-3 px-3 py-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
+              <div key={index} className="flex items-center gap-3 px-1 py-3">
+                <Skeleton className="h-9 w-9 rounded-md" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-48" />
                   <Skeleton className="h-3 w-32" />
@@ -63,7 +63,7 @@ export function ClientsPage() {
       ) : clients.data && clients.data.items.length === 0 ? (
         <EmptyState
           icon={UsersRound}
-          title="Nema pronađenih klijenata."
+          title="Nema pronađenih klijenata"
           description={
             search
               ? 'Provjerite ime ili broj telefona, ili obrišite pretragu.'
@@ -83,27 +83,25 @@ export function ClientsPage() {
         />
       ) : (
         <>
-          <Panel className="overflow-hidden">
-            <ul className="divide-y divide-line">
+          <Panel className="py-1">
+            <ul>
               {(clients.data?.items ?? []).map((client) => (
                 <li key={client.id}>
                   <Link
                     to={`/klijenti/${client.id}`}
-                    className="flex min-h-[68px] items-center gap-3 px-4 py-3 transition-colors hover:bg-paper/70 sm:px-5"
+                    className="group -mx-1 flex min-h-[64px] items-center gap-3 rounded-sm px-1 py-3 transition-colors hover:bg-paper"
                   >
                     <Avatar name={client.name} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-ink">{client.name}</p>
-                      <p className="mt-0.5 text-xs text-muted">{client.phoneOriginal}</p>
+                      <p className="tabular mt-0.5 text-xs text-muted">{client.phoneOriginal}</p>
                     </div>
                     {client.notes ? (
-                      <span className="hidden rounded-full border border-line px-2.5 py-1 text-[0.65rem] text-muted sm:inline">
-                        Napomena
-                      </span>
+                      <span className="hidden text-xs text-muted sm:inline">Napomena</span>
                     ) : null}
                     <ChevronRight
                       aria-hidden="true"
-                      className="h-4 w-4 shrink-0 text-line-strong"
+                      className="h-4 w-4 shrink-0 text-line-strong transition-colors group-hover:text-pine"
                     />
                   </Link>
                 </li>
@@ -112,7 +110,7 @@ export function ClientsPage() {
           </Panel>
 
           {clients.data && clients.data.totalPages > 1 ? (
-            <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="mt-5 flex items-center justify-between gap-3">
               <p className="text-xs text-muted">
                 Stranica {clients.data.page} od {clients.data.totalPages}
               </p>
@@ -122,7 +120,7 @@ export function ClientsPage() {
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
                   disabled={clients.data.page <= 1}
                   aria-label="Prethodna stranica"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-line bg-surface text-muted transition-colors hover:text-ink disabled:opacity-40"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-40"
                 >
                   <ChevronLeft aria-hidden="true" className="h-4 w-4" />
                 </button>
@@ -133,7 +131,7 @@ export function ClientsPage() {
                   }
                   disabled={clients.data.page >= clients.data.totalPages}
                   aria-label="Sljedeća stranica"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-line bg-surface text-muted transition-colors hover:text-ink disabled:opacity-40"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-40"
                 >
                   <ChevronRight aria-hidden="true" className="h-4 w-4" />
                 </button>
@@ -143,9 +141,9 @@ export function ClientsPage() {
         </>
       )}
 
-      <p className="mt-6 text-xs leading-relaxed text-muted">
-        Demo prikaz klijenata. Ne unosite stvarne lične podatke. Klijent se ne može obrisati iz ovog
-        prikaza; brisanje je predviđeno kao posebna administrativna procedura u pilotu.
+      <p className="mt-8 max-w-[70ch] text-xs leading-relaxed text-muted">
+        Demo prikaz klijenata. Ne unosite stvarne lične podatke. Brisanje klijenta je predviđeno kao
+        posebna administrativna procedura u pilotu.
       </p>
     </div>
   )

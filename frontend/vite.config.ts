@@ -19,6 +19,13 @@ export default defineConfig({
     port: 4173,
     strictPort: true,
   },
+  build: {
+    // The demo runs inside Vercel preview-toolbar iframes, which inject an inline script. The strict
+    // Content-Security-Policy is sent by the host `headers` (see vercel.json), a strict demo rule
+    // documented in docs/security.md. Keeping the build from injecting its own inline preload
+    // fallback means the policy stays `script-src 'self'` with no `'unsafe-inline'`.
+    modulePreload: { polyfill: false },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

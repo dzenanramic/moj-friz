@@ -60,6 +60,18 @@ pilot backend already exists.
 - Client-side demo is behind a `SalonGateway` contract. The future HTTP gateway must implement the
   same public/internal separation, stable error codes and token rules.
 
+## Public demo hosting
+
+- The repository is public at <https://github.com/dzenanramic/moj-friz>; `main` is the source of the
+  static demo.
+- The demo is hosted on Vercel (Hobby) as a static site. Vercel project settings: **Root Directory**
+  `frontend`, framework preset **Vite**. `frontend/vercel.json` sets the install, build and output
+  configuration explicitly because the Vite preset otherwise ignores `buildCommand` and
+  `outputDirectory`. No environment variables are needed; there is no server-side data.
+- `main` deploys to the production URL; every other branch and pull request is a preview deployment.
+- The strict CSP is kept as a production rule and is not weakened for Vercel preview tooling; see
+  [security notes](security.md).
+
 ## Deliberately deferred
 
 - Staff login and staff-specific permissions UI.

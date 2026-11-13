@@ -14,8 +14,8 @@ import {
   weekdayIndexFromDateKey,
 } from '@/lib/time'
 
-const GUTTER_WIDTH = 62
-const MIN_COLUMN_WIDTH = 190
+const GUTTER_WIDTH = 58
+const MIN_COLUMN_WIDTH = 186
 const HOUR_HEIGHT = 64
 
 interface CalendarGridProps {
@@ -88,7 +88,7 @@ export function CalendarGrid({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+    <div className="overflow-x-auto rounded-lg bg-surface py-2">
       <div
         className="min-w-full"
         style={{
@@ -96,27 +96,23 @@ export function CalendarGrid({
         }}
       >
         <div
-          className="grid border-b border-line bg-paper/70"
+          className="grid"
           style={{
             gridTemplateColumns: `${GUTTER_WIDTH}px repeat(${hairdressers.length}, minmax(${MIN_COLUMN_WIDTH}px, 1fr))`,
           }}
         >
-          <div className="px-2 py-3 text-[0.65rem] font-medium text-muted">Vrijeme</div>
+          <div />
           {hairdressers.map((hairdresser) => {
             const intervals = intervalsFor(hairdresser.id)
             return (
-              <div
-                key={hairdresser.id}
-                data-staff={hairdresser.colorKey}
-                className="border-l border-line px-3 py-2.5"
-              >
+              <div key={hairdresser.id} data-staff={hairdresser.colorKey} className="px-3 pb-3">
                 <div className="flex items-center gap-2">
-                  <span aria-hidden="true" className="staff-bar h-2 w-2 rounded-full" />
+                  <span aria-hidden="true" className="staff-bar h-3 w-[3px] rounded-xs" />
                   <p className="truncate text-sm font-semibold text-ink">
                     {hairdresser.displayName}
                   </p>
                 </div>
-                <p className="mt-0.5 text-[0.68rem] text-muted">
+                <p className="tabular mt-1 pl-[11px] text-xs text-muted">
                   {intervals.length > 0
                     ? intervals.map((interval) => `${interval.start}–${interval.end}`).join(', ')
                     : 'Ne radi'}
@@ -133,11 +129,11 @@ export function CalendarGrid({
             height: totalHeight,
           }}
         >
-          <div className="relative border-r border-line bg-paper/40">
+          <div className="relative">
             {hourMarks.map((minute) => (
               <span
                 key={minute}
-                className="time-gutter-label absolute right-2 -translate-y-1/2 text-[0.68rem] text-muted"
+                className="tabular absolute right-2 -translate-y-1/2 text-xs text-muted"
                 style={{ top: ((minute - gridStart) / 60) * HOUR_HEIGHT }}
               >
                 {timeFromMinutes(minute)}
@@ -145,7 +141,7 @@ export function CalendarGrid({
             ))}
             {showNow ? (
               <span
-                className="calendar-now-label time-gutter-label absolute right-1 z-10 -translate-y-1/2 rounded-sm px-1.5 py-0.5 text-[0.65rem] font-semibold"
+                className="calendar-now-label tabular absolute right-1 z-10 -translate-y-1/2 rounded-xs px-1 py-0.5 text-[0.7rem] font-semibold"
                 style={{ top: nowTop }}
               >
                 {formatTime(now.toISOString())}
@@ -163,7 +159,7 @@ export function CalendarGrid({
               <div
                 key={hairdresser.id}
                 data-staff={hairdresser.colorKey}
-                className="relative cursor-copy border-l border-line bg-paper/50"
+                className="relative cursor-copy bg-paper"
                 onClick={(event) => handleColumnClick(event, hairdresser.id)}
               >
                 {intervals.map((interval) => {
@@ -185,22 +181,14 @@ export function CalendarGrid({
                   )
                 })}
 
-                {Array.from({ length: Math.ceil((gridEnd - gridStart) / 30) + 1 }).map(
-                  (_, index) => {
-                    const minute = gridStart + index * 30
-                    return (
-                      <div
-                        key={minute}
-                        aria-hidden="true"
-                        className={cn(
-                          'pointer-events-none absolute inset-x-0 border-t',
-                          minute % 60 === 0 ? 'border-line' : 'border-line/60',
-                        )}
-                        style={{ top: ((minute - gridStart) / 60) * HOUR_HEIGHT }}
-                      />
-                    )
-                  },
-                )}
+                {hourMarks.map((minute) => (
+                  <div
+                    key={minute}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 border-t border-line"
+                    style={{ top: ((minute - gridStart) / 60) * HOUR_HEIGHT }}
+                  />
+                ))}
 
                 {staffBlocks.map((block) => {
                   const position = positionFor(block.startsAt, block.endsAt)
@@ -208,12 +196,15 @@ export function CalendarGrid({
                     <div
                       key={block.id}
                       data-ignore-column-click
-                      className="pointer-events-none absolute inset-x-1.5 z-[2] overflow-hidden rounded-sm border border-dashed border-line-strong bg-[repeating-linear-gradient(135deg,var(--color-paper)_0px,var(--color-paper)_7px,var(--color-surface)_7px,var(--color-surface)_14px)] px-1.5 py-1"
+                      className="pointer-events-none absolute inset-x-1 z-[2] overflow-hidden rounded-xs bg-paper px-1.5 py-1"
                       style={position}
                       title={`${block.reason}: ${formatTimeRange(block.startsAt, block.endsAt)}`}
                     >
-                      <p className="time-gutter-label truncate text-[0.62rem] leading-tight font-medium text-muted">
-                        {block.reason} · {formatTimeRange(block.startsAt, block.endsAt)}
+                      <p className="truncate text-[0.68rem] leading-tight font-medium text-muted">
+                        {block.reason}
+                      </p>
+                      <p className="tabular truncate text-[0.65rem] leading-tight text-muted">
+                        {formatTimeRange(block.startsAt, block.endsAt)}
                       </p>
                     </div>
                   )
@@ -230,22 +221,23 @@ export function CalendarGrid({
                         event.stopPropagation()
                         onOpenAppointment(appointment)
                       }}
-                      className="staff-soft absolute inset-x-1.5 z-[3] overflow-hidden rounded-sm border-l-[3px] px-2 py-1 text-left transition-shadow hover:shadow-sm"
+                      className={cn(
+                        'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-[3px] px-2 py-1 text-left transition-colors',
+                        'hover:brightness-[0.97]',
+                      )}
                       style={{
                         ...position,
                         borderLeftColor: 'var(--staff)',
-                        backgroundColor:
-                          appointment.status === 'cancelled' ? '#f4f2ed' : 'var(--staff-soft)',
                       }}
                     >
-                      <p className="text-[0.64rem] leading-tight font-medium text-muted">
+                      <p className="tabular text-[0.68rem] leading-tight font-medium text-muted">
                         {formatTimeRange(appointment.startsAt, appointment.endsAt)}
                       </p>
                       <p className="truncate text-xs leading-snug font-semibold text-ink">
                         {appointment.clientName}
                       </p>
                       {!compact ? (
-                        <p className="truncate text-[0.65rem] leading-snug text-muted">
+                        <p className="truncate text-[0.68rem] leading-snug text-muted">
                           {appointment.serviceName} ·{' '}
                           {formatDuration(appointment.durationMinutesSnapshot)}
                         </p>
@@ -261,7 +253,6 @@ export function CalendarGrid({
                     style={{ top: nowTop }}
                   >
                     <div className="calendar-now-line" />
-                    <span className="absolute -left-1 -top-[3px] h-2 w-2 rounded-full bg-amber" />
                   </div>
                 ) : null}
               </div>

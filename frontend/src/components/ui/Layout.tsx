@@ -20,16 +20,14 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 pb-6 sm:flex-row sm:items-end sm:justify-between sm:gap-6',
+        'flex flex-col gap-5 pb-7 sm:flex-row sm:items-end sm:justify-between sm:gap-8 sm:pb-9',
         className,
       )}
     >
       <div className="min-w-0">
-        <h1 className="font-display text-[2rem] leading-[1.05] font-semibold tracking-[-0.02em] text-ink sm:text-[2.6rem]">
-          {title}
-        </h1>
+        <h1 className="text-ink">{title}</h1>
         {description ? (
-          <div className="mt-2 max-w-[62ch] text-sm leading-relaxed text-muted sm:text-[0.95rem]">
+          <div className="mt-2.5 max-w-[60ch] text-sm leading-relaxed text-muted sm:text-[0.95rem]">
             {description}
           </div>
         ) : null}
@@ -39,6 +37,10 @@ export function PageHeader({
   )
 }
 
+/**
+ * The standard content block: no border, slightly lifted from the page.
+ * Use it for sections that group real content, never for a single line.
+ */
 export function Panel({
   children,
   className,
@@ -48,25 +50,62 @@ export function Panel({
   className?: string
   as?: 'section' | 'div' | 'article'
 }) {
-  return <Tag className={cn('rounded-lg border border-line bg-surface', className)}>{children}</Tag>
+  // Width padding lets list rows inside a Panel line up with the page edge instead of
+  // being inset twice. Ad-hoc padding can still override it.
+  const hasPadding =
+    className?.includes('p-') || className?.includes('px-') || className?.includes('py-')
+  return (
+    <Tag className={cn('rounded-lg bg-surface', !hasPadding && 'px-3 py-4 sm:px-4', className)}>
+      {children}
+    </Tag>
+  )
+}
+
+/**
+ * A surface that should read as physically above the page: dialogs, the hero
+ * preview, the confirmation. Only one elevation in the system.
+ */
+export function Surface({
+  children,
+  className,
+  as: Tag = 'div',
+}: {
+  children: ReactNode
+  className?: string
+  as?: 'section' | 'div' | 'article'
+}) {
+  return (
+    <Tag
+      className={cn(
+        'rounded-xl bg-surface shadow-[0_1px_2px_rgb(20_24_21/0.05),0_14px_36px_-22px_rgb(20_24_21/0.3)]',
+        className,
+      )}
+    >
+      {children}
+    </Tag>
+  )
 }
 
 export function SectionHeading({
   title,
   description,
   action,
+  as: Heading = 'h2',
   className,
 }: {
   title: string
-  description?: string
+  description?: ReactNode
   action?: ReactNode
+  as?: 'h2' | 'h3'
   className?: string
 }) {
   return (
     <div className={cn('flex flex-wrap items-end justify-between gap-3', className)}>
       <div>
-        <h2 className="text-base font-semibold text-ink">{title}</h2>
-        {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
+        <Heading className="text-ink">{title}</Heading>
+        {description ? (
+          <p className="mt-1.5 max-w-[58ch] text-sm leading-relaxed text-muted">{description}</p>
+        ) : null}
       </div>
       {action}
     </div>
@@ -89,27 +128,23 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface/60 px-6 py-12 text-center',
+        'flex flex-col items-center justify-center rounded-lg bg-surface px-6 py-14 text-center',
         className,
       )}
     >
-      {Icon ? (
-        <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-pine-soft text-pine">
-          <Icon aria-hidden="true" className="h-5 w-5" />
-        </span>
-      ) : null}
-      <h3 className="font-display text-xl font-semibold tracking-tight text-ink">{title}</h3>
+      {Icon ? <Icon aria-hidden="true" className="mb-4 h-6 w-6 text-line-strong" /> : null}
+      <h3 className="text-ink">{title}</h3>
       {description ? (
         <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted">{description}</p>
       ) : null}
-      {action ? <div className="mt-5">{action}</div> : null}
+      {action ? <div className="mt-6">{action}</div> : null}
     </div>
   )
 }
 
 export function Skeleton({ className }: { className?: string }) {
   return (
-    <span aria-hidden="true" className={cn('block animate-pulse rounded bg-line/70', className)} />
+    <span aria-hidden="true" className={cn('block animate-pulse rounded bg-line', className)} />
   )
 }
 
@@ -124,16 +159,16 @@ export function Avatar({
 }) {
   const sizeClass =
     size === 'sm'
-      ? 'h-8 w-8 text-[0.65rem]'
+      ? 'h-7 w-7 text-[0.65rem]'
       : size === 'lg'
-        ? 'h-12 w-12 text-sm'
-        : 'h-10 w-10 text-xs'
+        ? 'h-11 w-11 text-sm'
+        : 'h-9 w-9 text-xs'
   return (
     <span
       aria-hidden="true"
       data-staff={colorKey}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold tracking-wide',
+        'inline-flex shrink-0 items-center justify-center rounded-md font-semibold',
         colorKey ? 'staff-soft staff-text' : 'bg-paper text-muted',
         sizeClass,
       )}
@@ -166,7 +201,7 @@ export function DefinitionItem({
 }) {
   return (
     <div className={cn('space-y-1', className)}>
-      <dt className="text-xs font-medium text-muted">{label}</dt>
+      <dt className="text-xs text-muted">{label}</dt>
       <dd className="text-sm leading-relaxed text-ink">{children}</dd>
     </div>
   )
@@ -184,15 +219,15 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="rounded-lg border border-danger/25 bg-danger-soft px-5 py-4 text-sm leading-relaxed text-danger-strong"
+      className="rounded-lg bg-danger-soft px-5 py-4 text-sm leading-relaxed text-danger-strong"
     >
-      <p className="font-semibold">{title}</p>
-      {message ? <p className="mt-1 opacity-90">{message}</p> : null}
+      <p className="font-semibold text-ink">{title}</p>
+      {message ? <p className="mt-1">{message}</p> : null}
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 inline-flex min-h-9 items-center rounded-sm border border-danger/30 px-3 text-sm font-medium transition-colors hover:bg-danger/10"
+          className="mt-3 font-medium text-danger underline underline-offset-4 hover:text-danger-strong"
         >
           Pokušaj ponovo
         </button>
