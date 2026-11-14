@@ -10,29 +10,63 @@ export function PageHeader({
   title,
   description,
   actions,
+  aside,
+  align = 'end',
   className,
 }: {
   title: string
   description?: ReactNode
   actions?: ReactNode
+  /**
+   * A control that belongs with the title (a search field, a filter). It shares the
+   * title's row at every width: on a phone the title takes what it needs and the
+   * control takes the rest, so neither wraps onto its own line.
+   */
+  aside?: ReactNode
+  /** How the action buttons line up against the title: 'end' (common) or 'start' (top row). */
+  align?: 'start' | 'end'
   className?: string
 }) {
   return (
     <div
       className={cn(
-        'flex flex-col gap-5 pb-7 sm:flex-row sm:items-end sm:justify-between sm:gap-8 sm:pb-9',
+        // By default the actions drop under a long description on a phone. `align="start"`
+        // asks for the actions to sit in the title's row at every width instead.
+        'flex flex-col gap-5 pb-7 sm:flex-row sm:justify-between sm:gap-8 sm:pb-9',
+        align === 'end' ? 'sm:items-end' : 'sm:items-start',
+        align === 'start' &&
+          'max-sm:flex-row max-sm:flex-wrap max-sm:items-start max-sm:gap-x-4 max-sm:gap-y-3',
         className,
       )}
     >
-      <div className="min-w-0">
-        <h1 className="text-ink">{title}</h1>
-        {description ? (
-          <div className="mt-2.5 max-w-[60ch] text-sm leading-relaxed text-muted sm:text-[0.95rem]">
-            {description}
+      <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+        <div className="flex min-w-0 items-center justify-between gap-4 sm:contents">
+          <div className="min-w-0">
+            {/* With a control beside it the title steps down on a phone, never wraps. */}
+            <h1 className={cn('text-ink', aside && 'text-[1.6rem] whitespace-nowrap sm:text-2xl')}>
+              {title}
+            </h1>
+            {description ? (
+              <div className="mt-2.5 max-w-[60ch] text-sm leading-relaxed text-muted sm:text-[0.95rem]">
+                {description}
+              </div>
+            ) : null}
           </div>
-        ) : null}
+          {aside ? (
+            <div className="min-w-0 flex-1 sm:w-[320px] sm:flex-none lg:w-[360px]">{aside}</div>
+          ) : null}
+        </div>
       </div>
-      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div
+          className={cn(
+            'flex shrink-0 flex-wrap items-center gap-2',
+            align === 'start' && 'sm:-mt-1.5',
+          )}
+        >
+          {actions}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -162,14 +196,14 @@ export function Avatar({
       ? 'h-7 w-7 text-[0.65rem]'
       : size === 'lg'
         ? 'h-11 w-11 text-sm'
-        : 'h-9 w-9 text-xs'
+        : 'h-9 w-9 text-[0.75rem]'
   return (
     <span
       aria-hidden="true"
       data-staff={colorKey}
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-md font-semibold',
-        colorKey ? 'staff-soft staff-text' : 'bg-paper text-muted',
+        colorKey ? 'staff-soft staff-text' : 'bg-paper text-ink',
         sizeClass,
       )}
     >

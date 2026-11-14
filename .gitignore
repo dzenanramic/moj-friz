@@ -24,3 +24,7 @@ __pycache__/
 .artifacts/
 .DS_Store
 *.local
+
+# design-taste-frontend skill: a local clone and its per-run reports, never part of the app
+.taste-skill-src/
+.taste-skill/

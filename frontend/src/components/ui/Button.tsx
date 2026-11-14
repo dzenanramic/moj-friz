@@ -10,11 +10,12 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-pine text-white hover:bg-pine-strong',
-  secondary: 'bg-surface text-ink ring-1 ring-inset ring-line hover:ring-line-strong',
+  secondary:
+    'bg-surface text-ink ring-1 ring-inset ring-line hover:ring-line-strong active:ring-line-strong',
   ghost: 'text-ink hover:bg-pine-soft',
   quiet: 'text-pine hover:bg-pine-soft',
   danger: 'bg-danger text-white hover:bg-danger-strong',
-  'danger-ghost': 'text-danger hover:bg-danger-soft',
+  'danger-ghost': 'text-danger hover:bg-danger-soft hover:text-danger-strong',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -24,13 +25,17 @@ const sizeClasses: Record<ButtonSize, string> = {
   icon: 'h-11 w-11 rounded-md p-0',
 }
 
+/**
+ * Every button answers the pointer: it steps up 1px on hover and settles back on press.
+ * Transform plus colour only, so nothing reflows; disabled buttons never move.
+ */
 export function buttonClassName(
   variant: ButtonVariant = 'primary',
   size: ButtonSize = 'md',
   className?: string,
 ): string {
   return cn(
-    'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center gap-2 font-medium transition-[background-color,color,box-shadow,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] enabled:hover:-translate-y-px enabled:active:translate-y-0 enabled:active:scale-[0.985] disabled:pointer-events-none disabled:opacity-50',
     variantClasses[variant],
     sizeClasses[size],
     className,

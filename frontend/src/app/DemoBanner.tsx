@@ -117,11 +117,11 @@ export function DemoBanner() {
 export function PublicDemoBar() {
   return (
     <div className="bg-pine text-paper">
-      <div className="mx-auto flex min-h-10 w-full max-w-5xl items-center gap-3 px-4 py-2 text-xs sm:px-8">
+      <div className="mx-auto flex min-h-11 w-full max-w-5xl items-center gap-3 px-4 text-xs sm:px-8">
         <span className="font-semibold">Demo · podaci nisu stvarni</span>
         <a
           href="/"
-          className="ml-auto inline-flex min-h-8 items-center px-1 font-medium text-paper underline decoration-paper underline-offset-4 hover:no-underline"
+          className="ml-auto inline-flex min-h-11 items-center rounded-xs px-2 font-medium text-paper underline decoration-paper underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
         >
           Demo početna
         </a>

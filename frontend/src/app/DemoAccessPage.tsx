@@ -62,7 +62,9 @@ function DayPreview() {
       </ul>
 
       <p className="bg-paper px-6 py-3 text-xs leading-relaxed text-muted">
-        Primjer rasporeda, izmišljeni podaci. Ukupno {services.data?.length ?? 0} usluga u katalogu.
+        Primjer rasporeda, izmišljeni podaci.
+        {/* Never print a count that has not loaded yet: "0 usluga" reads as a broken salon. */}
+        {services.data ? ` Ukupno ${services.data.length} usluga u katalogu.` : null}
       </p>
     </Surface>
   )
@@ -102,7 +104,7 @@ export function DemoAccessPage() {
     <div className="min-h-dvh bg-paper">
       <DemoBanner />
       <main className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-20 lg:py-24">
-        <div className="max-w-xl">
+        <div className="hero-enter max-w-xl">
           <p className="flex items-center gap-2.5 text-sm font-medium text-ink">
             <span
               aria-hidden="true"
@@ -113,23 +115,23 @@ export function DemoAccessPage() {
             Studio Lana, Banja Luka
           </p>
 
-          <h1 className="mt-7 text-ink">Digitalna knjiga termina</h1>
+          <h1 className="hero-enter-2 mt-7 text-ink">Digitalna knjiga termina</h1>
           <p className="mt-5 max-w-[50ch] text-base leading-relaxed text-muted sm:text-lg">
             Raspored za tri frizera, ručni termini, pauze i online rezervacije sa privatnim linkom
             za klijenta.
           </p>
 
-          <div className="mt-8 flex flex-col gap-2.5 sm:flex-row">
+          <div className="hero-enter-3 mt-8 flex flex-col gap-2.5 sm:flex-row">
             <Link
               to="/danas"
-              className="inline-flex min-h-12 items-center justify-center rounded-md bg-pine px-6 text-base font-medium text-white transition-colors hover:bg-pine-strong"
+              className="inline-flex min-h-12 items-center justify-center rounded-md bg-pine px-6 text-base font-medium text-white transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:bg-pine-strong active:translate-y-0 active:scale-[0.985]"
             >
               Uđi u demo
             </Link>
             {isLevelTwo ? (
               <a
                 href={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-surface px-6 text-base font-medium text-ink transition-colors hover:bg-pine-soft"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-surface px-6 text-base font-medium text-ink transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:bg-pine-soft active:translate-y-0 active:scale-[0.985]"
               >
                 Otvori javnu stranicu
                 <ArrowUpRight aria-hidden="true" className="h-4 w-4 text-muted" />
@@ -171,6 +173,16 @@ export function DemoAccessPage() {
             Paket 1 prikazuje osnovni raspored; Paket 2 otključava javnu stranicu. Prekidač je u
             traci iznad.
           </p>
+
+          <ol className="mt-10 grid gap-px overflow-hidden rounded-md bg-line sm:grid-cols-3">
+            {JOURNEY.map((item, index) => (
+              <li key={item.title} className="bg-paper px-4 py-4">
+                <p className="tabular text-xs font-semibold text-pine">0{index + 1}</p>
+                <p className="mt-1.5 text-sm font-semibold text-ink">{item.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">{item.detail}</p>
+              </li>
+            ))}
+          </ol>
         </div>
 
         <DayPreview />
@@ -181,3 +193,18 @@ export function DemoAccessPage() {
     </div>
   )
 }
+
+const JOURNEY = [
+  {
+    title: 'Salon unosi termin',
+    detail: 'Ručno, klikanjem na slobodno vrijeme u kalendaru.',
+  },
+  {
+    title: 'Klijent bira sam',
+    detail: 'Usluga, frizer i slobodan termin, bez poziva i bez naloga.',
+  },
+  {
+    title: 'Potvrda odmah',
+    detail: 'Privatni link za promjenu ili otkazivanje, bez SMS-a.',
+  },
+]

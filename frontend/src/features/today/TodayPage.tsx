@@ -1,22 +1,13 @@
-import { CalendarDays, Clock3, Plus, Sun } from 'lucide-react'
+import { CalendarDays, Plus, Sun } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router'
 
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { ErrorState, EmptyState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
 import { useAppointments } from '@/data/queries'
 import type { AppointmentView } from '@/data/types'
-import { cn } from '@/lib/cn'
-import { formatHairdresserCount, formatKM, formatTerminCount } from '@/lib/format'
+import { formatTerminCount } from '@/lib/format'
 import { useNow, usePageTitle } from '@/lib/hooks'
-import {
-  capitalizeFirst,
-  dayRange,
-  formatDateKey,
-  formatDateLong,
-  formatTime,
-  todayDateKey,
-} from '@/lib/time'
+import { dayRange, formatTime, todayDateKey } from '@/lib/time'
 
 import { AppointmentDialog } from '../appointments/AppointmentDialog'
 import { AppointmentListItem } from '../appointments/AppointmentListItem'
@@ -41,8 +32,6 @@ export function TodayPage() {
   )
   const finished = active.filter((item) => item.status === 'completed' || item.status === 'no_show')
   const next = upcoming[0]
-  const staffCount = new Set(active.map((item) => item.hairdresserId)).size
-  const valueMinor = active.reduce((sum, item) => sum + (item.priceMinorSnapshot ?? 0), 0)
 
   const openAppointment = (appointment: AppointmentView) => setDialog({ mode: 'edit', appointment })
 
@@ -50,31 +39,27 @@ export function TodayPage() {
     <div>
       <PageHeader
         title="Danas"
-        description={
-          <>
-            {capitalizeFirst(formatDateLong(today))}
-            <span className="text-line-strong" aria-hidden="true">
-              {' · '}
-            </span>
-            {appointments.isPending
-              ? 'Učitavanje rasporeda…'
-              : `${formatTerminCount(active.length)}, ${formatHairdresserCount(staffCount)}`}
-          </>
-        }
+        align="start"
+        className="pb-6 sm:pb-8"
         actions={
           <>
             <ButtonLink
               to={`/kalendar?datum=${today}`}
               variant="secondary"
-              leftIcon={<CalendarDays className="h-4 w-4" />}
+              size="sm"
+              aria-label="Otvori kalendar"
             >
-              Kalendar
+              <CalendarDays aria-hidden="true" className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">Kalendar</span>
             </ButtonLink>
             <Button
-              leftIcon={<Plus className="h-4 w-4" />}
+              size="sm"
+              aria-label="Novi termin"
+              leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
               onClick={() => setDialog({ mode: 'create', defaults: { dateKey: today } })}
             >
-              Novi termin
+              <span className="hidden sm:inline">Novi termin</span>
+              <span className="sm:hidden">Novi</span>
             </Button>
           </>
         }
@@ -150,10 +135,10 @@ export function TodayPage() {
           }
         />
       ) : (
-        <div className="mt-9 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
-          <div className="space-y-10">
+        <div className="mt-8 grid gap-8">
+          <div className="space-y-8">
             <section aria-labelledby="upcoming-heading">
-              <div className="mb-1 flex items-baseline justify-between gap-3">
+              <div className="mb-3 flex items-baseline justify-between gap-3">
                 <h2 id="upcoming-heading" className="text-base font-semibold text-ink">
                   Predstojeći
                 </h2>
@@ -172,16 +157,17 @@ export function TodayPage() {
                     />
                   ))
                 ) : (
-                  <p className="px-3 py-5 text-sm text-muted">
-                    Današnji termini su završeni. Sljedeće obaveze su u kalendaru.
-                  </p>
+                  <div className="flex items-center gap-3 px-3 py-5 sm:px-4">
+                    <Sun aria-hidden="true" className="h-4 w-4 shrink-0 text-line-strong" />
+                    <p className="text-sm text-muted">Današnji termini su završeni.</p>
+                  </div>
                 )}
               </Panel>
             </section>
 
             {finished.length > 0 ? (
               <section aria-labelledby="finished-heading">
-                <div className="mb-1 flex items-baseline justify-between gap-3">
+                <div className="mb-3 flex items-baseline justify-between gap-3">
                   <h2 id="finished-heading" className="text-base font-semibold text-ink">
                     Završeno danas
                   </h2>
@@ -200,67 +186,8 @@ export function TodayPage() {
               </section>
             ) : null}
           </div>
-
-          <aside className="space-y-8 lg:sticky lg:top-6">
-            <section>
-              <h2 className="text-base font-semibold text-ink">Smjena danas</h2>
-              <dl className="mt-3 space-y-2.5 text-sm">
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-muted">Termini</dt>
-                  <dd className="tabular font-medium text-ink">{active.length}</dd>
-                </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-muted">Frizeri sa terminima</dt>
-                  <dd className="tabular font-medium text-ink">{staffCount}</dd>
-                </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-muted">Online rezervacije</dt>
-                  <dd className="tabular font-medium text-ink">
-                    {active.filter((item) => item.source === 'online').length}
-                  </dd>
-                </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-muted">Vrijednost termina</dt>
-                  <dd className="tabular font-medium text-ink">{formatKM(valueMinor)}</dd>
-                </div>
-              </dl>
-              <p className="mt-3 text-xs leading-relaxed text-muted">
-                Računa se iz prikazanih termina. Demo podaci, bez naplate.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-base font-semibold text-ink">Prečice</h2>
-              <div className="mt-2">
-                <Link
-                  to={`/kalendar?datum=${today}`}
-                  className="flex min-h-10 items-center gap-2 rounded-sm px-2 -mx-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
-                >
-                  <CalendarDays aria-hidden="true" className="h-4 w-4" />
-                  Cijeli raspored dana
-                </Link>
-                <Link
-                  to="/klijenti"
-                  className="flex min-h-10 items-center gap-2 rounded-sm px-2 -mx-2 text-sm text-muted transition-colors hover:bg-surface hover:text-ink"
-                >
-                  <Clock3 aria-hidden="true" className="h-4 w-4" />
-                  Pretraži klijente
-                </Link>
-              </div>
-            </section>
-          </aside>
         </div>
       )}
-
-      <div
-        className={cn('mt-10 flex items-center justify-between pb-2 text-xs text-muted lg:hidden')}
-      >
-        <span>{formatDateKey(today)}</span>
-        <span className="inline-flex items-center gap-1.5">
-          <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
-          {formatTime(now.toISOString())}
-        </span>
-      </div>
 
       {dialog ? (
         <AppointmentDialog

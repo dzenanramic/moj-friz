@@ -11,7 +11,7 @@ import {
 import { cn } from '@/lib/cn'
 
 const controlBase =
-  'block w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink placeholder:text-muted transition-colors focus:border-pine focus:ring-1 focus:ring-pine disabled:bg-paper disabled:text-muted aria-invalid:border-danger aria-invalid:focus:ring-danger'
+  'block w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink outline-none placeholder:text-muted transition-[border-color,box-shadow,background-color] duration-150 hover:border-line-strong focus:border-pine focus:shadow-[0_0_0_3px_var(--color-pine-soft)] disabled:bg-paper disabled:text-muted aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:shadow-[0_0_0_3px_var(--color-danger-soft)]'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...props }, ref) {

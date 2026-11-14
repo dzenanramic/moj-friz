@@ -17,7 +17,11 @@ test('owner adds, reschedules and cancels an appointment', async ({ page }) => {
   })
 
   await page.goto(`/kalendar?datum=${dateKey}`)
-  await expect(page.getByText(formatSalonDateLong(dateKey))).toBeVisible()
+  // The calendar names the day on the selected day cell (it no longer prints a subtitle).
+  await expect(page.locator('button[aria-current="date"]')).toHaveAttribute(
+    'aria-label',
+    formatSalonDateLong(dateKey),
+  )
   const row = page.getByRole('button', { name: new RegExp(clientName) }).first()
   await expect(row).toBeVisible()
   await row.click()
@@ -42,18 +46,34 @@ test('owner adds, reschedules and cancels an appointment', async ({ page }) => {
   await expect(page.getByRole('button', { name: new RegExp(clientName) })).toHaveCount(0)
 })
 
-test('owner adds a break that blocks availability', async ({ page }) => {
-  const dateKey = nextOpenDateKey(7)
-
-  await page.goto(`/kalendar?datum=${dateKey}`)
+test('owner adds a break from the working hours page', async ({ page }) => {
+  // Breaks are entered in Settings; the calendar only shows them. This test used to start
+  // from a calendar button that no longer exists.
+  await page.goto('/postavke/radno-vrijeme')
   await page.getByRole('button', { name: 'Dodaj pauzu' }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
-  await dialog.locator('#break-start').selectOption('16:45')
-  await dialog.locator('#break-end').selectOption('17:00')
   await dialog.getByRole('button', { name: 'Dodaj u raspored' }).click()
-  await expect(dialog).toBeHidden()
 
-  await page.goto('/postavke/radno-vrijeme')
-  await expect(page.getByText('16:45–17:00').first()).toBeVisible()
+  await expect(page.getByText(/Pauza/).first()).toBeVisible()
+})
+
+test('the day strip scrolls sideways and selects a day by tap', async ({ page }) => {
+  await page.goto('/kalendar')
+  const strip = page.getByRole('group', { name: 'Izaberite dan' })
+  await expect(strip).toBeVisible()
+  const selected = page.locator('button[aria-current="date"]')
+  await expect(selected).toBeVisible()
+  const startKey = await selected.getAttribute('data-date-key')
+
+  // The strip is a scroller: it holds more days than fit, and a later day is reachable.
+  const scrollable = await strip.evaluate((el) => el.scrollWidth > el.clientWidth + 1)
+  expect(scrollable).toBe(true)
+
+  const laterDay = page.locator('[data-date-key]').nth(9)
+  const laterKey = await laterDay.getAttribute('data-date-key')
+  expect(laterKey).not.toBe(startKey)
+  await laterDay.scrollIntoViewIfNeeded()
+  await laterDay.click()
+  await expect(selected).toHaveAttribute('data-date-key', laterKey ?? '')
 })

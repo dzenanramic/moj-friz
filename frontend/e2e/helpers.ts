@@ -52,7 +52,8 @@ export async function submitNewClientAppointment(
   page: Page,
   options: { dateKey: string; clientName: string; phone: string },
 ): Promise<void> {
-  await page.getByRole('button', { name: 'Novi termin' }).click()
+  // The header action and the empty state's action share this name: the first is the header.
+  await page.getByRole('button', { name: 'Novi termin' }).first().click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   await dialog.getByRole('button', { name: 'Novi klijent' }).click()

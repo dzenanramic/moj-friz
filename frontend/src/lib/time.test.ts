@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   addDaysToDateKey,
+  calendarWindowDateKeys,
   dayRange,
   formatDateKey,
   formatDateLong,
@@ -49,5 +50,20 @@ describe('time helpers', () => {
   it('adds calendar days without adding fixed 24-hour blocks', () => {
     expect(addDaysToDateKey('2026-03-28', 2)).toBe('2026-03-30')
     expect(addDaysToDateKey('2026-10-24', 2)).toBe('2026-10-26')
+  })
+})
+
+describe('calendarWindowDateKeys', () => {
+  it('starts on the selected day and holds three weeks', () => {
+    const keys = calendarWindowDateKeys('2026-11-14')
+    expect(keys).toHaveLength(21)
+    expect(keys[0]).toBe('2026-11-14')
+    expect(keys[20]).toBe('2026-12-04')
+  })
+
+  it('runs into the next month instead of wrapping back', () => {
+    const keys = calendarWindowDateKeys('2026-11-29')
+    expect(keys[1]).toBe('2026-11-30')
+    expect(keys[2]).toBe('2026-12-01')
   })
 })

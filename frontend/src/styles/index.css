@@ -299,6 +299,57 @@
   }
 }
 
+/*
+ * The launcher's entrance: the words arrive once on load, then everything stands still.
+ * It only adds to a page that already reads whole: the content is visible at rest, the
+ * animation is the enhancement, and it never runs under reduced motion.
+ */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .hero-enter,
+  .hero-enter-2,
+  .hero-enter-3 {
+    animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hero-enter-2 {
+    animation-delay: 80ms;
+  }
+
+  .hero-enter-3 {
+    animation-delay: 140ms;
+  }
+}
+
+/* A swipe on the day picker nudges the grid the way the finger went, then settles. */
+@keyframes swipe-left {
+  from {
+    transform: translateX(10px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes swipe-right {
+  from {
+    transform: translateX(-10px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

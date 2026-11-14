@@ -1,3 +1,5 @@
+import { ChevronRight } from 'lucide-react'
+
 import { Skeleton } from '@/components/ui/Layout'
 import { gatewayErrorMessage } from '@/data/gateway'
 import type { AvailabilityDay } from '@/data/types'
@@ -11,6 +13,8 @@ export function SlotPicker({
   dateKey,
   isPending,
   error,
+  nextOpenDate,
+  onPickNextOpen,
 }: {
   availability: AvailabilityDay | undefined
   selected?: string
@@ -18,6 +22,9 @@ export function SlotPicker({
   dateKey: string
   isPending: boolean
   error: unknown
+  /** The next day in the strip that still has openings, so an empty day is never a dead end. */
+  nextOpenDate?: string
+  onPickNextOpen?: (dateKey: string) => void
 }) {
   if (isPending) {
     return (
@@ -37,23 +44,28 @@ export function SlotPicker({
     return <p className="text-sm text-muted">Izaberite datum da vidite slobodne termine.</p>
   }
 
-  if (availability.isClosed) {
+  if (availability.isClosed || availability.slots.length === 0) {
+    const closed = availability.isClosed
     return (
       <div className="rounded-md bg-paper px-4 py-8 text-center">
-        <p className="text-sm font-semibold text-ink">Salon ne radi tog dana</p>
-        <p className="mt-1 text-sm text-muted">Izaberite drugi datum iznad.</p>
-      </div>
-    )
-  }
-
-  if (availability.slots.length === 0) {
-    return (
-      <div className="rounded-md bg-paper px-4 py-8 text-center">
-        <p className="text-sm font-semibold text-ink">Nema slobodnih termina</p>
-        <p className="mt-1 text-sm text-muted">
-          {formatDateLong(dateKey)} je popunjen ili je prošlo vrijeme za rezervaciju. Izaberite
-          drugi datum.
+        <p className="text-sm font-semibold text-ink">
+          {closed ? 'Salon ne radi tog dana' : 'Nema slobodnih termina'}
         </p>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-muted">
+          {closed
+            ? 'Izaberite drugi datum iznad.'
+            : `${formatDateLong(dateKey)} je popunjen ili je prošlo vrijeme za rezervaciju. Izaberite drugi datum.`}
+        </p>
+        {nextOpenDate && onPickNextOpen ? (
+          <button
+            type="button"
+            onClick={() => onPickNextOpen(nextOpenDate)}
+            className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-pine transition-colors hover:bg-pine-soft"
+          >
+            Prvi slobodan dan: {formatDateLong(nextOpenDate)}
+            <ChevronRight aria-hidden="true" className="h-4 w-4" />
+          </button>
+        ) : null}
       </div>
     )
   }
@@ -63,7 +75,10 @@ export function SlotPicker({
     <div className="space-y-4">
       {groups.map((group) => (
         <div key={group.label}>
-          <p className="mb-2 text-sm text-muted">{group.label}</p>
+          <p className="mb-2 flex items-center gap-2 text-sm text-muted">
+            {group.label}
+            <span aria-hidden="true" className="h-px flex-1 bg-line" />
+          </p>
           <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
             {group.slots.map((slot) => {
               const active = slot.startsAt === selected
@@ -74,8 +89,10 @@ export function SlotPicker({
                   aria-pressed={active}
                   onClick={() => onSelect(slot.startsAt)}
                   className={cn(
-                    'tabular inline-flex min-h-10 items-center justify-center rounded-sm text-sm font-medium transition-colors',
-                    active ? 'bg-pine text-white' : 'bg-paper text-ink hover:bg-pine-soft',
+                    'tabular inline-flex min-h-11 items-center justify-center rounded-sm text-sm font-medium transition-[background-color,color,box-shadow,transform] duration-150 active:scale-[0.97]',
+                    active
+                      ? 'bg-pine text-white'
+                      : 'bg-paper text-ink ring-1 ring-inset ring-line hover:bg-pine-soft hover:ring-pine/30',
                   )}
                 >
                   {formatTime(slot.startsAt)}

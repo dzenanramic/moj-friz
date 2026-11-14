@@ -1,4 +1,4 @@
-import { Check, Clipboard, ExternalLink } from 'lucide-react'
+import { Check, Clipboard, ExternalLink, X } from 'lucide-react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 
@@ -6,6 +6,7 @@ import { StatusIndicator } from '@/components/ui/Badges'
 import { Button, buttonClassName } from '@/components/ui/Button'
 import { ErrorState, Skeleton, Surface } from '@/components/ui/Layout'
 import { useManagementAppointment } from '@/data/queries'
+import { cn } from '@/lib/cn'
 import { managementPath, readTokenFromFragment } from '@/demo/token'
 import { formatKM } from '@/lib/format'
 import { useCopyToClipboard, usePageTitle } from '@/lib/hooks'
@@ -59,6 +60,27 @@ export function ConfirmationPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <div className="max-w-xl">
+        <span
+          className={cn(
+            'mb-5 inline-flex items-center gap-2 rounded-full py-1.5 pr-4 pl-1.5 text-sm font-medium',
+            isCancelled ? 'bg-danger-soft text-danger-strong' : 'bg-pine-soft text-pine-strong',
+          )}
+        >
+          <span
+            aria-hidden="true"
+            className={cn(
+              'flex h-6 w-6 items-center justify-center rounded-full',
+              isCancelled ? 'bg-danger text-white' : 'bg-pine text-white',
+            )}
+          >
+            {isCancelled ? (
+              <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+            ) : (
+              <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+            )}
+          </span>
+          {isCancelled ? 'Termin je otkazan' : 'Termin je potvrđen'}
+        </span>
         <h1 className="text-ink">{isCancelled ? 'Termin je otkazan' : 'Vidimo se u salonu'}</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           {isCancelled

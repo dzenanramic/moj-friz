@@ -134,6 +134,19 @@ export function rangeDateKeys(startDateKey: string, endDateKey: string): string[
   return result
 }
 
+/**
+ * The days the calendar's date strip holds: the selected day and the three weeks after it,
+ * enough to scroll for a later day without opening a calendar. Near the end of one month
+ * the window simply runs into the next.
+ */
+export const CALENDAR_WINDOW_DAYS = 21
+
+export function calendarWindowDateKeys(selectedDateKey: string): string[] {
+  return Array.from({ length: CALENDAR_WINDOW_DAYS }, (_, index) =>
+    addDaysToDateKey(selectedDateKey, index),
+  )
+}
+
 export function weekDateKeys(dateKey: string): string[] {
   const start = addDaysToDateKey(dateKey, -weekdayIndexFromDateKey(dateKey))
   return Array.from({ length: 7 }, (_, index) => addDaysToDateKey(start, index))

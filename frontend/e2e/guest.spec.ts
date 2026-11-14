@@ -58,3 +58,29 @@ test('Level 1 shows an honest lock instead of public booking', async ({ page }) 
     page.getByRole('heading', { name: /Online rezervacije su isključene/ }),
   ).toBeVisible()
 })
+
+test('guest picks a day from the scrollable date strip', async ({ page }) => {
+  await page.goto('/rezervacija/studio-lana')
+  await page.getByRole('button', { name: /Žensko šišanje/ }).click()
+  await page.getByRole('button', { name: /Lana Jovanović/ }).click()
+
+  const strip = page.getByRole('group', { name: 'Izaberite datum' })
+  await expect(strip).toBeVisible()
+  const selectedDay = page.locator('[data-date-key][aria-pressed="true"]')
+  // Wait for the strip's own first-free-day choice to settle.
+  await expect
+    .poll(async () => await selectedDay.getAttribute('aria-label'), { timeout: 5_000 })
+    .toMatch(/slobodnih termina$/)
+  const startLabel = await selectedDay.getAttribute('aria-label')
+
+  // The guest can scroll to a later day and tap it, not just the first few on screen.
+  await expect
+    .poll(async () => strip.evaluate((el) => el.scrollWidth > el.clientWidth + 1))
+    .toBe(true)
+  const laterDay = page.locator('[data-date-key]').nth(6)
+  await laterDay.scrollIntoViewIfNeeded()
+  await laterDay.click()
+  await expect
+    .poll(async () => await selectedDay.getAttribute('aria-label'), { timeout: 5_000 })
+    .not.toBe(startLabel)
+})

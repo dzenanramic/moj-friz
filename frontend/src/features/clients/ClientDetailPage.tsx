@@ -1,13 +1,21 @@
-import { Phone } from 'lucide-react'
-import { useParams } from 'react-router'
+import { ArrowLeft, Phone } from 'lucide-react'
+import { Link, useParams } from 'react-router'
 
-import { BackLink, ErrorState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
+import { StatusIndicator } from '@/components/ui/Badges'
+import { ErrorState, Panel, Skeleton } from '@/components/ui/Layout'
 import { useClient } from '@/data/queries'
-import { formatKM, formatTerminCount } from '@/lib/format'
+import type { AppointmentView } from '@/data/types'
+import { cn } from '@/lib/cn'
+import { formatKM } from '@/lib/format'
 import { usePageTitle } from '@/lib/hooks'
-import { dateKeyFromInstant, formatDateKey } from '@/lib/time'
-
-import { AppointmentListItem } from '../appointments/AppointmentListItem'
+import {
+  capitalizeFirst,
+  dateKeyFromInstant,
+  formatDateKey,
+  formatTime,
+  formatWeekday,
+  todayDateKey,
+} from '@/lib/time'
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -17,9 +25,9 @@ export function ClientDetailPage() {
   if (client.isPending) {
     return (
       <div className="space-y-5">
-        <BackLink to="/klijenti">Klijenti</BackLink>
-        <Skeleton className="h-20 w-full rounded-lg" />
-        <Skeleton className="h-48 w-full rounded-lg" />
+        <ClientHeaderRow title="Učitavanje…" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     )
   }
@@ -27,8 +35,8 @@ export function ClientDetailPage() {
   if (client.isError || !client.data) {
     return (
       <div>
-        <BackLink to="/klijenti">Klijenti</BackLink>
-        <div className="mt-4">
+        <ClientHeaderRow title="Klijent" />
+        <div className="mt-5">
           <ErrorState
             title="Klijent nije pronađen"
             message="Link je možda pogrešan ili je demo resetovan."
@@ -40,63 +48,87 @@ export function ClientDetailPage() {
   }
 
   const { client: person, appointments } = client.data
-  const completed = appointments.filter((appointment) => appointment.status === 'completed')
+  const completed = appointments
+    .filter((appointment) => appointment.status === 'completed')
+    .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
   const lastVisit = completed[0]
   const totalValue = appointments
     .filter((appointment) => appointment.status !== 'cancelled')
     .reduce((sum, appointment) => sum + (appointment.priceMinorSnapshot ?? 0), 0)
   const callHref = `tel:${person.phoneOriginal.replace(/\s+/g, '')}`
+  const today = todayDateKey()
+  /** Last visit talks in days a person recognises: "danas", "juče", then the date. */
+  const lastVisitDate = lastVisit ? dateKeyFromInstant(lastVisit.startsAt) : null
+
+  const byYear = new Map<string, AppointmentView[]>()
+  for (const appointment of [...appointments].sort(
+    (a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt),
+  )) {
+    const year = dateKeyFromInstant(appointment.startsAt).slice(0, 4)
+    const group = byYear.get(year) ?? []
+    group.push(appointment)
+    byYear.set(year, group)
+  }
+  const years = [...byYear.keys()].sort().reverse()
+  const showYearHeadings = years.length > 1
 
   return (
     <div>
-      <BackLink to="/klijenti">Klijenti</BackLink>
-
-      <div className="mt-2">
-        <PageHeader
-          title={person.name}
-          description={
-            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-              <a
-                href={callHref}
-                className="inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line-strong underline-offset-4 hover:text-pine"
-              >
-                <Phone aria-hidden="true" className="h-3.5 w-3.5" />
-                {person.phoneOriginal}
-              </a>
-              <span>Klijent od {formatDateKey(dateKeyFromInstant(person.createdAt))}</span>
+      {/* Back arrow on the left, the name on the right: one line, one row. */}
+      <div className="flex items-start gap-3 pb-5">
+        <Link
+          to="/klijenti"
+          aria-label="Nazad na listu klijenata"
+          className="-ml-2.5 -mt-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
+        >
+          <ArrowLeft aria-hidden="true" className="h-[1.15rem] w-[1.15rem]" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-ink">{person.name}</h1>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-muted">
+            <a
+              href={callHref}
+              className="tabular inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:text-pine"
+            >
+              <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
+              {person.phoneOriginal}
+            </a>
+            <span aria-hidden="true" className="text-line-strong">
+              ·
             </span>
-          }
-          className="pb-6"
-        />
+            <span>
+              {appointments.length === 0
+                ? 'Bez termina'
+                : lastVisitDate === today
+                  ? 'Bila danas'
+                  : lastVisitDate
+                    ? `Zadnji dolazak ${formatDateKey(lastVisitDate)}`
+                    : 'Bez završenih termina'}
+            </span>
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
-        <div className="space-y-8">
-          <dl className="grid grid-cols-3 gap-4 rounded-lg bg-surface px-5 py-4">
-            <div>
-              <dt className="text-xs text-muted">Termini</dt>
-              <dd className="tabular mt-1 text-lg font-semibold text-ink">{appointments.length}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted">Zadnji dolazak</dt>
-              <dd className="tabular mt-1 text-lg font-semibold text-ink">
-                {lastVisit ? formatDateKey(dateKeyFromInstant(lastVisit.startsAt)) : '—'}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted">Vrijednost termina</dt>
-              <dd className="tabular mt-1 text-lg font-semibold text-ink">
-                {formatKM(totalValue)}
-              </dd>
-            </div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_272px] lg:items-start">
+        <div className="min-w-0 space-y-8">
+          {/* Three figures, each centred in its own column, on one shared baseline. */}
+          <dl className="grid grid-cols-3 divide-x divide-line rounded-lg bg-surface text-center">
+            <Stat label="Termini" value={String(appointments.length)} />
+            <Stat
+              label="Zadnji dolazak"
+              value={lastVisitDate ? formatDateKey(lastVisitDate) : '—'}
+            />
+            <Stat label="Vrijednost" value={formatKM(totalValue)} />
           </dl>
 
           <section aria-labelledby="client-history">
-            <div className="mb-1 flex items-baseline justify-between gap-3">
+            <div className="mb-3 flex items-baseline justify-between gap-3">
               <h2 id="client-history" className="text-base font-semibold text-ink">
                 Historija termina
               </h2>
-              <span className="text-xs text-muted">{formatTerminCount(appointments.length)}</span>
+              {appointments.length > 0 ? (
+                <span className="text-xs text-muted">{appointments.length}</span>
+              ) : null}
             </div>
             {appointments.length === 0 ? (
               <Panel>
@@ -104,45 +136,125 @@ export function ClientDetailPage() {
               </Panel>
             ) : (
               <Panel className="py-1">
-                {appointments.map((appointment) => (
-                  <AppointmentListItem key={appointment.id} appointment={appointment} showPrice />
-                ))}
+                <ol>
+                  {years.map((year) => (
+                    <li key={year}>
+                      {showYearHeadings ? (
+                        <p className="px-3 pt-3 pb-1 text-[0.7rem] font-semibold tracking-wide text-muted uppercase sm:px-4">
+                          {year}
+                        </p>
+                      ) : null}
+                      <ol>
+                        {byYear.get(year)?.map((appointment) => (
+                          <HistoryRow
+                            key={appointment.id}
+                            appointment={appointment}
+                            today={today}
+                          />
+                        ))}
+                      </ol>
+                    </li>
+                  ))}
+                </ol>
               </Panel>
             )}
           </section>
         </div>
 
-        <aside className="space-y-7 lg:sticky lg:top-6">
-          <section>
-            <h2 className="text-base font-semibold text-ink">Napomena</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink">
-              {person.notes ?? 'Nema napomene.'}
+        {person.notes ? (
+          <aside className="lg:sticky lg:top-6">
+            <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">Napomena</h2>
+            <p className="mt-2 rounded-lg bg-surface px-4 py-3 text-sm leading-relaxed text-ink">
+              {person.notes}
             </p>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
-              Samo poslovne napomene. Ne unosite zdravstvene ni druge osjetljive podatke.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-base font-semibold text-ink">Kontakt</h2>
-            <a
-              href={callHref}
-              className="tabular mt-2 inline-flex min-h-11 items-center gap-2 rounded-md bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-pine-soft"
-            >
-              <Phone aria-hidden="true" className="h-4 w-4 text-pine" />
-              {person.phoneOriginal}
-            </a>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
-              Broj nije verifikovan; prikaz je iz demo podataka.
-            </p>
-          </section>
-        </aside>
+          </aside>
+        ) : null}
       </div>
+    </div>
+  )
+}
 
-      <p className="mt-9 max-w-[70ch] text-xs leading-relaxed text-muted">
-        Historija je vidljiva samo salonu. Nikada se ne prikazuje na javnoj stranici ni preko
-        privatnog linka za upravljanje terminom.
-      </p>
+function ClientHeaderRow({ title }: { title: string }) {
+  return (
+    <div className="flex items-center gap-3 pb-5">
+      <Link
+        to="/klijenti"
+        aria-label="Nazad na listu klijenata"
+        className="-ml-2.5 -mt-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
+      >
+        <ArrowLeft aria-hidden="true" className="h-[1.15rem] w-[1.15rem]" />
+      </Link>
+      <h1 className="truncate text-ink">{title}</h1>
+    </div>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="px-2 py-4 sm:px-4">
+      <dt className="text-[0.7rem] leading-tight text-muted sm:text-xs">{label}</dt>
+      <dd className="tabular mt-1.5 text-[0.95rem] font-semibold text-ink sm:text-lg">{value}</dd>
+    </div>
+  )
+}
+
+/**
+ * One visit, read at a glance: when, what, how it ended. The client's own name is left
+ * out (every row on this page is the same client), and the price leads the second line
+ * because it is what the owner scans for.
+ */
+function HistoryRow({ appointment, today }: { appointment: AppointmentView; today: string }) {
+  const cancelled = appointment.status === 'cancelled'
+  const dateKey = dateKeyFromInstant(appointment.startsAt)
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-3 border-b border-line px-3 py-2.5 last:border-b-0 sm:px-4',
+        cancelled && 'opacity-60',
+      )}
+    >
+      <span className="w-[74px] shrink-0 sm:w-[86px]">
+        <span className="tabular block text-sm font-semibold text-ink">
+          {formatTime(appointment.startsAt)}
+        </span>
+        <span className="mt-0.5 block text-[0.7rem] whitespace-nowrap text-muted">
+          {dateKey === today
+            ? 'danas'
+            : `${capitalizeFirst(formatWeekday(dateKey, true))} ${formatDateKey(dateKey)}`}
+        </span>
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span
+          className={cn(
+            'block truncate text-sm font-medium text-ink',
+            cancelled && 'line-through decoration-line-strong',
+          )}
+        >
+          {appointment.serviceName}
+        </span>
+        <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-muted">
+          <span
+            data-staff={appointment.hairdresserColorKey}
+            aria-hidden="true"
+            className="staff-bar h-2.5 w-[2px] shrink-0 rounded-xs"
+          />
+          <span className="truncate">{appointment.hairdresserName}</span>
+        </span>
+      </span>
+
+      <span className="flex shrink-0 items-center gap-3">
+        {appointment.priceMinorSnapshot !== null ? (
+          <span className="tabular text-sm font-semibold text-ink">
+            {formatKM(appointment.priceMinorSnapshot)}
+          </span>
+        ) : null}
+        <StatusIndicator
+          status={appointment.status}
+          className="text-[0.7rem] whitespace-nowrap sm:text-xs"
+        />
+      </span>
     </div>
   )
 }
