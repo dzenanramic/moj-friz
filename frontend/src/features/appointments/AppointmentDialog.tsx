@@ -282,18 +282,6 @@ export function AppointmentDialog({
           if (!open) close()
         }}
         title={mode === 'edit' ? 'Uredi termin' : 'Novi termin'}
-        description={
-          mode === 'edit' && appointment ? (
-            <span className="inline-flex flex-wrap items-center gap-2">
-              <StatusPill status={appointment.status} />
-              <span>
-                {appointment.clientName} · {formatDateKey(dateKeyFromInstant(appointment.startsAt))}
-              </span>
-            </span>
-          ) : (
-            'Brzi unos termina za salonski raspored.'
-          )
-        }
         size="lg"
         footer={
           <>
@@ -317,11 +305,6 @@ export function AppointmentDialog({
           {submitError ? <FormError>{submitError}</FormError> : null}
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-ink">Klijent</p>
-              <span className="text-xs text-muted">Pretražite po imenu ili telefonu</span>
-            </div>
-
             {selectedClient ? (
               <div className="flex flex-wrap items-center gap-3 rounded-md bg-paper px-3 py-2.5">
                 <Avatar name={selectedClient.name} size="sm" />
@@ -544,7 +527,6 @@ export function AppointmentDialog({
             id="appointment-note"
             optional
             placeholder="Npr. dolazi s djetetom, preferira tiši dio salona…"
-            hint="Vidljivo samo salonu. Ne unosite zdravstvene ili druge osjetljive podatke."
             error={errors.internalNote?.message}
             {...register('internalNote')}
           />

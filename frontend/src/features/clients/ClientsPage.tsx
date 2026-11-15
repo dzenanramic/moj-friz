@@ -127,7 +127,7 @@ export function ClientsPage() {
             </ul>
           </Panel>
 
-          <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="mt-1.5 flex items-center justify-between gap-3">
             <p className="text-xs text-muted">
               {clients.data
                 ? `${clients.data.total} ${clients.data.total === 1 ? 'klijent' : 'klijenata'}`
