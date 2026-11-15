@@ -15,7 +15,6 @@ import { useNow, usePageTitle } from '@/lib/hooks'
 import { useSwipe, type SwipeDirection } from '@/lib/swipe'
 import {
   addDaysToDateKey,
-  calendarWindowDateKeys,
   capitalizeFirst,
   dayRange,
   formatDateCompact,
@@ -23,6 +22,7 @@ import {
   formatTime,
   formatWeekday,
   isValidDateKey,
+  stableDateStripWindow,
   todayDateKey,
   weekdayIndexFromDateKey,
 } from '@/lib/time'
@@ -134,8 +134,8 @@ export function CalendarPage() {
   }
   const swipe = useSwipe(shiftDay)
 
-  /** The selected day and the next four: enough to plan ahead without paging. */
-  const days = useMemo(() => calendarWindowDateKeys(dateKey), [dateKey])
+  /** Three weeks from today, with the selected day in it: the strip does not follow each tap. */
+  const days = useMemo(() => stableDateStripWindow(today, dateKey), [today, dateKey])
   const dayLabel = capitalizeFirst(formatDateLong(dateKey))
   const dayStripItems: DateStripItem[] = days.map((day) => ({
     dateKey: day,

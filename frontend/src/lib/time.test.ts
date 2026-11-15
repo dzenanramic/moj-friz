@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   addDaysToDateKey,
   calendarWindowDateKeys,
+  stableDateStripWindow,
   dayRange,
   formatDateKey,
   formatDateLong,
@@ -65,5 +66,30 @@ describe('calendarWindowDateKeys', () => {
     const keys = calendarWindowDateKeys('2026-11-29')
     expect(keys[1]).toBe('2026-11-30')
     expect(keys[2]).toBe('2026-12-01')
+  })
+})
+
+describe('stableDateStripWindow', () => {
+  it('keeps the strip around today instead of re-anchoring on the chosen day', () => {
+    const today = '2026-11-15'
+    const before = stableDateStripWindow(today, today)
+    const after = stableDateStripWindow(today, '2026-11-22')
+    // One week back, three weeks ahead.
+    expect(before[0]).toBe('2026-11-08')
+    expect(before).toHaveLength(21)
+    expect(before[20]).toBe('2026-11-28')
+    // Choosing a day inside the strip does not move it: earlier days stay reachable.
+    expect(after).toEqual(before)
+  })
+
+  it('moves only for a day picked outside the window, which joins at the edge', () => {
+    const today = '2026-11-15'
+    const later = stableDateStripWindow(today, '2026-12-20')
+    expect(later).toHaveLength(21)
+    expect(later[20]).toBe('2026-12-20')
+
+    const earlier = stableDateStripWindow(today, '2026-11-01')
+    expect(earlier).toHaveLength(21)
+    expect(earlier[0]).toBe('2026-11-01')
   })
 })

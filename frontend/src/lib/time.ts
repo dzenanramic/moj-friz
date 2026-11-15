@@ -147,6 +147,27 @@ export function calendarWindowDateKeys(selectedDateKey: string): string[] {
   )
 }
 
+/** How many days before today the owner's strip keeps visible. */
+export const DATE_STRIP_BEFORE_DAYS = 7
+
+/**
+ * The strip on a fixed page (the owner's calendar): three weeks counted from today, not from the
+ * selected day. Choosing a day inside the strip leaves it where it is, so the days before and
+ * after stay reachable; the strip only moves for a day outside it.
+ */
+export function stableDateStripWindow(today: string, selectedDateKey: string): string[] {
+  const start = addDaysToDateKey(today, -DATE_STRIP_BEFORE_DAYS)
+  const fromToday = Array.from({ length: CALENDAR_WINDOW_DAYS }, (_, index) =>
+    addDaysToDateKey(start, index),
+  )
+  const afterWindow = addDaysToDateKey(today, CALENDAR_WINDOW_DAYS - DATE_STRIP_BEFORE_DAYS)
+  // A day picked outside the window (found another way, or a link from days ago) joins the strip
+  // at its edge, so it can still be the selected one.
+  if (selectedDateKey < start) return [selectedDateKey, ...fromToday.slice(0, -1)]
+  if (selectedDateKey >= afterWindow) return [...fromToday.slice(1), selectedDateKey]
+  return fromToday
+}
+
 export function weekDateKeys(dateKey: string): string[] {
   const start = addDaysToDateKey(dateKey, -weekdayIndexFromDateKey(dateKey))
   return Array.from({ length: 7 }, (_, index) => addDaysToDateKey(start, index))

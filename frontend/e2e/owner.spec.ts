@@ -77,3 +77,37 @@ test('the day strip scrolls sideways and selects a day by tap', async ({ page })
   await laterDay.click()
   await expect(selected).toHaveAttribute('data-date-key', laterKey ?? '')
 })
+
+test('picking a later day keeps the earlier days in the strip', async ({ page }) => {
+  await page.goto('/kalendar')
+  const strip = page.getByRole('group', { name: 'Izaberite dan' })
+  const cells = strip.locator('[data-date-key]')
+  const originalKeys = await cells.evaluateAll((els) =>
+    els.map((el) => el.getAttribute('data-date-key')),
+  )
+  const firstKey = originalKeys[0]
+
+  // Choose a day a few places in: the strip must not re-anchor on it.
+  const laterDay = cells.nth(5)
+  const laterKey = await laterDay.getAttribute('data-date-key')
+  await laterDay.scrollIntoViewIfNeeded()
+  await laterDay.click()
+  await expect(page.locator('button[aria-current="date"]')).toHaveAttribute(
+    'data-date-key',
+    laterKey ?? '',
+  )
+
+  const keysAfter = await cells.evaluateAll((els) =>
+    els.map((el) => el.getAttribute('data-date-key')),
+  )
+  expect(keysAfter).toEqual(originalKeys)
+  expect(keysAfter[0]).toBe(firstKey)
+
+  // The earlier day is still on screen and can be brought back into view.
+  await page.locator(`[data-date-key="${firstKey}"]`).scrollIntoViewIfNeeded()
+  await page.locator(`[data-date-key="${firstKey}"]`).click()
+  await expect(page.locator('button[aria-current="date"]')).toHaveAttribute(
+    'data-date-key',
+    firstKey ?? '',
+  )
+})
