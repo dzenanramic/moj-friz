@@ -1,11 +1,4 @@
-import {
-  CalendarDays,
-  ExternalLink,
-  Settings2,
-  Sun,
-  UsersRound,
-  type LucideIcon,
-} from 'lucide-react'
+import { CalendarDays, ExternalLink, Settings2, Sun, type LucideIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
@@ -24,10 +17,11 @@ interface NavItem {
   end?: boolean
 }
 
+// Clients have no entry of their own: a client is a name and a phone on an appointment. The
+// screens and routes stay in the code for whenever that history earns its place in the nav.
 const NAV_ITEMS: NavItem[] = [
   { to: '/danas', label: 'Danas', icon: Sun },
   { to: '/kalendar', label: 'Kalendar', icon: CalendarDays },
-  { to: '/klijenti', label: 'Klijenti', icon: UsersRound },
   { to: '/postavke', label: 'Postavke', icon: Settings2 },
 ]
 
@@ -159,7 +153,7 @@ function MobileNav() {
       aria-label="Glavna navigacija"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-4">
+      <ul className="mx-auto grid max-w-md grid-cols-3">
         {NAV_ITEMS.map((item) => (
           <li key={item.to}>
             <NavLink

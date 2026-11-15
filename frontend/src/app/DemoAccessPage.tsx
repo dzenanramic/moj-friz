@@ -155,7 +155,7 @@ export function DemoAccessPage() {
                 Za vlasnicu
               </dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted">
-                Danas, kalendar, brzi unos termina, klijenti i pauze.
+                Danas, kalendar, brzi unos termina i pauze.
               </dd>
             </div>
             <div>
