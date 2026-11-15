@@ -7,6 +7,15 @@ import { cn } from '@/lib/cn'
 import { formatDuration } from '@/lib/format'
 import { isoWeekdayLabel } from '@/lib/time'
 
+/** "1 aktivan", "3 aktivna", "5 aktivnih": the count decides the form. */
+function activeLabel(count: number): string {
+  const lastTwo = count % 100
+  const last = count % 10
+  if (last === 1 && lastTwo !== 11) return 'aktivan'
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return 'aktivna'
+  return 'aktivnih'
+}
+
 export function HairdressersPage() {
   const hairdressers = useHairdressers()
   const services = useServices()
@@ -45,7 +54,8 @@ export function HairdressersPage() {
       <div className="max-w-[62ch]">
         <h2 className="text-xl font-semibold text-ink">Frizeri</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">
-          {activeCount} aktivnih u timu. Svaki frizer ima svoje radno vrijeme i usluge koje radi.
+          {activeCount} {activeLabel(activeCount)} u timu. Svaki frizer ima svoje radno vrijeme i
+          usluge koje radi.
         </p>
       </div>
 
@@ -131,8 +141,8 @@ export function HairdressersPage() {
       )}
 
       <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-muted">
-        Frizeri su u demou prikaz. Dodavanje, deaktivacija i promjena dodijeljenih usluga dolaze uz
-        pilot.
+        Frizeri su u demou samo prikaz. Dodavanje, deaktivacija i promjena dodijeljenih usluga
+        dolaze uz pilot.
       </p>
     </div>
   )

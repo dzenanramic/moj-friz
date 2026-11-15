@@ -38,15 +38,13 @@ export function DateStrip({
         const free = info?.free
         const isToday = dateKey === today
         const soldOut = free !== undefined && free === 0
+        // Today keeps its word, but never loses the reason it cannot be booked.
+        const statusHint = soldOut ? (info?.closed ? 'ne radi' : 'puno') : undefined
         const hint = isToday
-          ? 'danas'
-          : soldOut
-            ? info?.closed
-              ? 'ne radi'
-              : 'puno'
-            : free !== undefined
-              ? `${free}`
-              : undefined
+          ? statusHint
+            ? `danas · ${statusHint}`
+            : 'danas'
+          : (statusHint ?? (free !== undefined ? `${free}` : undefined))
         const freeLabel =
           free === undefined
             ? null
@@ -67,5 +65,24 @@ export function DateStrip({
     [dates, dayInfo, today],
   )
 
-  return <HorizontalDateStrip label={label} items={items} value={selected} onChange={onSelect} />
+  return (
+    <HorizontalDateStrip
+      label={label}
+      items={items}
+      value={selected}
+      onChange={onSelect}
+      cellClassName={dateStripCellClassName}
+    />
+  )
+}
+
+/**
+ * A closed or full day reads as unavailable at rest: paper instead of the surface, muted text
+ * and the plain border. The selected day keeps the strip's own fill untouched.
+ */
+function dateStripCellClassName(item: DateStripItem, selected: boolean): string {
+  if (selected || !item.muted) return ''
+  // `bg-paper!` is the only way to beat the strip's own `bg-surface` and its hover fill: the
+  // utilities are emitted in theme order, so a plain `bg-paper` would lose to the base class.
+  return 'border-line bg-paper! text-muted'
 }

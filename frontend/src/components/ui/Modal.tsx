@@ -1,7 +1,7 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 import { cn } from '@/lib/cn'
 
@@ -24,6 +24,35 @@ const sizeClasses = {
   lg: 'sm:w-[min(94vw,44rem)]',
 }
 
+/**
+ * Dialogs here open from state rather than a `Dialog.Trigger`, so Radix has no trigger to
+ * return focus to and leaves it on the body. Remember the control that opened the dialog and
+ * give focus back to it on close, for as long as that control is still on the page.
+ */
+function useRestoreFocusTarget(open: boolean) {
+  const targetRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+
+    const active = document.activeElement
+    if (active instanceof HTMLElement && active !== document.body) targetRef.current = active
+  }, [open])
+
+  return targetRef
+}
+
+function restoreFocusOnClose(targetRef: { current: HTMLElement | null }, event: Event): void {
+  const target = targetRef.current
+  if (!target || !target.isConnected) return
+
+  const content = event.currentTarget
+  if (content instanceof Node && content.contains(target)) return
+
+  event.preventDefault()
+  target.focus({ preventScroll: true })
+}
+
 export function Modal({
   open,
   onOpenChange,
@@ -34,6 +63,8 @@ export function Modal({
   size = 'md',
   className,
 }: ModalProps) {
+  const restoreFocusRef = useRestoreFocusTarget(open)
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -45,6 +76,7 @@ export function Modal({
             className,
           )}
           aria-describedby={description ? 'modal-description' : undefined}
+          onCloseAutoFocus={(event) => restoreFocusOnClose(restoreFocusRef, event)}
         >
           <div className="flex shrink-0 items-start justify-between gap-4 pr-8">
             <div>
@@ -73,7 +105,7 @@ export function Modal({
           </Dialog.Close>
           <div className="dialog-sheet-body mt-2.5">{children}</div>
           {footer ? (
-            <div className="mt-6 flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <div className="mt-6 flex shrink-0 flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:justify-end">
               {footer}
             </div>
           ) : null}
@@ -106,11 +138,16 @@ export function ConfirmDialog({
   pending = false,
   onConfirm,
 }: ConfirmDialogProps) {
+  const restoreFocusRef = useRestoreFocusTarget(open)
+
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="dialog-overlay" />
-        <AlertDialog.Content className="dialog-content w-full p-5 sm:w-[min(92vw,28rem)] sm:p-6">
+        <AlertDialog.Content
+          className="dialog-content w-full p-5 sm:w-[min(92vw,28rem)] sm:p-6"
+          onCloseAutoFocus={(event) => restoreFocusOnClose(restoreFocusRef, event)}
+        >
           <AlertDialog.Title className="text-xl leading-snug font-semibold text-ink">
             {title}
           </AlertDialog.Title>

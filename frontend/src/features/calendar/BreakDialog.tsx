@@ -1,22 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
+import { DateSelectField } from '@/components/date-strip/DateSelectField'
 import { Button } from '@/components/ui/Button'
 import { FormError, SelectField } from '@/components/ui/form'
 import { Modal } from '@/components/ui/Modal'
 import { gatewayErrorMessage } from '@/data/gateway'
 import { useCreateTimeBlock, useHairdressers } from '@/data/queries'
-import {
-  addDaysToDateKey,
-  capitalizeFirst,
-  formatDateKey,
-  formatWeekday,
-  rangeDateKeys,
-  timeFromMinutes,
-  todayDateKey,
-} from '@/lib/time'
+import { timeFromMinutes, todayDateKey } from '@/lib/time'
 import { breakFormSchema, type BreakFormValues } from '@/lib/validation'
 
 const TIME_OPTIONS = Array.from({ length: 57 }, (_, index) => timeFromMinutes(7 * 60 + index * 15))
@@ -39,7 +32,6 @@ export function BreakDialog({ defaultDateKey, defaultHairdresserId, onClose }: B
   const firstHairdresser = defaultHairdresserId ?? activeHairdressers[0]?.id ?? ''
 
   const today = todayDateKey()
-  const dateOptions = useMemo(() => rangeDateKeys(today, addDaysToDateKey(today, 90)), [today])
 
   const form = useForm<BreakFormValues>({
     resolver: zodResolver(breakFormSchema),
@@ -53,6 +45,7 @@ export function BreakDialog({ defaultDateKey, defaultHairdresserId, onClose }: B
   })
   const { register, handleSubmit, formState, setValue } = form
   const errors = formState.errors
+  const dateKey = useWatch({ control: form.control, name: 'dateKey' })
 
   useEffect(() => {
     if (!form.getValues('hairdresserId') && activeHairdressers[0]) {
@@ -114,22 +107,14 @@ export function BreakDialog({ defaultDateKey, defaultHairdresserId, onClose }: B
           ))}
         </SelectField>
 
-        <SelectField
+        <DateSelectField
           label="Datum"
           id="break-date"
+          value={dateKey}
+          onChange={(next) => setValue('dateKey', next, { shouldValidate: true })}
+          startDateKey={today}
           error={errors.dateKey?.message}
-          {...register('dateKey')}
-        >
-          {dateOptions.map((option) => (
-            <option key={option} value={option}>
-              {option === today
-                ? `Danas — ${formatDateKey(option)}`
-                : option === addDaysToDateKey(today, 1)
-                  ? `Sutra — ${formatDateKey(option)}`
-                  : `${capitalizeFirst(formatWeekday(option))}, ${formatDateKey(option)}`}
-            </option>
-          ))}
-        </SelectField>
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <SelectField

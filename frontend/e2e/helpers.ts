@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 
 const WEEKDAYS = [
   'ponedjeljak',
@@ -48,17 +48,32 @@ export function nextOpenDateKey(startOffset = 7): string {
   throw new Error('No open demo date found')
 }
 
+/** The day picker is a grid of buttons: open more days until the wanted one is on screen, then tap it. */
+async function chooseAppointmentDate(dialog: Locator, dateKey: string): Promise<void> {
+  const picker = dialog.locator('#appointment-date')
+  const day = picker.getByRole('button', { name: formatSalonDateLong(dateKey) })
+  const more = picker.getByRole('button', { name: 'Više datuma' })
+  for (let step = 0; step < 9 && !(await day.isVisible()); step += 1) {
+    await more.click()
+  }
+  await day.click()
+}
+
 export async function submitNewClientAppointment(
   page: Page,
   options: { dateKey: string; clientName: string; phone: string },
 ): Promise<void> {
+  // Creating starts from the calendar for the wanted day: the dashboard hides its action on a
+  // day the salon is closed, and this day is chosen from the open days.
+  await page.goto(`/kalendar?datum=${options.dateKey}`)
   // The header action and the empty state's action share this name: the first is the header.
+  await expect(page.getByRole('button', { name: 'Novi termin' }).first()).toBeVisible()
   await page.getByRole('button', { name: 'Novi termin' }).first().click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   await dialog.locator('#appointment-client-name').fill(options.clientName)
   await dialog.locator('#appointment-client-phone').fill(options.phone)
-  await dialog.locator('#appointment-date').selectOption(options.dateKey)
+  await chooseAppointmentDate(dialog, options.dateKey)
   await expect(dialog.locator('fieldset button').first()).toBeVisible()
   await dialog.locator('fieldset button').first().click()
   await dialog.getByRole('button', { name: 'Dodaj termin' }).click()

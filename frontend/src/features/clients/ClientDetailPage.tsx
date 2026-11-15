@@ -1,7 +1,9 @@
-import { ArrowLeft, Phone } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Phone, Plus } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
 import { StatusIndicator } from '@/components/ui/Badges'
+import { Button, buttonClassName } from '@/components/ui/Button'
 import { ErrorState, Panel, Skeleton } from '@/components/ui/Layout'
 import { useClient } from '@/data/queries'
 import type { AppointmentView } from '@/data/types'
@@ -17,9 +19,12 @@ import {
   todayDateKey,
 } from '@/lib/time'
 
+import { AppointmentDialog } from '../appointments/AppointmentDialog'
+
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const client = useClient(id)
+  const [createOpen, setCreateOpen] = useState(false)
   usePageTitle(client.data?.client.name ?? 'Klijent')
 
   if (client.isPending) {
@@ -56,6 +61,7 @@ export function ClientDetailPage() {
     .filter((appointment) => appointment.status !== 'cancelled')
     .reduce((sum, appointment) => sum + (appointment.priceMinorSnapshot ?? 0), 0)
   const callHref = `tel:${person.phoneOriginal.replace(/\s+/g, '')}`
+  const messageHref = `sms:${person.phoneOriginal.replace(/\s+/g, '')}`
   const today = todayDateKey()
   /** Last visit talks in days a person recognises: "danas", "juče", then the date. */
   const lastVisitDate = lastVisit ? dateKeyFromInstant(lastVisit.startsAt) : null
@@ -74,7 +80,7 @@ export function ClientDetailPage() {
 
   return (
     <div>
-      {/* Back arrow on the left, the name on the right: one line, one row. */}
+      {/* Back arrow on the left, the name and its actions on the right. */}
       <div className="flex items-start gap-3 pb-5">
         <Link
           to="/klijenti"
@@ -83,33 +89,58 @@ export function ClientDetailPage() {
         >
           <ArrowLeft aria-hidden="true" className="h-[1.15rem] w-[1.15rem]" />
         </Link>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-ink">{person.name}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-muted">
-            <a
-              href={callHref}
-              className="tabular inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line underline-offset-4 transition-colors hover:text-primary"
+        <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="min-w-0">
+            <h1 className="truncate text-ink">{person.name}</h1>
+            <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-muted">
+              <a
+                href={callHref}
+                className="tabular inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line underline-offset-4 transition-colors hover:text-primary"
+              >
+                <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
+                {person.phoneOriginal}
+              </a>
+              <span aria-hidden="true" className="text-muted">
+                ·
+              </span>
+              <span>
+                {appointments.length === 0
+                  ? 'Bez termina'
+                  : lastVisitDate === today
+                    ? 'Bila danas'
+                    : lastVisitDate
+                      ? `Zadnji dolazak ${formatDateKey(lastVisitDate)}`
+                      : 'Bez završenih termina'}
+              </span>
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:shrink-0">
+            <Button
+              size="md"
+              className="col-span-2 sm:col-auto"
+              leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
+              onClick={() => setCreateOpen(true)}
             >
-              <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
-              {person.phoneOriginal}
+              Novi termin
+            </Button>
+            <a href={callHref} className={buttonClassName('secondary', 'md')}>
+              <Phone aria-hidden="true" className="h-4 w-4 shrink-0" />
+              Pozovi
             </a>
-            <span aria-hidden="true" className="text-muted">
-              ·
-            </span>
-            <span>
-              {appointments.length === 0
-                ? 'Bez termina'
-                : lastVisitDate === today
-                  ? 'Bila danas'
-                  : lastVisitDate
-                    ? `Zadnji dolazak ${formatDateKey(lastVisitDate)}`
-                    : 'Bez završenih termina'}
-            </span>
-          </p>
+            <a href={messageHref} className={buttonClassName('secondary', 'md')}>
+              <MessageSquare aria-hidden="true" className="h-4 w-4 shrink-0" />
+              Poruka
+            </a>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_272px] lg:items-start">
+      <div
+        className={cn(
+          'grid gap-8 lg:items-start',
+          person.notes ? 'lg:grid-cols-[minmax(0,1fr)_272px]' : 'lg:grid-cols-1',
+        )}
+      >
         <div className="min-w-0 space-y-8">
           {/* Three figures, each centred in its own column, on one shared baseline. */}
           <dl className="grid grid-cols-3 divide-x divide-line rounded-lg bg-surface text-center">
@@ -133,6 +164,15 @@ export function ClientDetailPage() {
             {appointments.length === 0 ? (
               <Panel>
                 <p className="text-sm text-muted">Ovaj klijent još nema termina.</p>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="mt-4"
+                  leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
+                  onClick={() => setCreateOpen(true)}
+                >
+                  Novi termin
+                </Button>
               </Panel>
             ) : (
               <Panel className="py-1">
@@ -170,6 +210,18 @@ export function ClientDetailPage() {
           </aside>
         ) : null}
       </div>
+
+      {createOpen ? (
+        <AppointmentDialog
+          mode="create"
+          defaults={{
+            clientId: person.id,
+            clientName: person.name,
+            clientPhone: person.phoneOriginal,
+          }}
+          onClose={() => setCreateOpen(false)}
+        />
+      ) : null}
     </div>
   )
 }
@@ -208,12 +260,7 @@ function HistoryRow({ appointment, today }: { appointment: AppointmentView; toda
   const dateKey = dateKeyFromInstant(appointment.startsAt)
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 border-b border-line px-3 py-2.5 last:border-b-0 sm:px-4',
-        cancelled && 'opacity-60',
-      )}
-    >
+    <div className="flex items-center gap-3 border-b border-line px-3 py-2.5 last:border-b-0 sm:px-4">
       <span className="w-[74px] shrink-0 sm:w-[86px]">
         <span className="tabular block text-sm font-semibold text-ink">
           {formatTime(appointment.startsAt)}

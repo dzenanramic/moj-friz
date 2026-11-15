@@ -62,13 +62,17 @@ export function ActiveState({
   active,
   labelOn = 'Aktivno',
   labelOff = 'Neaktivno',
+  className,
 }: {
   active: boolean
   labelOn?: string
   labelOff?: string
+  className?: string
 }) {
   return (
-    <span className="inline-flex items-center gap-2 text-xs font-medium text-muted">
+    <span
+      className={cn('inline-flex items-center gap-2 text-xs font-medium text-muted', className)}
+    >
       <span
         aria-hidden="true"
         className={cn('h-1.5 w-1.5 rounded-full', active ? 'bg-primary' : 'bg-muted')}

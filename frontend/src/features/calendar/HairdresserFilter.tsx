@@ -38,7 +38,7 @@ export function HairdresserFilter({
           type="button"
           aria-label={`Filter po frizeru: ${label}`}
           className={cn(
-            'inline-flex min-h-9 max-w-[11rem] items-center gap-2 rounded-md px-2.5 text-sm transition-colors',
+            'inline-flex min-h-11 max-w-[11rem] items-center gap-2 rounded-md px-2.5 text-sm transition-colors',
             selected
               ? 'bg-surface font-medium text-ink ring-1 ring-inset ring-line'
               : 'text-muted hover:bg-surface hover:text-ink',
@@ -72,7 +72,7 @@ export function HairdresserFilter({
               <button
                 type="button"
                 aria-label="Zatvori"
-                className="-mt-1 -mr-1 inline-flex h-9 w-9 items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-ink"
+                className="-mt-1 -mr-1 inline-flex h-11 w-11 items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-ink"
               >
                 <X aria-hidden="true" className="h-4 w-4" />
               </button>

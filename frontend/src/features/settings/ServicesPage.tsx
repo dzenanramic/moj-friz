@@ -39,8 +39,8 @@ export function ServicesPage() {
       <div className="max-w-[62ch]">
         <h2 className="text-xl font-semibold text-ink">Usluge</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">
-          Trajanje i cijena su isti za sve frizere. U demou su usluge prikaz; dodavanje i uređivanje
-          dolazi uz pilot.
+          Trajanje i cijena su isti za sve frizere. U demou su usluge samo prikaz; dodavanje i
+          uređivanje dolazi uz pilot.
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export function ServicesPage() {
               return (
                 <li
                   key={service.id}
-                  className="grid gap-x-6 gap-y-2 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] sm:items-baseline"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-3 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_120px] sm:gap-x-6 sm:px-4"
                 >
                   <div>
                     <p className="text-sm font-semibold text-ink">{service.name}</p>
@@ -67,7 +67,7 @@ export function ServicesPage() {
                       {formatDuration(service.durationMinutes)} · {formatKM(service.priceMinor)}
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                  <div className="col-span-2 row-start-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 sm:col-span-1 sm:col-start-2 sm:row-start-1">
                     {assigned.length > 0 ? (
                       assigned.map((member) => (
                         <StaffName
@@ -79,8 +79,13 @@ export function ServicesPage() {
                     ) : (
                       <span className="text-xs text-muted">Nijedan frizer ne radi ovu uslugu</span>
                     )}
-                    <ActiveState active={service.isActive} labelOn="Aktivna" labelOff="Neaktivna" />
                   </div>
+                  <ActiveState
+                    active={service.isActive}
+                    labelOn="Aktivna"
+                    labelOff="Neaktivna"
+                    className="col-start-2 row-start-1 justify-self-end font-semibold text-ink sm:col-start-3 sm:justify-self-start"
+                  />
                 </li>
               )
             })}

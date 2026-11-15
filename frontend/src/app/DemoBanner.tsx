@@ -31,8 +31,10 @@ function LevelButton({
       disabled={pending}
       onClick={onClick}
       className={cn(
-        'min-h-8 rounded-sm px-2.5 text-xs font-medium transition-colors',
-        active ? 'bg-paper text-primary' : 'text-on-primary hover:bg-primary-hover',
+        'min-h-11 rounded-sm px-3 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary dark:focus-visible:outline-primary',
+        active
+          ? 'bg-paper text-primary dark:bg-primary dark:text-on-primary'
+          : 'text-on-primary hover:bg-primary-hover dark:text-ink dark:hover:bg-paper',
       )}
     >
       {label}
@@ -60,15 +62,17 @@ export function DemoBanner() {
 
   return (
     <>
-      <div className="bg-primary text-on-primary">
-        <div className="mx-auto flex min-h-10 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
+      <div className="bg-primary text-on-primary dark:border-b dark:border-line dark:bg-surface dark:text-ink">
+        <div className="mx-auto flex min-h-11 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
           <p className="min-w-0 truncate text-xs font-semibold">
             <span className="sm:hidden">Demo</span>
             <span className="hidden sm:inline">Demo · podaci nisu stvarni</span>
           </p>
 
-          <div className="ml-auto flex items-center gap-1">
-            <span className="mr-1.5 hidden text-xs text-on-primary md:inline">Prikaz paketa</span>
+          <div className="ml-auto flex items-center gap-2 py-1">
+            <span className="mr-1.5 hidden text-xs text-on-primary md:inline dark:text-ink">
+              Prikaz paketa
+            </span>
             <LevelButton
               level="level_1"
               active={level === 'level_1'}
@@ -84,13 +88,13 @@ export function DemoBanner() {
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
-              className="ml-2 inline-flex min-h-8 items-center gap-1.5 rounded-sm px-2 text-xs font-medium text-on-primary transition-colors hover:bg-primary-hover"
+              className="ml-2 inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-sm px-3 text-xs font-medium text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary dark:text-ink dark:hover:bg-paper dark:focus-visible:outline-primary"
               aria-label="Resetuj demo"
             >
               <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Resetuj demo</span>
             </button>
-            <ThemeToggle />
+            <ThemeToggle className="h-11 w-11 dark:text-ink dark:hover:bg-paper dark:focus-visible:outline-primary" />
           </div>
         </div>
       </div>

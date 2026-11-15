@@ -36,6 +36,9 @@ interface AppointmentDefaults {
   dateKey?: string
   time?: string
   hairdresserId?: string
+  clientId?: string
+  clientName?: string
+  clientPhone?: string
 }
 
 interface AppointmentDialogProps {
@@ -64,7 +67,23 @@ export function AppointmentDialog({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [confirmCancel, setConfirmCancel] = useState(false)
   // Editing keeps the appointment's client unless the owner deliberately types a new name.
-  const [keepCurrentClient, setKeepCurrentClient] = useState(Boolean(appointment))
+  const [keepCurrentClient, setKeepCurrentClient] = useState(
+    Boolean(appointment) || Boolean(defaults?.clientId),
+  )
+
+  // A create sheet opened from a client page arrives with that client already filled in.
+  const defaultClient =
+    mode === 'edit' && appointment
+      ? {
+          clientId: appointment.clientId,
+          clientName: appointment.clientName,
+          clientPhone: appointment.clientPhone,
+        }
+      : {
+          clientId: defaults?.clientId,
+          clientName: defaults?.clientName ?? '',
+          clientPhone: defaults?.clientPhone ?? '',
+        }
 
   const firstHairdresserId =
     defaults?.hairdresserId ??
@@ -77,9 +96,9 @@ export function AppointmentDialog({
     defaultValues: {
       hairdresserId: firstHairdresserId,
       serviceId: appointment?.serviceId ?? '',
-      clientId: appointment?.clientId,
-      newClientName: appointment?.clientName ?? '',
-      newClientPhone: appointment?.clientPhone ?? '',
+      clientId: defaultClient.clientId,
+      newClientName: defaultClient.clientName,
+      newClientPhone: defaultClient.clientPhone,
       dateKey: appointment
         ? dateKeyFromInstant(appointment.startsAt)
         : (defaults?.dateKey ?? todayDateKey()),
@@ -166,8 +185,8 @@ export function AppointmentDialog({
   const onSubmit = form.handleSubmit(async (values) => {
     setSubmitError(null)
     const clientTyped =
-      values.newClientName !== (appointment?.clientName ?? '') ||
-      values.newClientPhone !== (appointment?.clientPhone ?? '')
+      values.newClientName !== defaultClient.clientName ||
+      values.newClientPhone !== defaultClient.clientPhone
     const clientId = keepCurrentClient && !clientTyped ? values.clientId : undefined
     const draft: AppointmentDraft = {
       hairdresserId: values.hairdresserId,
@@ -272,6 +291,7 @@ export function AppointmentDialog({
               {...register('newClientName', {
                 onChange: () => {
                   setKeepCurrentClient(false)
+                  if (mode === 'create') setValue('clientId', undefined)
                   clearErrors('clientId')
                 },
               })}
@@ -287,6 +307,7 @@ export function AppointmentDialog({
               {...register('newClientPhone', {
                 onChange: () => {
                   setKeepCurrentClient(false)
+                  if (mode === 'create') setValue('clientId', undefined)
                   clearErrors('clientId')
                 },
               })}
@@ -348,7 +369,7 @@ export function AppointmentDialog({
               ) : availability.isPending ? (
                 <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">
                   {Array.from({ length: 8 }).map((_, index) => (
-                    <Skeleton key={index} className="h-9 w-full" />
+                    <Skeleton key={index} className="h-11 w-full" />
                   ))}
                 </div>
               ) : availability.isError ? (
@@ -371,7 +392,7 @@ export function AppointmentDialog({
                           setValue('time', slotTime, { shouldValidate: true })
                         }}
                         className={cn(
-                          'tabular min-h-9 rounded-sm px-1 text-sm font-medium transition-colors',
+                          'tabular min-h-11 rounded-sm px-1 text-sm font-medium transition-colors',
                           active
                             ? 'bg-primary text-on-primary'
                             : 'bg-surface text-ink hover:bg-primary-tint',

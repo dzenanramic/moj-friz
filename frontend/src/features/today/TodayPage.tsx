@@ -3,11 +3,19 @@ import { useMemo, useState } from 'react'
 
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { ErrorState, EmptyState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
-import { useAppointments } from '@/data/queries'
+import { useAppointments, useWorkingHours } from '@/data/queries'
 import type { AppointmentView } from '@/data/types'
 import { formatTerminCount } from '@/lib/format'
 import { useNow, usePageTitle } from '@/lib/hooks'
-import { dayRange, formatTime, todayDateKey } from '@/lib/time'
+import {
+  addDaysToDateKey,
+  dayRange,
+  formatDateCompact,
+  formatDateKey,
+  formatTime,
+  todayDateKey,
+  weekdayIndexFromDateKey,
+} from '@/lib/time'
 
 import { AppointmentDialog } from '../appointments/AppointmentDialog'
 import { AppointmentListItem } from '../appointments/AppointmentListItem'
@@ -24,7 +32,27 @@ export function TodayPage() {
   const today = todayDateKey(now)
   const range = useMemo(() => dayRange(today), [today])
   const appointments = useAppointments(range)
+  const workingHours = useWorkingHours()
   const [dialog, setDialog] = useState<DialogState | null>(null)
+
+  // A day is closed only once the working hours are known: an interval-free day means the
+  // owner does not work, while a pending read must never be reported as closed.
+  const todayWeekday = weekdayIndexFromDateKey(today)
+  const isClosed =
+    workingHours.isSuccess &&
+    !(workingHours.data ?? []).some((interval) => interval.weekday === todayWeekday)
+
+  const nextOpenDateKey = useMemo(() => {
+    const intervals = workingHours.data
+    if (!intervals) return addDaysToDateKey(today, 1)
+    for (let offset = 1; offset <= 7; offset += 1) {
+      const dateKey = addDaysToDateKey(today, offset)
+      if (intervals.some((interval) => interval.weekday === weekdayIndexFromDateKey(dateKey))) {
+        return dateKey
+      }
+    }
+    return addDaysToDateKey(today, 1)
+  }, [today, workingHours.data])
 
   const active = (appointments.data ?? []).filter((item) => item.status !== 'cancelled')
   const upcoming = active.filter(
@@ -46,21 +74,22 @@ export function TodayPage() {
             <ButtonLink
               to={`/kalendar?datum=${today}`}
               variant="secondary"
-              size="sm"
+              size="md"
               aria-label="Otvori kalendar"
             >
               <CalendarDays aria-hidden="true" className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">Kalendar</span>
             </ButtonLink>
-            <Button
-              size="sm"
-              aria-label="Novi termin"
-              leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
-              onClick={() => setDialog({ mode: 'create', defaults: { dateKey: today } })}
-            >
-              <span className="hidden sm:inline">Novi termin</span>
-              <span className="sm:hidden">Novi</span>
-            </Button>
+            {isClosed ? null : (
+              <Button
+                size="md"
+                aria-label="Novi termin"
+                leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
+                onClick={() => setDialog({ mode: 'create', defaults: { dateKey: today } })}
+              >
+                Novi termin
+              </Button>
+            )}
           </>
         }
       />
@@ -113,25 +142,20 @@ export function TodayPage() {
       ) : appointments.isError ? null : active.length === 0 ? (
         <EmptyState
           className="mt-7"
+          as="h2"
           icon={Sun}
-          title="Danas je mirno"
+          title={isClosed ? 'Salon je danas zatvoren' : 'Danas je mirno'}
           description={
-            isSunday(today)
-              ? 'Salon je nedjeljom zatvoren. Otvorite kalendar za naredne dane.'
+            isClosed
+              ? `Danas ne radite. Prvi sljedeći radni dan je ${formatDateKey(nextOpenDateKey)}.`
               : 'Nema termina za danas. Dodajte prvi termin ili provjerite kalendar.'
           }
           action={
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={() => setDialog({ mode: 'create', defaults: { dateKey: today } })}
-              >
-                Novi termin
-              </Button>
-              <ButtonLink to={`/kalendar?datum=${today}`} variant="secondary">
-                Otvori kalendar
+            isClosed ? (
+              <ButtonLink to={`/kalendar?datum=${nextOpenDateKey}`}>
+                Pogledaj {formatDateCompact(nextOpenDateKey)}
               </ButtonLink>
-            </div>
+            ) : undefined
           }
         />
       ) : (
@@ -199,9 +223,4 @@ export function TodayPage() {
       ) : null}
     </div>
   )
-}
-
-function isSunday(dateKey: string): boolean {
-  const date = new Date(`${dateKey}T12:00:00Z`)
-  return date.getUTCDay() === 0
 }

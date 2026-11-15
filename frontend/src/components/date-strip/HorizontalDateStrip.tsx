@@ -53,7 +53,12 @@ export function HorizontalDateStrip({
     const scroller = scrollerRef.current
     const cell = selectedRef.current
     if (!scroller || !cell || typeof scroller.scrollTo !== 'function') return
-    const target = cell.offsetLeft - scroller.clientWidth / 2 + cell.clientWidth / 2
+    const cellRect = cell.getBoundingClientRect()
+    const scrollerRect = scroller.getBoundingClientRect()
+    const target =
+      scroller.scrollLeft +
+      (cellRect.left - scrollerRect.left) -
+      (scroller.clientWidth - cell.clientWidth) / 2
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     scroller.scrollTo({ left: Math.max(0, target), behavior: reduce ? 'auto' : 'smooth' })
   }, [value])
@@ -81,7 +86,7 @@ export function HorizontalDateStrip({
           type="button"
           onClick={() => shift(-240)}
           aria-label="Prethodni datumi"
-          className="hidden h-10 w-8 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink sm:inline-flex"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink"
         >
           <ChevronLeft aria-hidden="true" className="h-4 w-4" />
         </button>
@@ -163,7 +168,7 @@ export function HorizontalDateStrip({
           type="button"
           onClick={() => shift(240)}
           aria-label="Sljedeći datumi"
-          className="hidden h-10 w-8 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink sm:inline-flex"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:bg-surface hover:text-ink"
         >
           <ChevronRight aria-hidden="true" className="h-4 w-4" />
         </button>

@@ -16,6 +16,7 @@ import type {
   PublicSalonCatalog,
   PublicServiceView,
 } from '@/data/types'
+import { cn } from '@/lib/cn'
 import { formatDuration, formatKM } from '@/lib/format'
 import { usePageTitle } from '@/lib/hooks'
 import {
@@ -168,10 +169,13 @@ export function PublicBookingPage() {
   const editSelection = () => goToStep(0)
 
   const chooseService = (service: PublicServiceView) => {
-    setServiceId(service.id)
-    setHairdresserId('')
-    setStartsAt(null)
-    setPickedDateKey(null)
+    // Confirming the same service moves on without touching the choice made after it.
+    if (service.id !== serviceId) {
+      setServiceId(service.id)
+      setHairdresserId('')
+      setStartsAt(null)
+      setPickedDateKey(null)
+    }
     setBookingError(null)
     setStep(1)
   }
@@ -179,9 +183,11 @@ export function PublicBookingPage() {
   const chooseHairdresser = (member: PublicHairdresserView) => {
     const sameHairdresser = member.id === hairdresserId
     setHairdresserId(member.id)
-    setStartsAt(null)
-    // A guest coming back to confirm the same hairdresser keeps the day they chose.
-    if (!sameHairdresser) setPickedDateKey(null)
+    // A guest coming back to confirm the same hairdresser keeps the day and time they chose.
+    if (!sameHairdresser) {
+      setStartsAt(null)
+      setPickedDateKey(null)
+    }
     setBookingError(null)
     setStep(2)
   }
@@ -257,10 +263,15 @@ export function PublicBookingPage() {
                 <MapPin aria-hidden="true" className="h-4 w-4 text-muted" />
                 {salon.address}, {salon.city}
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Phone aria-hidden="true" className="h-4 w-4 text-muted" />
-                {salon.phone}
-              </span>
+              {salon.phone ? (
+                <a
+                  href={`tel:${salon.phone.replace(/\s+/g, '')}`}
+                  className="inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 hover:text-primary"
+                >
+                  <Phone aria-hidden="true" className="h-4 w-4 text-muted" />
+                  {salon.phone}
+                </a>
+              ) : null}
             </div>
           </div>
           <p className="text-sm text-muted">Rezervacija bez korisničkog naloga</p>
@@ -282,33 +293,47 @@ export function PublicBookingPage() {
                 description="Cijena i trajanje su isti kod svih frizera."
               />
               <ul className="mt-2">
-                {services.map((service) => (
-                  <li key={service.id} className="border-b border-line last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => chooseService(service)}
-                      aria-pressed={service.id === serviceId}
-                      className="group flex min-h-[64px] w-full items-center justify-between gap-4 rounded-sm px-3 py-3 text-left transition-colors hover:bg-paper active:bg-paper"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-ink">{service.name}</span>
-                        <span className="mt-0.5 block text-xs text-muted">
-                          {formatDuration(service.durationMinutes)} ·{' '}
-                          {countHairdressers(service, hairdressers)}
+                {services.map((service) => {
+                  const selected = service.id === serviceId
+                  return (
+                    <li key={service.id} className="border-b border-line last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => chooseService(service)}
+                        aria-pressed={selected}
+                        className={cn(
+                          'group flex min-h-[64px] w-full items-center justify-between gap-4 rounded-sm px-3 py-3 text-left transition-colors',
+                          selected
+                            ? 'bg-primary-tint ring-1 ring-inset ring-primary'
+                            : 'hover:bg-paper active:bg-paper',
+                        )}
+                      >
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-ink">
+                            {service.name}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted">
+                            {formatDuration(service.durationMinutes)} ·{' '}
+                            {countHairdressers(service, hairdressers)}
+                          </span>
                         </span>
-                      </span>
-                      <span className="flex items-center gap-3">
-                        <span className="tabular text-sm font-semibold text-ink">
-                          {formatKM(service.priceMinor)}
+                        <span className="flex items-center gap-3">
+                          <span className="tabular text-sm font-semibold text-ink">
+                            {formatKM(service.priceMinor)}
+                          </span>
+                          {selected ? (
+                            <Check aria-hidden="true" className="h-4 w-4 text-primary" />
+                          ) : (
+                            <ChevronRight
+                              aria-hidden="true"
+                              className="h-4 w-4 text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
+                            />
+                          )}
                         </span>
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="h-4 w-4 text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
-                        />
-                      </span>
-                    </button>
-                  </li>
-                ))}
+                      </button>
+                    </li>
+                  )
+                })}
               </ul>
               {services.length === 0 ? (
                 <p className="text-sm text-muted">Salon trenutno nema aktivnih usluga.</p>
@@ -325,30 +350,42 @@ export function PublicBookingPage() {
                 description={`Za uslugu ${selectedService?.name ?? ''}.`}
               />
               <ul className="mt-2">
-                {eligibleHairdressers.map((member) => (
-                  <li key={member.id} className="border-b border-line last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => chooseHairdresser(member)}
-                      aria-pressed={member.id === hairdresserId}
-                      className="group flex min-h-[64px] w-full items-center gap-3 rounded-sm px-3 py-3 text-left transition-colors hover:bg-paper active:bg-paper"
-                    >
-                      <Avatar name={member.displayName} size="lg" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-ink">
-                          {member.displayName}
+                {eligibleHairdressers.map((member) => {
+                  const selected = member.id === hairdresserId
+                  return (
+                    <li key={member.id} className="border-b border-line last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => chooseHairdresser(member)}
+                        aria-pressed={selected}
+                        className={cn(
+                          'group flex min-h-[64px] w-full items-center gap-3 rounded-sm px-3 py-3 text-left transition-colors',
+                          selected
+                            ? 'bg-primary-tint ring-1 ring-inset ring-primary'
+                            : 'hover:bg-paper active:bg-paper',
+                        )}
+                      >
+                        <Avatar name={member.displayName} size="lg" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-ink">
+                            {member.displayName}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted">
+                            Slobodni termini po rasporedu
+                          </span>
                         </span>
-                        <span className="mt-0.5 block text-xs text-muted">
-                          Slobodni termini po rasporedu
-                        </span>
-                      </span>
-                      <ChevronRight
-                        aria-hidden="true"
-                        className="h-4 w-4 text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
-                      />
-                    </button>
-                  </li>
-                ))}
+                        {selected ? (
+                          <Check aria-hidden="true" className="h-4 w-4 text-primary" />
+                        ) : (
+                          <ChevronRight
+                            aria-hidden="true"
+                            className="h-4 w-4 text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
+                          />
+                        )}
+                      </button>
+                    </li>
+                  )
+                })}
               </ul>
               {eligibleHairdressers.length === 0 ? (
                 <p className="text-sm text-muted">
@@ -374,7 +411,11 @@ export function PublicBookingPage() {
                   headingRefs.current[2] = node
                 }}
                 title="Izaberite termin"
-                description={`${selectedService?.name ?? ''} kod ${selectedHairdresser?.displayName ?? ''}.`}
+                description={
+                  selectedService && selectedHairdresser
+                    ? `Usluga: ${selectedService.name} · Frizer: ${selectedHairdresser.displayName}`
+                    : undefined
+                }
               />
               <div className="mt-5">
                 <p className="mb-2 text-sm font-medium text-ink">Datum</p>
@@ -640,7 +681,11 @@ function BookingSummary({
       <dl className="mt-4 space-y-3 text-sm">
         <SummaryRow label="Usluga" value={service?.name ?? 'Nije izabrana'} />
         <SummaryRow label="Frizer" value={hairdresser?.displayName ?? 'Nije izabran'} />
-        <SummaryRow label="Datum" value={slot ? formatDateLong(dateKey) : 'Nije izabran'} />
+        {/* The day is known once the service and the hairdresser are: only the time waits. */}
+        <SummaryRow
+          label="Datum"
+          value={service && hairdresser ? formatDateLong(dateKey) : 'Nije izabran'}
+        />
         <SummaryRow
           label="Vrijeme"
           value={slot ? `${formatTime(slot.startsAt)}–${formatTime(slot.endsAt)}` : '—'}

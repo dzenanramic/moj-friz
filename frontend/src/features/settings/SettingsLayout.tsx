@@ -45,7 +45,7 @@ export function SettingsLayout() {
     <div>
       <PageHeader
         title="Postavke"
-        description="Paket, usluge, frizeri i radno vrijeme. Ove stranice su u demou prikaz; uređivanje dolazi uz pilot."
+        description="Paket, usluge, frizeri i radno vrijeme. Ove stranice su u demou samo prikaz; uređivanje dolazi uz pilot."
       />
 
       <AppearanceSetting />

@@ -42,7 +42,7 @@ export function ClientsPage() {
             setPage(1)
           }}
           aria-label="Obriši pretragu"
-          className="absolute top-1/2 right-1.5 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-ink"
+          className="absolute top-1/2 right-1.5 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-ink"
         >
           <X aria-hidden="true" className="h-4 w-4" />
         </button>

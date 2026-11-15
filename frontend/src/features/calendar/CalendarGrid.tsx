@@ -212,7 +212,12 @@ export function CalendarGrid({
 
                 {staffAppointments.map((appointment) => {
                   const position = positionFor(appointment.startsAt, appointment.endsAt)
-                  const compact = appointment.durationMinutesSnapshot < 45
+                  // A card shows what fits in the height it got from its slot, not what its
+                  // duration promises: a clipped line is worse than a shorter card.
+                  const height = position.height
+                  const tight = height < 40
+                  const showName = height >= 32
+                  const showService = height >= 54
                   return (
                     <button
                       key={appointment.id}
@@ -226,8 +231,9 @@ export function CalendarGrid({
                        * tint is the card, so the card's own pair carries the second line.
                        */
                       className={cn(
-                        'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-[3px] px-2 py-1 text-left transition-colors',
+                        'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-[3px] px-2 text-left transition-colors',
                         'hover:brightness-[0.96]',
+                        tight ? 'py-0.5' : 'py-1',
                       )}
                       style={{
                         ...position,
@@ -237,10 +243,17 @@ export function CalendarGrid({
                       <p className="tabular text-[0.68rem] leading-tight font-medium staff-text">
                         {formatTimeRange(appointment.startsAt, appointment.endsAt)}
                       </p>
-                      <p className="truncate text-xs leading-snug font-semibold text-ink">
-                        {appointment.clientName}
-                      </p>
-                      {!compact ? (
+                      {showName ? (
+                        <p
+                          className={cn(
+                            'truncate text-xs font-semibold text-ink',
+                            tight ? 'leading-tight' : 'leading-snug',
+                          )}
+                        >
+                          {appointment.clientName}
+                        </p>
+                      ) : null}
+                      {showService ? (
                         <p className="truncate text-[0.68rem] leading-snug staff-text">
                           {appointment.serviceName} ·{' '}
                           {formatDuration(appointment.durationMinutesSnapshot)}

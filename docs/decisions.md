@@ -81,8 +81,14 @@ never colours. Dark values live under `.dark`, not in a media query, so a stored
   views and lets the day view fit the mobile-first design. No paid calendar dependency is present.
 - Local fonts: Fraunces Variable and Instrument Sans Variable, bundled through Fontsource, OFL-1.1,
   Latin Extended included. No external font CDN.
-- Form date controls use explicit day-first selects so the visible format is **DD.MM.YYYY** regardless
-  of browser locale.
+- A form's day is a grid of day buttons (`DateSelectField`), not a native date `<select>`: two rows
+  of five days to start, "Više datuma" adding two rows at a time, up to a quarter ahead. The same
+  five columns on every width, so the picker keeps one shape on phone and desktop. The chosen day is
+  spelled out above it in words (**DD.MM.YYYY** regardless of browser locale). The sheet is a modal
+  with a focus trap, and the operating system's select menu opened from it could close on its own and
+  move the value to a neighbour day — a day must never become wrong by being chosen. Its layout is in
+  plain CSS classes (`.picker-days`, `.picker-day`, `.picker-more`) so no utility generation stands
+  between the component and its style.
 - A guest confirmation never says or implies that an SMS/email was sent.
 - No third-party analytics and no fabricated testimonials, charts or usage metrics.
 

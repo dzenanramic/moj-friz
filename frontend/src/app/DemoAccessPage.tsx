@@ -1,8 +1,8 @@
 import { ArrowUpRight, CalendarDays, Clock3, ShieldCheck } from 'lucide-react'
 import { useMemo } from 'react'
-import { Link } from 'react-router'
 
 import { StatusPill } from '@/components/ui/Badges'
+import { ButtonLink } from '@/components/ui/Button'
 import { Avatar, Skeleton, Surface } from '@/components/ui/Layout'
 import { useAppointments, useSalon, useServices } from '@/data/queries'
 import { formatTerminCount } from '@/lib/format'
@@ -24,10 +24,12 @@ function DayPreview() {
   const nextConfirmed = active.find((appointment) => appointment.status === 'confirmed')
 
   return (
-    <Surface className="overflow-hidden">
+    <Surface as="section" aria-labelledby="preview-heading" className="overflow-hidden">
       <div className="flex items-baseline justify-between gap-4 px-6 pt-6 pb-4">
         <div>
-          <p className="text-sm text-muted">{formatWeekday(today)}</p>
+          <h2 id="preview-heading" className="text-sm font-normal text-muted">
+            {formatWeekday(today)}
+          </h2>
           <p className="tabular mt-1 text-5xl leading-none font-semibold text-ink">
             {formatDateKey(today).slice(0, 5)}
           </p>
@@ -103,8 +105,8 @@ export function DemoAccessPage() {
   return (
     <div className="min-h-dvh bg-paper">
       <DemoBanner />
-      <main className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-20 lg:py-24">
-        <div className="hero-enter max-w-xl">
+      <main className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20 lg:py-24">
+        <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-1">
           <p className="flex items-center gap-2.5 text-sm font-medium text-ink">
             <span
               aria-hidden="true"
@@ -122,20 +124,18 @@ export function DemoAccessPage() {
           </p>
 
           <div className="hero-enter-3 mt-8 flex flex-col gap-2.5 sm:flex-row">
-            <Link
-              to="/danas"
-              className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-6 text-base font-medium text-on-accent transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:brightness-90 active:translate-y-0 active:scale-[0.985]"
-            >
+            <ButtonLink to="/danas" variant="accent" size="lg">
               Uđi u demo
-            </Link>
+            </ButtonLink>
             {isLevelTwo ? (
-              <a
-                href={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-surface px-6 text-base font-medium text-ink transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:bg-primary-tint active:translate-y-0 active:scale-[0.985]"
+              <ButtonLink
+                to={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
+                variant="secondary"
+                size="lg"
               >
                 Otvori javnu stranicu
                 <ArrowUpRight aria-hidden="true" className="h-4 w-4 text-muted" />
-              </a>
+              </ButtonLink>
             ) : (
               <span className="inline-flex min-h-12 items-center justify-center px-1 text-sm text-muted">
                 Online rezervacije su u Paketu 2
@@ -147,8 +147,14 @@ export function DemoAccessPage() {
             <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             Bez prijave. Podaci su izmišljeni, ostaju u ovom pregledniku i nisu stvarna rezervacija.
           </p>
+        </div>
 
-          <dl className="mt-12 grid gap-8 sm:grid-cols-2">
+        <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
+          <DayPreview />
+        </div>
+
+        <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-2">
+          <dl className="grid gap-8 sm:grid-cols-2">
             <div>
               <dt className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <Clock3 aria-hidden="true" className="h-4 w-4 text-primary" />
@@ -184,8 +190,6 @@ export function DemoAccessPage() {
             ))}
           </ol>
         </div>
-
-        <DayPreview />
       </main>
       <footer className="mx-auto w-full max-w-6xl px-4 py-6 text-xs text-muted sm:px-8">
         Demo okruženje. Ne predstavlja stvarnu uslugu ni obračun.

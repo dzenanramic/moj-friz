@@ -42,10 +42,7 @@ export function PageHeader({
       <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
         <div className="flex min-w-0 items-center justify-between gap-4 sm:contents">
           <div className="min-w-0">
-            {/* With a control beside it the title steps down on a phone, never wraps. */}
-            <h1 className={cn('text-ink', aside && 'text-[1.6rem] whitespace-nowrap sm:text-2xl')}>
-              {title}
-            </h1>
+            <h1 className="text-ink">{title}</h1>
             {description ? (
               <div className="mt-2.5 max-w-[60ch] text-sm leading-relaxed text-muted sm:text-[0.95rem]">
                 {description}
@@ -103,12 +100,21 @@ export function Surface({
   children,
   className,
   as: Tag = 'div',
+  'aria-labelledby': ariaLabelledBy,
 }: {
   children: ReactNode
   className?: string
   as?: 'section' | 'div' | 'article'
+  'aria-labelledby'?: string
 }) {
-  return <Tag className={cn('rounded-xl bg-surface shadow-card', className)}>{children}</Tag>
+  return (
+    <Tag
+      aria-labelledby={ariaLabelledBy}
+      className={cn('rounded-xl bg-surface shadow-card', className)}
+    >
+      {children}
+    </Tag>
+  )
 }
 
 export function SectionHeading({
@@ -142,12 +148,15 @@ export function EmptyState({
   title,
   description,
   action,
+  as: Heading = 'h3',
   className,
 }: {
   icon?: LucideIcon
   title: string
   description?: string
   action?: ReactNode
+  /** The heading level that fits the page's outline. Defaults to 'h3'. */
+  as?: 'h2' | 'h3'
   className?: string
 }) {
   return (
@@ -158,7 +167,7 @@ export function EmptyState({
       )}
     >
       {Icon ? <Icon aria-hidden="true" className="mb-4 h-6 w-6 text-muted" /> : null}
-      <h3 className="text-ink">{title}</h3>
+      <Heading className="text-ink">{title}</Heading>
       {description ? (
         <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted">{description}</p>
       ) : null}
@@ -252,7 +261,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 font-medium text-danger underline underline-offset-4 hover:text-brick"
+          className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-sm px-3 font-medium text-danger underline underline-offset-4 hover:text-brick"
         >
           Pokušaj ponovo
         </button>

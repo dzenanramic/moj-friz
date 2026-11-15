@@ -72,22 +72,13 @@ export function WorkingHoursPage() {
   return (
     <div className="space-y-12">
       <section aria-labelledby="weekly-hours">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-[62ch]">
-            <h2 id="weekly-hours" className="text-xl font-semibold text-ink">
-              Sedmično radno vrijeme
-            </h2>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              Raspored se ponavlja svake sedmice. Dan bez vremena znači da frizer ne radi.
-            </p>
-          </div>
-          <Button
-            variant="secondary"
-            leftIcon={<CalendarPlus className="h-4 w-4" />}
-            onClick={() => setBreakOpen(true)}
-          >
-            Dodaj pauzu ili odsustvo
-          </Button>
+        <div className="max-w-[62ch]">
+          <h2 id="weekly-hours" className="text-xl font-semibold text-ink">
+            Sedmično radno vrijeme
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">
+            Raspored se ponavlja svake sedmice. Dan bez vremena znači da frizer ne radi.
+          </p>
         </div>
 
         <div className="mt-6">
@@ -128,19 +119,18 @@ export function WorkingHoursPage() {
               Naredne dvije sedmice. Pauza ili odsustvo blokiraju vrijeme i u online dostupnosti.
             </p>
           </div>
+          <Button
+            variant="secondary"
+            leftIcon={<CalendarPlus className="h-4 w-4" />}
+            onClick={() => setBreakOpen(true)}
+          >
+            Dodaj pauzu ili odsustvo
+          </Button>
         </div>
 
         {groupedBlocks.length === 0 ? (
           <Panel className="mt-5">
             <p className="text-sm text-muted">Nema unesenih pauza ni odsustava u ovom periodu.</p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              leftIcon={<CalendarPlus className="h-4 w-4" />}
-              onClick={() => setBreakOpen(true)}
-            >
-              Dodaj pauzu
-            </Button>
           </Panel>
         ) : (
           <div className="mt-5 space-y-6">
@@ -158,20 +148,24 @@ export function WorkingHoursPage() {
                       return (
                         <li
                           key={block.id}
-                          className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1 py-2"
+                          className="grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-3 py-0.5 sm:px-4"
                         >
-                          <span className="tabular w-28 shrink-0 text-sm font-medium text-ink">
+                          <span className="tabular w-24 shrink-0 text-sm font-medium text-ink sm:w-28">
                             {formatTimeRange(block.startsAt, block.endsAt)}
                           </span>
-                          <span className="text-sm text-ink">{block.reason}</span>
-                          <StaffName
-                            name={member?.displayName ?? 'Frizer'}
-                            colorKey={member?.colorKey ?? '1'}
-                          />
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <span className="text-sm text-ink">{block.reason}</span>
+                            <span className="min-w-0 truncate">
+                              <StaffName
+                                name={member?.displayName ?? 'Frizer'}
+                                colorKey={member?.colorKey ?? '1'}
+                              />
+                            </span>
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="-mr-2 ml-auto size-9 text-muted hover:text-danger"
+                            className="size-11 text-muted hover:text-danger"
                             aria-label={`Ukloni ${block.reason.toLowerCase()} ${member?.displayName ?? ''}`}
                             onClick={() => removeBlock(block)}
                             disabled={deleteBlock.isPending}

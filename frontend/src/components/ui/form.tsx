@@ -177,11 +177,16 @@ export function CustomField({
   error,
   optional,
   className,
+  summary,
   children,
-}: Omit<BaseFieldProps, 'id'> & { htmlFor: string; children: ReactNode }) {
+}: Omit<BaseFieldProps, 'id'> & { htmlFor: string; children: ReactNode; summary?: ReactNode }) {
   return (
     <div className={cn('space-y-1.5', className)}>
-      <FieldLabel label={label} htmlFor={htmlFor} optional={optional} />
+      <div className="flex items-baseline justify-between gap-3">
+        <FieldLabel label={label} htmlFor={htmlFor} optional={optional} />
+        {/* A custom control often hides its value behind a glyph; this is that value in words. */}
+        {summary ? <p className="text-sm font-medium text-ink">{summary}</p> : null}
+      </div>
       {children}
       <FieldMessages id={htmlFor} hint={hint} error={error} />
     </div>

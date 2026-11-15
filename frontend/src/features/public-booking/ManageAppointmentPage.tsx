@@ -31,6 +31,8 @@ import {
 import { DateStrip } from './DateStrip'
 import { SlotPicker } from './SlotPicker'
 
+const DEMO_SALON_PHONE = '051 000 000'
+
 export function ManageAppointmentPage() {
   usePageTitle('Upravljanje terminom')
   const location = useLocation()
@@ -67,7 +69,7 @@ export function ManageAppointmentPage() {
   }
 
   if (appointment.isError || !appointment.data) {
-    return <ManagementLinkError expired />
+    return <ManagementLinkError expired phone={appointment.data?.salonPhone} />
   }
 
   const data = appointment.data
@@ -154,7 +156,7 @@ export function ManageAppointmentPage() {
             <dd className="mt-0.5 font-medium text-ink">
               <a
                 href={callHref}
-                className="inline-flex items-center gap-1.5 underline decoration-line underline-offset-4 hover:text-primary"
+                className="inline-flex min-h-11 items-center gap-1.5 underline decoration-line underline-offset-4 hover:text-primary"
               >
                 <Phone aria-hidden="true" className="h-3.5 w-3.5" />
                 {data.salonPhone}
@@ -242,7 +244,11 @@ export function ManageAppointmentPage() {
           <p className="bg-paper px-6 py-4 text-sm leading-relaxed text-muted sm:px-8">
             Izmjene su zatvorene {data.cancellationCutoffMinutes / 60} sata prije termina. Za hitne
             promjene pozovite salon na{' '}
-            <a href={callHref} className="font-medium text-primary underline underline-offset-4">
+            <a
+              href={callHref}
+              className="inline-flex min-h-11 items-center gap-1.5 font-medium text-primary underline underline-offset-4"
+            >
+              <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
               {data.salonPhone}
             </a>
             .
@@ -287,7 +293,7 @@ export function ManageAppointmentPage() {
   )
 }
 
-function ManagementLinkError({ expired = false }: { expired?: boolean }) {
+function ManagementLinkError({ expired = false, phone }: { expired?: boolean; phone?: string }) {
   return (
     <div className="mx-auto max-w-xl py-8">
       <h1 className="text-ink">
@@ -297,11 +303,28 @@ function ManagementLinkError({ expired = false }: { expired?: boolean }) {
         Ako ste rezervisali termin, koristite link koji ste sačuvali nakon potvrde. Za novi link ili
         izmjenu kontaktirajte salon telefonom.
       </p>
-      <div className="mt-6">
+      <div className="mt-4">
+        <SalonCallLink phone={phone} />
+      </div>
+      <div className="mt-4">
         <a href="/" className={buttonClassName('primary')}>
           Demo početna
         </a>
       </div>
     </div>
+  )
+}
+
+function SalonCallLink({ phone }: { phone?: string }) {
+  const number = phone?.trim() || DEMO_SALON_PHONE
+
+  return (
+    <a
+      href={`tel:${number.replace(/\s+/g, '')}`}
+      className="inline-flex min-h-11 items-center gap-1.5 font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+    >
+      <Phone aria-hidden="true" className="h-4 w-4 shrink-0" />
+      Pozovi salon <span className="tabular whitespace-nowrap">{number}</span>
+    </a>
   )
 }

@@ -35,7 +35,7 @@ export function ThemeToggle({
         'inline-flex shrink-0 items-center justify-center rounded-sm transition-colors',
         variant === 'bar'
           ? 'h-8 w-8 text-on-primary hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary'
-          : 'h-10 w-10 bg-surface text-ink ring-1 ring-inset ring-line hover:bg-paper',
+          : 'h-11 w-11 bg-surface text-ink ring-1 ring-inset ring-line hover:bg-paper',
         className,
       )}
     >

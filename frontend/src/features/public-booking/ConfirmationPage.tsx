@@ -1,4 +1,4 @@
-import { Check, Clipboard, ExternalLink, X } from 'lucide-react'
+import { Check, Clipboard, ExternalLink, Phone, X } from 'lucide-react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 
@@ -17,6 +17,8 @@ import {
   formatTimeRange,
   formatWeekday,
 } from '@/lib/time'
+
+const DEMO_SALON_PHONE = '051 000 000'
 
 export function ConfirmationPage() {
   usePageTitle('Termin je potvrđen')
@@ -43,6 +45,9 @@ export function ConfirmationPage() {
           title="Potvrda nije dostupna"
           message="Link je nevažeći ili je istekao. Ako ste upravo rezervisali, pokušajte ponovo."
         />
+        <div className="mt-4">
+          <SalonCallLink phone={appointment.data?.salonPhone} />
+        </div>
         <div className="mt-4 flex gap-2">
           <a href="/" className={buttonClassName('primary')}>
             Demo početna
@@ -56,6 +61,7 @@ export function ConfirmationPage() {
   const managementUrl = `${window.location.origin}${managementPath(token)}`
   const dateKey = dateKeyFromInstant(data.startsAt)
   const isCancelled = data.status === 'cancelled'
+  const callHref = `tel:${data.salonPhone.replace(/\s+/g, '')}`
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -131,13 +137,14 @@ export function ConfirmationPage() {
               value={managementUrl}
               aria-label="Privatni link za upravljanje terminom"
               onFocus={(event) => event.currentTarget.select()}
-              className="min-h-11 w-full flex-1 rounded-md bg-surface px-3 py-2 text-xs text-ink ring-1 ring-inset ring-line"
+              className="min-h-11 w-full flex-1 rounded-md bg-surface px-3 py-2 text-base text-ink ring-1 ring-inset ring-line sm:text-sm"
             />
+            {/* The one copper action while the appointment stands: keeping the link. */}
             <Button
-              variant="secondary"
+              variant={isCancelled ? 'secondary' : 'accent'}
               leftIcon={
                 copied ? (
-                  <Check aria-hidden="true" className="h-4 w-4 text-primary" />
+                  <Check aria-hidden="true" className="h-4 w-4" />
                 ) : (
                   <Clipboard aria-hidden="true" className="h-4 w-4" />
                 )
@@ -153,24 +160,44 @@ export function ConfirmationPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            {/* The one copper action: what the guest came to do after booking. */}
-            <a href={managementUrl} className={buttonClassName('accent', 'md')}>
-              Upravljaj terminom
-              <ExternalLink aria-hidden="true" className="h-4 w-4" />
-            </a>
-            <a
-              href={`/rezervacija/${data.salonSlug}`}
-              className={buttonClassName('secondary', 'md')}
-            >
-              Nova rezervacija
-            </a>
+            {isCancelled ? (
+              <a
+                href={`/rezervacija/${data.salonSlug}`}
+                className={buttonClassName('accent', 'md')}
+              >
+                Nova rezervacija
+              </a>
+            ) : (
+              <>
+                <a href={managementUrl} className={buttonClassName('secondary', 'md')}>
+                  Upravljaj terminom
+                  <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                </a>
+                <a
+                  href={`/rezervacija/${data.salonSlug}`}
+                  className={buttonClassName('secondary', 'md')}
+                >
+                  Nova rezervacija
+                </a>
+              </>
+            )}
           </div>
         </div>
 
         <div className="px-6 py-4 text-xs leading-relaxed text-muted sm:px-8">
-          <p>
-            {data.salonName} · {data.salonAddress}, {data.salonCity} · {data.salonPhone}
-          </p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="whitespace-nowrap">{data.salonName} ·</span>
+            <span>
+              {data.salonAddress}, {data.salonCity}
+            </span>
+            <a
+              href={callHref}
+              className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap underline underline-offset-4 hover:text-primary"
+            >
+              <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+              {data.salonPhone}
+            </a>
+          </div>
           <p className="mt-1">
             Ovo je demo potvrda. Podaci su izmišljeni i ne predstavljaju stvarnu rezervaciju.
           </p>
@@ -194,11 +221,28 @@ function InvalidManagementLink() {
         Za upravljanje terminom potreban je privatni link koji ste dobili nakon rezervacije. Ako ste
         ga izgubili, kontaktirajte salon.
       </p>
-      <div className="mt-6">
+      <div className="mt-4">
+        <SalonCallLink />
+      </div>
+      <div className="mt-4">
         <a href="/" className={buttonClassName('primary')}>
           Demo početna
         </a>
       </div>
     </div>
+  )
+}
+
+function SalonCallLink({ phone }: { phone?: string }) {
+  const number = phone?.trim() || DEMO_SALON_PHONE
+
+  return (
+    <a
+      href={`tel:${number.replace(/\s+/g, '')}`}
+      className="inline-flex min-h-11 items-center gap-1.5 font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+    >
+      <Phone aria-hidden="true" className="h-4 w-4 shrink-0" />
+      Pozovi salon <span className="tabular whitespace-nowrap">{number}</span>
+    </a>
   )
 }

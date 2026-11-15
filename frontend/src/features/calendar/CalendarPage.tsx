@@ -161,12 +161,11 @@ export function CalendarPage() {
           label="Izaberite dan"
           items={dayStripItems}
           value={dateKey}
-          showArrows={false}
           onChange={(next) => updateParams(next, filter)}
         />
 
         {/* One toolbar under the days: whose schedule, whether breaks show, and the action. */}
-        <div className="mt-3 flex items-center gap-1.5 border-t border-line pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
           <HairdresserFilter
             hairdressers={activeHairdressers}
             value={filter}
@@ -178,7 +177,7 @@ export function CalendarPage() {
               aria-pressed={showBreaks}
               onClick={() => setShowBreaks((current) => !current)}
               className={cn(
-                'inline-flex min-h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors',
+                'inline-flex min-h-11 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors lg:hidden',
                 showBreaks
                   ? 'bg-primary-tint font-medium text-primary-hover'
                   : 'text-muted hover:bg-surface hover:text-ink',
@@ -195,7 +194,7 @@ export function CalendarPage() {
             </button>
           ) : null}
           <Button
-            size="sm"
+            size="md"
             className="ml-auto"
             aria-label="Novi termin"
             leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
@@ -222,6 +221,7 @@ export function CalendarPage() {
         />
       ) : isClosed ? (
         <EmptyState
+          as="h2"
           icon={Coffee}
           title="Nema radnog vremena"
           description={`${dayLabel} izabrani frizeri ne rade. Izaberite drugi dan u sedmici iznad.`}
@@ -284,11 +284,16 @@ export function CalendarPage() {
               </Panel>
             ) : (
               <EmptyState
+                as="h2"
                 icon={Coffee}
                 title="Nema termina za ovaj dan"
                 description="Slobodno vrijeme je dostupno za novi termin ili pauzu."
                 action={
-                  <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => openCreate()}>
+                  <Button
+                    variant="secondary"
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    onClick={() => openCreate()}
+                  >
                     Novi termin
                   </Button>
                 }

@@ -304,6 +304,57 @@
 }
 
 @layer utilities {
+  /* The day picker: five days a row on every width, the same shape on a phone as on a desktop. */
+  .picker-days {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+
+  .picker-day {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 150ms ease;
+  }
+
+  .picker-day:hover {
+    background-color: var(--color-primary-tint);
+  }
+
+  /* The chosen day keeps its fill on every surface, and hover does not take it back. */
+  .picker-day[aria-pressed='true'] {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+
+  .picker-day[aria-pressed='true']:hover {
+    background-color: var(--color-primary-hover);
+  }
+
+  .picker-more {
+    width: 100%;
+    min-height: 2.75rem;
+    margin-top: 0.375rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 150ms ease;
+  }
+
+  .picker-more:hover {
+    background-color: var(--color-primary-tint);
+  }
+
   .hide-scrollbar {
     scrollbar-width: none;
   }
@@ -422,13 +473,27 @@
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
-  /* Still scrolls, but without a visible track or thumb competing with the form. */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  /* The sheet keeps showing that there is more content below the fold. */
+  padding-bottom: 1.5rem;
+  /* A thin bar instead of a hidden one, so the scroll is discoverable on a desktop. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+  /* Content fades out at the scroll edge; the padding below keeps the last row whole. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
 }
 
 .dialog-sheet-body::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.dialog-sheet-body::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.dialog-sheet-body::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-xs);
+  background-color: var(--color-line);
 }
 
 .dialog-content[data-state='open'] {
@@ -450,13 +515,14 @@
   }
 }
 
+/* The time now carries meaning on the grid, so it uses the text-safe warm tone, not copper. */
 .calendar-now-line {
-  border-top: 2px solid var(--color-accent);
+  border-top: 2px solid var(--color-accent-ui);
 }
 
 .calendar-now-label {
-  background-color: var(--color-accent);
-  color: var(--color-on-accent);
+  background-color: var(--color-accent-ui);
+  color: var(--color-surface);
 }
 
 [data-sonner-toaster] {
