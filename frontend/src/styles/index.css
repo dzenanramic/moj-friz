@@ -524,25 +524,16 @@
   overflow-y: auto;
   /* The sheet keeps showing that there is more content below the fold. */
   padding-bottom: 1.5rem;
-  /* A thin bar instead of a hidden one, so the scroll is discoverable on a desktop. */
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-line) transparent;
+  /* No scrollbar drawn: the sheet still scrolls normally, and the fade below is the only
+     cue that the content continues. */
+  scrollbar-width: none;
   /* Content fades out at the scroll edge; the padding below keeps the last row whole. */
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
 }
 
 .dialog-sheet-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dialog-sheet-body::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-.dialog-sheet-body::-webkit-scrollbar-thumb {
-  border-radius: var(--radius-xs);
-  background-color: var(--color-line);
+  display: none;
 }
 
 .dialog-content[data-state='open'] {
