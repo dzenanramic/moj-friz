@@ -16,14 +16,16 @@ import { intervalOverlaps } from '@/lib/scheduling'
 import {
   addDaysToDateKey,
   addMinutesToInstant,
+  dateKeyFromInstant,
   localDateTimeToInstant,
   minutesFromTime,
   SALON_TIMEZONE,
+  timeFromMinutes,
   todayDateKey,
   weekdayIndexFromDateKey,
 } from '@/lib/time'
 
-import type { DemoState } from './types'
+import type { DemoState, ManagementTokenRecord } from './types'
 
 export const DEMO_SALON_ID = 'salon-studio-lana'
 export const DEMO_SALON_SLUG = 'studio-lana'
@@ -85,7 +87,14 @@ const HAIRDRESSERS: Hairdresser[] = [
     displayName: 'Lana Jovanović',
     isActive: true,
     colorKey: '4',
-    serviceIds: ['svc-zensko', 'svc-feniranje', 'svc-bojenje', 'svc-pramenovi', 'svc-svecana'],
+    serviceIds: [
+      'svc-zensko',
+      'svc-musko',
+      'svc-feniranje',
+      'svc-bojenje',
+      'svc-pramenovi',
+      'svc-svecana',
+    ],
   },
   {
     id: 'hd-amina',
@@ -131,24 +140,66 @@ const CLIENT_NOTES: Record<number, string> = {
   13: 'Preferira tiši dio salona.',
 }
 
+/**
+ * Every day of the week is a working day in the demo, Sunday included: a quiet day reads as
+ * broken in a screenshot. Saturday and Sunday are shorter and open later; they are still wide
+ * enough for ten appointments once the seed fills them, and for a guest to find a free slot.
+ */
 const STAFF_WORK_HOURS: Record<
   string,
   Array<{ from: Weekday; to: Weekday; start: string; end: string }>
 > = {
   'hd-lana': [
     { from: 0, to: 4, start: '09:00', end: '18:00' },
-    { from: 5, to: 5, start: '09:00', end: '14:00' },
+    { from: 5, to: 5, start: '09:00', end: '15:00' },
+    { from: 6, to: 6, start: '10:00', end: '16:00' },
   ],
   'hd-amina': [
     { from: 1, to: 4, start: '10:00', end: '19:00' },
     { from: 5, to: 5, start: '09:00', end: '15:00' },
+    { from: 6, to: 6, start: '10:00', end: '16:00' },
   ],
   'hd-milica': [
     { from: 0, to: 2, start: '09:00', end: '17:00' },
     { from: 3, to: 3, start: '12:00', end: '20:00' },
     { from: 4, to: 4, start: '09:00', end: '17:00' },
-    { from: 5, to: 5, start: '09:00', end: '13:00' },
+    { from: 5, to: 5, start: '09:00', end: '15:00' },
+    { from: 6, to: 6, start: '10:00', end: '15:00' },
   ],
+}
+
+/** Today is filled too, but the day is already running: no invented morning history. */
+const TODAY_START_OVERRIDE = '10:00'
+
+/**
+ * The least a seeded day shows, Sunday included. Nothing before today is pre-booked: an
+ * appointment is only ever created for a time that is still ahead, so today never opens with
+ * invented morning history. Only a day that is still too thin is topped up, and the guest
+ * bookings of an earlier seed are kept, so the demo replaces its own data and nobody else's.
+ */
+export const MIN_SEED_APPOINTMENTS_PER_DAY = 10
+const SEED_PAST_DAYS = 7
+const SEED_FUTURE_DAYS = 20
+const SHORT_SERVICE_MINUTES = 45
+/**
+ * How far one hairdresser's day is walked: the day's own walks stop here and keep the rest of
+ * their hours free, so a guest always has where to book. Only a day that is still too thin
+ * after these walks is topped up, and only until it has `MIN_SEED_APPOINTMENTS_PER_DAY`.
+ */
+const WALK_MIN_APPOINTMENTS = 4
+
+/** The order each hairdresser takes services in, so a column does not read as one service. */
+const SERVICE_ORDER: Record<string, string[]> = {
+  'hd-lana': [
+    'svc-zensko',
+    'svc-bojenje',
+    'svc-feniranje',
+    'svc-pramenovi',
+    'svc-svecana',
+    'svc-musko',
+  ],
+  'hd-amina': ['svc-musko', 'svc-zensko', 'svc-feniranje', 'svc-bojenje'],
+  'hd-milica': ['svc-feniranje', 'svc-zensko', 'svc-musko', 'svc-svecana', 'svc-pramenovi'],
 }
 
 const BREAKS: Record<string, { start: string; end: string }> = {
@@ -210,50 +261,48 @@ function workIntervalFor(
 function createBlocks(todayKey: string, workingHours: WorkingHoursInterval[]): TimeBlock[] {
   const blocks: TimeBlock[] = []
 
-  for (let offset = 0; offset <= 2; offset += 1) {
-    const dateKey = addDaysToDateKey(todayKey, offset)
-    const weekday = weekdayIndexFromDateKey(dateKey)
+  // Lunch breaks are drawn for today only. Past days already read as finished work, and
+  // tomorrow already has a full day: a break there would only make the day read thinner.
+  const weekday = weekdayIndexFromDateKey(todayKey)
+  for (const hairdresser of HAIRDRESSERS) {
+    const interval = workIntervalFor(workingHours, hairdresser.id, weekday)
+    if (!interval) continue
 
-    for (const hairdresser of HAIRDRESSERS) {
-      const interval = workIntervalFor(workingHours, hairdresser.id, weekday)
-      if (!interval) continue
+    const intervalStart = minutesFromTime(interval.start)
+    const intervalEnd = minutesFromTime(interval.end)
+    const breakTime = BREAKS[hairdresser.id]
+    if (!breakTime || intervalStart === null || intervalEnd === null) continue
+    const breakStart = minutesFromTime(breakTime.start)
+    const breakEnd = minutesFromTime(breakTime.end)
+    if (breakStart === null || breakEnd === null) continue
 
-      const intervalStart = minutesFromTime(interval.start)
-      const intervalEnd = minutesFromTime(interval.end)
-      const breakTime = BREAKS[hairdresser.id]
-      if (!breakTime || intervalStart === null || intervalEnd === null) continue
-      const breakStart = minutesFromTime(breakTime.start)
-      const breakEnd = minutesFromTime(breakTime.end)
-      if (breakStart === null || breakEnd === null) continue
-
-      if (breakStart >= intervalStart && breakEnd <= intervalEnd) {
-        const startsAt = localDateTimeToInstant(dateKey, breakTime.start)
-        const endsAt = localDateTimeToInstant(dateKey, breakTime.end)
-        if (startsAt && endsAt) {
-          blocks.push({
-            id: `blk-${dateKey}-${hairdresser.id}-pauza`,
-            hairdresserId: hairdresser.id,
-            startsAt,
-            endsAt,
-            reason: 'Pauza',
-          })
-        }
+    if (breakStart >= intervalStart && breakEnd <= intervalEnd) {
+      const startsAt = localDateTimeToInstant(todayKey, breakTime.start)
+      const endsAt = localDateTimeToInstant(todayKey, breakTime.end)
+      if (startsAt && endsAt) {
+        blocks.push({
+          id: `blk-${todayKey}-${hairdresser.id}-pauza`,
+          hairdresserId: hairdresser.id,
+          startsAt,
+          endsAt,
+          reason: 'Pauza',
+        })
       }
     }
   }
 
-  // One honest date-specific absence, only if it fits inside working hours.
+  // One honest date-specific absence in the days ahead, at the very end of a late day, so
+  // it closes real working hours without taking a seeded appointment off the schedule.
   for (let offset = 1; offset <= 5; offset += 1) {
     const dateKey = addDaysToDateKey(todayKey, offset)
-    const weekday = weekdayIndexFromDateKey(dateKey)
     const hairdresser = HAIRDRESSERS[2]!
-    const interval = workIntervalFor(workingHours, hairdresser.id, weekday)
+    const interval = workIntervalFor(workingHours, hairdresser.id, weekdayIndexFromDateKey(dateKey))
     if (!interval) continue
     const intervalEnd = minutesFromTime(interval.end)
-    if (intervalEnd === null || intervalEnd < 17 * 60) continue
+    if (intervalEnd === null || intervalEnd < 20 * 60) continue
 
-    const startsAt = localDateTimeToInstant(dateKey, '15:00')
-    const endsAt = localDateTimeToInstant(dateKey, '17:00')
+    const startsAt = localDateTimeToInstant(dateKey, '18:00')
+    const endsAt = localDateTimeToInstant(dateKey, '20:00')
     if (startsAt && endsAt) {
       blocks.push({
         id: `blk-${dateKey}-${hairdresser.id}-odsustvo`,
@@ -274,10 +323,18 @@ function pickService(
   preferredIndex: number,
   startMinute: number,
   intervalEnd: number,
+  shortOnly = false,
 ): SalonService | null {
-  const services = hairdresser.serviceIds
+  const ordered = SERVICE_ORDER[hairdresser.id] ?? hairdresser.serviceIds
+  const services = ordered
     .map((serviceId) => SERVICE_BY_ID.get(serviceId))
-    .filter((service): service is SalonService => service !== undefined)
+    .filter(
+      (service): service is SalonService =>
+        service !== undefined &&
+        service.isActive &&
+        hairdresser.serviceIds.includes(service.id) &&
+        (!shortOnly || service.durationMinutes <= SHORT_SERVICE_MINUTES),
+    )
   if (services.length === 0) return null
 
   for (let step = 0; step < services.length; step += 1) {
@@ -287,71 +344,152 @@ function pickService(
   return null
 }
 
+/**
+ * Seed identity is per (day, hairdresser, slot), so a re-seed of another day never collides.
+ * It is marked on the id itself: a guest booking gets a random `appt-<uuid>` and is never
+ * mistaken for demo data.
+ */
+const SEED_ID_PREFIX = 'appt-seed-'
+
+function isSeedId(id: string): boolean {
+  return id.startsWith(SEED_ID_PREFIX)
+}
+
+interface WalkResult {
+  placed: number
+  /** Where the last appointment started: the day is only topped up after this time. */
+  lastStartMinute: number
+}
+
+/**
+ * One hairdresser's day, as a walk through it: each service starts a little after the one
+ * before ends, so the agenda is a real chain of work, not a grid of fixed slots. The walk is
+ * deliberately short — it keeps the rest of the hours free — and the day tops itself up only
+ * when what the walks produced is still too little to show.
+ */
+function startsWithWalk(
+  offset: number,
+  hairdresserIndex: number,
+  intervalStart: number,
+  intervalEnd: number,
+  firstStart: number,
+  addAppointment: (slotIndex: number, startMinute: number, shortOnly?: boolean) => number,
+): WalkResult {
+  // Each hairdresser walks the day from a slightly different moment, so the columns do not
+  // start together and the grid reads like a real book.
+  const stagger = Math.min(
+    (hairdresserIndex * 15 + (offset - (offset > 0 ? 1 : 0)) * 5 + 45) % 75,
+    120,
+  )
+  const start = Math.max(intervalStart, firstStart) + stagger
+  let cursor = start
+  let lastStartMinute = start
+  let placed = 0
+  let slotIndex = 0
+
+  while (cursor < intervalEnd && placed < WALK_MIN_APPOINTMENTS) {
+    // Short services first: they leave room for the day to fill, so it opens with a chain
+    // of real work instead of one long dye that leaves a column looking empty.
+    const added = addAppointment(slotIndex, cursor, true)
+    if (added > 0) {
+      lastStartMinute = cursor
+      placed += 1
+      // Gaps are real: a client leaves, the seat is cleaned, the next one arrives.
+      cursor += added + (placed < 4 ? 60 : placed < 8 ? 30 : 15)
+    } else {
+      // Nothing short enough fits here: move on so a long service cannot stall the walk.
+      cursor += 15
+    }
+    slotIndex += 1
+  }
+  return { placed, lastStartMinute }
+}
+
 function createAppointments(
   now: Date,
   todayKey: string,
   workingHours: WorkingHoursInterval[],
   blocks: TimeBlock[],
   clients: Client[],
+  carried: Appointment[] = [],
 ): Appointment[] {
   const appointments: Appointment[] = []
   const nowMs = now.getTime()
 
+  /** Returns the appointment it placed, or null when nothing fits or the time is taken. */
   const addAppointment = (
     dateKey: string,
     offset: number,
     hairdresser: Hairdresser,
     hairdresserIndex: number,
     slotIndex: number,
-    slotTime: string,
+    startMinute: number,
     intervalEnd: number,
-  ): void => {
-    const startMinute = minutesFromTime(slotTime)
-    if (startMinute === null) return
+    shortOnly = false,
+  ): Appointment | null => {
     const service = pickService(
       hairdresser,
-      Math.abs(offset) + hairdresserIndex + slotIndex * 2,
+      Math.abs(offset) + hairdresserIndex + slotIndex,
       startMinute,
       intervalEnd,
+      shortOnly,
     )
-    if (!service) return
+    if (!service) return null
 
+    const slotTime = timeFromMinutes(startMinute)
     const startsAt = localDateTimeToInstant(dateKey, slotTime)
-    if (!startsAt) return
+    if (!startsAt) return null
     const endsAt = addMinutesToInstant(startsAt, service.durationMinutes)
+    const endMs = new Date(endsAt).getTime()
+    const isPast = endMs <= nowMs
 
-    const busy = [
-      ...blocks
-        .filter((block) => block.hairdresserId === hairdresser.id)
-        .map((block) => ({ startsAt: block.startsAt, endsAt: block.endsAt })),
-      ...appointments
-        .filter((appointment) => appointment.hairdresserId === hairdresser.id)
-        .map((appointment) => ({ startsAt: appointment.startsAt, endsAt: appointment.endsAt })),
-    ]
-    if (busy.some((entry) => intervalOverlaps(startsAt, endsAt, entry.startsAt, entry.endsAt))) {
-      return
+    const busy = (entries: Array<{ startsAt: string; endsAt: string }>) =>
+      entries.some((entry) => intervalOverlaps(startsAt, endsAt, entry.startsAt, entry.endsAt))
+    if (
+      busy([
+        ...blocks
+          .filter((block) => block.hairdresserId === hairdresser.id)
+          .map((block) => ({ startsAt: block.startsAt, endsAt: block.endsAt })),
+        ...appointments
+          .filter((appointment) => appointment.hairdresserId === hairdresser.id)
+          .map((appointment) => ({ startsAt: appointment.startsAt, endsAt: appointment.endsAt })),
+      ])
+    ) {
+      return null
     }
 
     const client =
       clients[(Math.abs(offset) * 3 + hairdresserIndex * 2 + slotIndex) % clients.length]!
-    const endMs = new Date(endsAt).getTime()
-    const isPast = endMs <= nowMs
+    const dateSlotKey = `${offset >= 0 ? 'p' : 'm'}${Math.abs(offset)}-${hairdresserIndex}-${slotIndex}`
+
+    // An earlier seed still holds a real guest booking at this time: keep the guest, place
+    // the demo around it, and give the guest back the marketing marks the seed removes.
+    const guestBooking = carried.find(
+      (appointment) =>
+        appointment.hairdresserId === hairdresser.id &&
+        appointment.status === 'confirmed' &&
+        !isSeedId(appointment.id) &&
+        intervalOverlaps(startsAt, endsAt, appointment.startsAt, appointment.endsAt),
+    )
+    if (guestBooking) return null
+
     let status: AppointmentStatus = isPast ? 'completed' : 'confirmed'
     if (isPast && (Math.abs(offset) + hairdresserIndex + slotIndex) % 9 === 0) {
       status = 'no_show'
     }
-    if (offset < 0 && hairdresserIndex === 1 && slotIndex === 0 && Math.abs(offset) % 4 === 1) {
-      status = 'cancelled'
-    }
 
     const source: AppointmentSource =
       (Math.abs(offset) + hairdresserIndex + slotIndex) % 4 === 0 ? 'online' : 'manual'
-    const createdAt = new Date(new Date(startsAt).getTime() - 4 * 86_400_000).toISOString()
+    const bookingTime = new Date(
+      new Date(startsAt).getTime() - (isPast ? 4 : 2) * 86_400_000,
+    ).toISOString()
+    const createdAt =
+      new Date(bookingTime).getTime() > nowMs ? new Date(nowMs).toISOString() : bookingTime
     const note =
       (Math.abs(offset) + hairdresserIndex) % 7 === 0 ? 'Potvrditi dužinu usluge na dolasku.' : null
 
-    appointments.push({
-      id: `appt-${offset >= 0 ? 'p' : 'm'}${Math.abs(offset)}-${hairdresserIndex}-${slotIndex}`,
+    const appointment: Appointment = {
+      id: `${SEED_ID_PREFIX}${dateSlotKey}`,
       hairdresserId: hairdresser.id,
       serviceId: service.id,
       clientId: client.id,
@@ -365,12 +503,24 @@ function createAppointments(
       internalNote: note,
       createdAt,
       updatedAt: createdAt,
-    })
+    }
+    appointments.push(appointment)
+    return appointment
   }
 
-  for (let offset = -7; offset <= 10; offset += 1) {
+  for (let offset = -SEED_PAST_DAYS; offset <= SEED_FUTURE_DAYS; offset += 1) {
     const dateKey = addDaysToDateKey(todayKey, offset)
     const weekday = weekdayIndexFromDateKey(dateKey)
+    let dayCount = 0
+    /** This day's walks, one per working hairdresser: where each of them filled the day. */
+    const walks: Array<{
+      dateKey: string
+      hairdresser: Hairdresser
+      hairdresserIndex: number
+      startMinute: number
+      intervalEnd: number
+      lastStartMinute: number
+    }> = []
 
     HAIRDRESSERS.forEach((hairdresser, hairdresserIndex) => {
       const interval = workIntervalFor(workingHours, hairdresser.id, weekday)
@@ -378,21 +528,64 @@ function createAppointments(
       const intervalStart = minutesFromTime(interval.start)
       const intervalEnd = minutesFromTime(interval.end)
       if (intervalStart === null || intervalEnd === null) return
-      if ((offset + hairdresserIndex) % 3 === 0) return
 
-      const firstTime = interval.start
-      addAppointment(dateKey, offset, hairdresser, hairdresserIndex, 0, firstTime, intervalEnd)
-
-      if ((offset + hairdresserIndex) % 2 === 0) {
-        const secondMinute = intervalStart + 270
-        if (secondMinute + 30 <= intervalEnd) {
-          const secondTime = `${String(Math.floor(secondMinute / 60)).padStart(2, '0')}:${String(
-            secondMinute % 60,
-          ).padStart(2, '0')}`
-          addAppointment(dateKey, offset, hairdresser, hairdresserIndex, 1, secondTime, intervalEnd)
-        }
-      }
+      const firstStart =
+        offset === 0
+          ? Math.max(intervalStart, minutesFromTime(TODAY_START_OVERRIDE) ?? 0)
+          : intervalStart
+      const walk = startsWithWalk(
+        offset,
+        hairdresserIndex,
+        intervalStart,
+        intervalEnd,
+        firstStart,
+        (slotIndex, startMinute, shortOnly) =>
+          addAppointment(
+            dateKey,
+            offset,
+            hairdresser,
+            hairdresserIndex,
+            slotIndex,
+            startMinute,
+            intervalEnd,
+            shortOnly,
+          )?.durationMinutesSnapshot ?? 0,
+      )
+      dayCount += walk.placed
+      walks.push({
+        dateKey,
+        hairdresser,
+        hairdresserIndex,
+        startMinute: Math.max(intervalStart, firstStart),
+        intervalEnd,
+        lastStartMinute: walk.lastStartMinute,
+      })
     })
+
+    // A day's walks keep room for a guest to book, so they are only topped up when the day
+    // still has too few appointments to show. Gaps are searched from the end of the day
+    // backwards: a guest looks at the morning first, so that is where the room stays.
+    if (dayCount >= MIN_SEED_APPOINTMENTS_PER_DAY) continue
+    for (const walk of walks.filter((entry) => entry.dateKey === dateKey)) {
+      for (
+        let minute = walk.intervalEnd - SHORT_SERVICE_MINUTES;
+        minute >= walk.lastStartMinute;
+        minute -= 15
+      ) {
+        if (dayCount >= MIN_SEED_APPOINTMENTS_PER_DAY) break
+        const placed = addAppointment(
+          dateKey,
+          offset,
+          walk.hairdresser,
+          walk.hairdresserIndex,
+          90 + walk.hairdresserIndex * 100 + minute,
+          Math.max(minute, walk.startMinute),
+          walk.intervalEnd,
+          true,
+        )
+        if (placed) dayCount += 1
+      }
+    }
   }
 
   return appointments.sort(
@@ -400,12 +593,35 @@ function createAppointments(
   )
 }
 
-export function createSeedState(now: Date = new Date()): DemoState {
+interface SeedOptions {
+  /** State from before the re-seed, so the demo never throws away a real guest file. */
+  carried?: {
+    appointments: Appointment[]
+    clients: Client[]
+    managementTokens: ManagementTokenRecord[]
+  }
+}
+
+export function createSeedState(now: Date = new Date(), options: SeedOptions = {}): DemoState {
   const todayKey = todayDateKey(now)
   const workingHours = createWorkingHours()
   const clients = createClients(now)
   const blocks = createBlocks(todayKey, workingHours)
-  const appointments = createAppointments(now, todayKey, workingHours, blocks, clients)
+  const appointments = createAppointments(
+    now,
+    todayKey,
+    workingHours,
+    blocks,
+    clients,
+    options.carried?.appointments,
+  )
+  const guests = guestBookingsOf(options.carried?.appointments, todayKey, blocks, appointments)
+  const guestClients = guestClientsOf(options.carried?.clients, guests, clients)
+  // The guest's private link is theirs: a reseed must not take it away.
+  const keptIds = new Set(guests.map((guest) => guest.id))
+  const guestTokens = (options.carried?.managementTokens ?? []).filter((token) =>
+    keptIds.has(token.appointmentId),
+  )
 
   const salon: SalonProfile = {
     id: DEMO_SALON_ID,
@@ -437,11 +653,59 @@ export function createSeedState(now: Date = new Date()): DemoState {
     })),
     services: SERVICES.map((service) => ({ ...service })),
     workingHours,
-    clients,
-    appointments,
+    clients: [...clients, ...guestClients],
+    appointments: [...appointments, ...guests].sort(
+      (left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime(),
+    ),
     blocks,
-    managementTokens: [],
+    managementTokens: guestTokens.map((token) => ({ ...token })),
   }
+}
+
+function guestBookingsOf(
+  carried: Appointment[] | undefined,
+  todayKey: string,
+  blocks: TimeBlock[],
+  appointments: Appointment[],
+): Appointment[] {
+  if (!carried || carried.length === 0) return []
+
+  const taken = [
+    ...blocks.map((block) => ({ startsAt: block.startsAt, endsAt: block.endsAt })),
+    ...appointments.map((appointment) => ({
+      startsAt: appointment.startsAt,
+      endsAt: appointment.endsAt,
+    })),
+  ]
+
+  return carried
+    .filter((appointment) => {
+      if (isSeedId(appointment.id)) return false
+      if (appointment.status !== 'confirmed') return true
+      if (dateKeyFromInstant(appointment.startsAt) < todayKey) return false
+      return !taken.some((entry) =>
+        intervalOverlaps(appointment.startsAt, appointment.endsAt, entry.startsAt, entry.endsAt),
+      )
+    })
+    .map((appointment) => ({ ...appointment }))
+}
+
+function guestClientsOf(
+  carried: Client[] | undefined,
+  guests: Appointment[],
+  clients: Client[],
+): Client[] {
+  if (!carried) return []
+  const known = new Set(clients.map((client) => client.id))
+  const result: Client[] = []
+  for (const guest of guests) {
+    if (known.has(guest.clientId)) continue
+    const client = carried.find((candidate) => candidate.id === guest.clientId)
+    if (!client) continue
+    known.add(client.id)
+    result.push({ ...client })
+  }
+  return result
 }
 
 export function staffColorFor(hairdresserId: string): StaffColor {

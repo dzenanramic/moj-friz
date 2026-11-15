@@ -37,15 +37,22 @@ export function formatSalonDateLong(dateKey: string): string {
   return `${WEEKDAYS[weekday]}, ${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`
 }
 
-/** A future date when the demo salon is open and the standard hairdresser works. */
-export function nextOpenDateKey(startOffset = 7): string {
-  for (let offset = startOffset; offset < startOffset + 10; offset += 1) {
+/** The next date, from today on, that falls on the given weekday (0 = Sunday). */
+export function nextDateKeyOnWeekday(weekday: number, startOffset = 1): string {
+  for (let offset = startOffset; offset < startOffset + 7; offset += 1) {
     const key = salonDateKey(offset)
     const [year, month, day] = key.split('-').map(Number)
-    const weekday = new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay()
-    if (weekday !== 0) return key
+    if (new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay() === weekday) return key
   }
-  throw new Error('No open demo date found')
+  throw new Error('No such weekday found')
+}
+
+/**
+ * A future date the demo has appointments on. Every day of the week is a demo working day —
+ * Sunday included — and the seed fills three weeks ahead, so any day in that window is open.
+ */
+export function nextOpenDateKey(startOffset = 7): string {
+  return salonDateKey(startOffset)
 }
 
 /** The day picker is a grid of buttons: open more days until the wanted one is on screen, then tap it. */

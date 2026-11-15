@@ -118,7 +118,33 @@ export class DemoGateway implements SalonGateway {
     this.now = options.now ?? (() => new Date())
     this.storage = options.storage === undefined ? getDefaultStorage() : options.storage
     this.latencyMs = options.latencyMs ?? 110
-    this.state = this.readStoredState() ?? createSeedState(this.now())
+    this.state = this.readFreshState() ?? createSeedState(this.now())
+  }
+
+  /**
+   * A stored demo belongs to the day it was seeded on: left alone, tomorrow's pages would show
+   * yesterday's calendar and the days after it would slowly empty. A state seeded on an earlier
+   * day is reseeded, keeping the guest bookings it holds; one seeded today is reused as it is,
+   * so every edit within the day survives a reload, on localhost and on the deployed demo alike.
+   */
+  private readFreshState(): DemoState | null {
+    const stored = this.readStoredState()
+    if (!stored) return null
+    // A state that cannot say when it was seeded cannot be trusted to still be today's.
+    const seededAt = new Date(stored.seededAt)
+    const seededKey = Number.isNaN(seededAt.getTime()) ? '' : dateKeyFromInstant(seededAt)
+    if (seededKey === todayDateKey(this.now())) return stored
+
+    const fresh = createSeedState(this.now(), {
+      carried: {
+        appointments: stored.appointments,
+        clients: stored.clients,
+        managementTokens: stored.managementTokens,
+      },
+    })
+    this.state = fresh
+    this.persist()
+    return fresh
   }
 
   private readStoredState(): DemoState | null {

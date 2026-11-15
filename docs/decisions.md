@@ -19,6 +19,7 @@ pilot backend already exists.
 | 9   | Service duration               | **One duration per service**, same for all hairdressers                                                   | Approved                |
 | 10  | Guest phone verification       | **None** in the controlled pilot; documented impersonation/spam risk                                      | Approved with risk      |
 | 11  | Colour palette                 | **Ink blue + copper** on a paper-cream base; dark is a warm near-black blue. The green palette is dropped | Approved 15.11.2026     |
+| 12  | Demo seed                      | **Every day has work**: all seven weekdays are demo working days (Sunday opens later and shorter) and each day shows **at least 10 appointments** | Approved 15.11.2026     |
 
 ## Palette (decision 11)
 
@@ -57,6 +58,25 @@ never colours. Dark values live under `.dark`, not in a media query, so a stored
 - Hairdresser colours are six seats (`1`–`6`), assigned in `frontend/src/demo/seed.ts`: Lana plum,
   Amina blue, Milica brick. The blue seat is not the first one so a calendar column in the primary
   colour never reads as selection. The public booking flow shows no hairdresser colour.
+
+## Demo seed (decision 12)
+
+- The seed covers **seven days back and twenty ahead**, so the public date strip (30 days) and the
+  calendar strip (three weeks) both show busy days from the first paint.
+- `frontend/src/demo/seed.ts` walks each hairdresser's day as a chain of services with real gaps
+  rather than fixed slot blocks. When a day still has fewer than ten appointments after those
+  walks, it is topped up from the end of the day backwards, so the morning keeps the room a guest
+  is most likely to want. `MIN_SEED_APPOINTMENTS_PER_DAY` holds that floor and is asserted in
+  `frontend/src/demo/gateway.test.ts` for every weekday.
+- Nothing is seeded in the past, nothing is cancelled, and no seeded day books a hairdresser
+  twice. A fresh seed leaves at least one free slot on every working hairdresser-day (checked over
+  120 sample days), because a demo nobody can book in is not a demo of booking.
+- Working hours are demo data and can be edited in the pilot; the seed's own hours are the only
+  requirement that every day can reach ten appointments.
+- A stored state is reused while it was seeded **today**; opening it on a later day reseeds it,
+  carrying over guest bookings (and their management tokens) that are still ahead and do not
+  collide with the fresh plan. Both localhost and the Vercel deployment read the same
+  `localStorage` key, so they behave the same way.
 
 ## Engineering defaults
 

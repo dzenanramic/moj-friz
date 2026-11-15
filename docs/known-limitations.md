@@ -23,8 +23,13 @@ product.
 
 - State lives in the browser’s localStorage (`mojfriz.demo.v1`); it is not shared between browsers or
   devices and is lost when that storage is cleared. A separate “Resetuj demo” restores the seed.
-- Seed appointments are generated relative to the day the demo is opened. Someone opening it late in
-  the day will mostly see completed appointments. The demo script says this openly.
+- Seed appointments are generated relative to the day the demo is opened. Only times still ahead are
+  pre-booked and every working hairdresser gets appointments, so a day opened late is still a day of
+  work, not a page of finished history. The demo script says this openly.
+- Every day of the week is a demo working day, Sunday included, and the seed guarantees at least ten
+  appointments a day for three weeks (seven days back, twenty ahead). A state seeded on an earlier
+  day is reseeded when it is next opened: the demo moves with the calendar, and guest bookings the
+  stored state holds are carried over with their private links. Edits made within the day are kept.
 - The demo’s scheduling and conflict rules are client-side illustrations. They are **not** the
   production scheduling guarantee and do not exercise PostgreSQL exclusion constraints.
 - The guest management token is hashed in localStorage and travels in a URL fragment, but the link

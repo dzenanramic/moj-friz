@@ -2,9 +2,17 @@ import { describe, expect, it } from 'vitest'
 
 import { gatewayErrorMessage, isGatewayError } from '@/data/gateway'
 import type { AvailabilitySlot } from '@/data/types'
-import { addDaysToDateKey, formatTime } from '@/lib/time'
+import {
+  addDaysToDateKey,
+  dateKeyFromInstant,
+  dayRange,
+  formatTime,
+  todayDateKey,
+  weekdayIndexFromDateKey,
+} from '@/lib/time'
 
 import { DEMO_STORAGE_KEY, DemoGateway } from './gateway'
+import { createSeedState, MIN_SEED_APPOINTMENTS_PER_DAY } from './seed'
 
 class MemoryStorage {
   private readonly values = new Map<string, string>()
@@ -64,6 +72,81 @@ async function firstPublicSlot(
   }
   throw new Error('Seed produced no public availability')
 }
+
+describe('demo seed', () => {
+  const seededDays = 21
+
+  it('gives every day of the window at least ten appointments, Sunday included', () => {
+    // A different day of the week (and a different hour) for each run, so the check is not
+    // tied to the weekday the fixed date happens to land on.
+    for (let start = 0; start < 7; start += 1) {
+      const now = new Date(Date.UTC(2026, 10, 15 + start, 6, 30))
+      const state = createSeedState(now)
+      const todayKey = todayDateKey(now)
+      for (let offset = 0; offset < seededDays; offset += 1) {
+        const dateKey = addDaysToDateKey(todayKey, offset)
+        const active = state.appointments.filter(
+          (appointment) =>
+            dateKeyFromInstant(appointment.startsAt) === dateKey &&
+            appointment.status !== 'cancelled',
+        )
+        expect(
+          active.length,
+          `${dateKey} (weekday ${weekdayIndexFromDateKey(dateKey)})`,
+        ).toBeGreaterThanOrEqual(MIN_SEED_APPOINTMENTS_PER_DAY)
+      }
+    }
+  })
+
+  it('never books a hairdresser twice at the same time', () => {
+    const state = createSeedState(new Date('2026-11-18T09:00:00.000Z'))
+    for (const hairdresser of state.hairdressers) {
+      const theirs = state.appointments
+        .filter((appointment) => appointment.hairdresserId === hairdresser.id)
+        .sort((left, right) => left.startsAt.localeCompare(right.startsAt))
+      for (let index = 1; index < theirs.length; index += 1) {
+        expect(theirs[index]!.startsAt >= theirs[index - 1]!.endsAt).toBe(true)
+      }
+    }
+  })
+
+  it('reseeds a state from an earlier day but keeps the guest booking it holds', async () => {
+    const storage = new MemoryStorage()
+    const { gateway } = createGateway(storage)
+    const { slot } = await firstPublicSlot(gateway)
+    const booking = await gateway.createPublicBooking({
+      slug: 'studio-lana',
+      serviceId: 'svc-zensko',
+      hairdresserId: 'hd-lana',
+      startsAt: slot.startsAt,
+      name: 'Demo Gost',
+      phone: '061 000 099',
+      consent: true,
+    })
+
+    // The same browser, the next day: the stored demo belongs to another day, while the
+    // guest's appointment is still ahead.
+    const later = new Date(new Date(slot.startsAt).getTime() - 12 * 3_600_000)
+    const reopened = new DemoGateway({ now: () => later, storage, latencyMs: 0 })
+    expect((await reopened.lookupManagement(booking.managementToken)).startsAt).toBe(slot.startsAt)
+
+    // Its own demo data moved with the day; the guest's booking did not.
+    const todayAppointments = await reopened.listAppointments(dayRange(todayDateKey(later)))
+    expect(todayAppointments.length).toBeGreaterThanOrEqual(MIN_SEED_APPOINTMENTS_PER_DAY)
+    expect((await reopened.getClient('client-01')).client.name).toBe('Ana Marković')
+  })
+
+  it('keeps the same state when it was seeded today', async () => {
+    const storage = new MemoryStorage()
+    const { gateway } = createGateway(storage)
+    const first = await gateway.listAppointments(dayRange(today))
+
+    const laterToday = new Date(fixedNow.getTime() + 2 * 3_600_000)
+    const reopened = new DemoGateway({ now: () => laterToday, storage, latencyMs: 0 })
+    const again = await reopened.listAppointments(dayRange(today))
+    expect(again.map((entry) => entry.id)).toEqual(first.map((entry) => entry.id))
+  })
+})
 
 describe('demo scheduling gateway', () => {
   it('creates, conflicts, cancels and frees a slot', async () => {

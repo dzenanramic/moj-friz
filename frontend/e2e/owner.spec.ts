@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test'
 
-import { formatSalonDateLong, nextOpenDateKey, submitNewClientAppointment } from './helpers'
+import {
+  formatSalonDateLong,
+  nextDateKeyOnWeekday,
+  nextOpenDateKey,
+  submitNewClientAppointment,
+} from './helpers'
 
 test('owner adds, reschedules and cancels an appointment', async ({ page }) => {
   const dateKey = nextOpenDateKey(7)
@@ -110,4 +115,23 @@ test('picking a later day keeps the earlier days in the strip', async ({ page })
     'data-date-key',
     firstKey ?? '',
   )
+})
+
+test('a Sunday is a working day with a full agenda', async ({ page }) => {
+  // Every demo day is open, Sunday included: the seed fills 21 days, so the next Sunday is
+  // inside the window and must show a day of work rather than a closed-salon message.
+  const sundayKey = nextDateKeyOnWeekday(0)
+  expect(formatSalonDateLong(sundayKey)).toContain('nedjelja')
+
+  await page.goto(`/kalendar?datum=${sundayKey}`)
+  await expect(page.getByText('Nema radnog vremena')).toHaveCount(0)
+  await expect(page.getByText('Nema termina za ovaj dan')).toHaveCount(0)
+  await expect(page.locator('button[aria-current="date"]')).toHaveAttribute(
+    'aria-label',
+    formatSalonDateLong(sundayKey),
+  )
+  // The agenda lists the day's appointments: ten or more, one row each.
+  const rows = page.locator('main button').filter({ hasText: /^\d{2}:\d{2}/ })
+  await expect(rows.first()).toBeVisible()
+  expect(await rows.count()).toBeGreaterThanOrEqual(10)
 })

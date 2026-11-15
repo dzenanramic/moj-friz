@@ -53,7 +53,8 @@ locked there. “Resetuj demo” restores the seed and returns to the access scr
 ## What works in this milestone
 
 - Fictional salon, three hairdressers, six services, fictional clients and appointments relative to
-  today.
+  today: every weekday is a working day (Sunday included) and every day shows at least ten
+  appointments, for three weeks ahead.
 - Day calendar with staff columns, breaks, free/busy space, date navigation and hairdresser filter.
 - Add, edit, reschedule and cancel appointments; mark completed/no-show; conflict and working-hours
   messages.
