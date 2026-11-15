@@ -12,6 +12,7 @@ export function PageHeader({
   actions,
   aside,
   align = 'end',
+  actionsWrap = 'stack',
   className,
 }: {
   title: string
@@ -25,6 +26,16 @@ export function PageHeader({
   aside?: ReactNode
   /** How the action buttons line up against the title: 'end' (common) or 'start' (top row). */
   align?: 'start' | 'end'
+  /**
+   * What the actions do on a phone. `stack` (the default) puts them on their own line under the
+   * title, which suits buttons that carry words. `beside` keeps them in the title's column, so a
+   * control can sit to the right of a short title without the header growing; the row starts with
+   * zero width, so a control that does not fit opens a gap rather than wrapping under the title.
+   * The control is centred against the title's line and its height is rounded up to that line,
+   * so the header stays exactly one line tall: a control a few pixels shorter or taller does not
+   * push the row down or spill out of the header.
+   */
+  actionsWrap?: 'stack' | 'beside'
   className?: string
 }) {
   return (
@@ -33,13 +44,27 @@ export function PageHeader({
         // By default the actions drop under a long description on a phone. `align="start"`
         // asks for the actions to sit in the title's row at every width instead.
         'flex flex-col gap-5  sm:flex-row sm:justify-between sm:gap-8 sm:pb-9',
-        align === 'end' ? 'sm:items-end' : 'sm:items-start',
+        // `beside` lines the actions up with the title's own row, so they are centred against it.
+        align === 'end'
+          ? actionsWrap === 'beside'
+            ? 'sm:items-center'
+            : 'sm:items-end'
+          : 'sm:items-start',
         align === 'start' &&
           'max-sm:flex-row max-sm:flex-wrap max-sm:items-start max-sm:gap-x-4 max-sm:gap-y-3',
+        actionsWrap === 'beside' &&
+          // `max-sm:text-h1` hands the title's line height to the actions row (see below), so a
+          // control sized to one `em` is exactly the height of the "Kalendar" line.
+          'max-sm:flex-row max-sm:items-center max-sm:justify-between max-sm:gap-x-3 max-sm:gap-y-0 max-sm:text-h1',
         className,
       )}
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:justify-between sm:gap-6',
+          actionsWrap === 'beside' ? 'sm:items-center' : 'sm:items-end',
+        )}
+      >
         <div className="flex min-w-0 items-center justify-between gap-4 sm:contents">
           <div className="min-w-0">
             <h1 className="text-ink">{title}</h1>
@@ -59,6 +84,8 @@ export function PageHeader({
           className={cn(
             'flex shrink-0 flex-wrap items-center gap-2',
             align === 'start' && 'sm:-mt-1.5',
+            actionsWrap === 'beside' &&
+              'max-sm:w-0 max-sm:grow max-sm:justify-end max-sm:flex-nowrap max-sm:leading-h1',
           )}
         >
           {actions}

@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
 import { Skeleton } from '@/components/ui/Layout'
-import { SalonMark } from '@/components/ui/SalonMark'
 import { usePackageInfo, useSalon } from '@/data/queries'
 import { cn } from '@/lib/cn'
 import { formatKM } from '@/lib/format'
@@ -28,20 +27,16 @@ const NAV_ITEMS: NavItem[] = [
 function Sidebar() {
   const salon = useSalon()
   const packageInfo = usePackageInfo()
-  const name = salon.data?.name ?? 'Studio Lana'
   const level = salon.data?.plan ?? 'level_2'
 
   return (
-    <aside className="hidden w-[228px] shrink-0 lg:sticky lg:top-0 lg:flex lg:h-[calc(100dvh-2.5rem)] lg:flex-col">
-      <div className="flex items-center gap-3 px-4 pb-8 pt-6">
-        <SalonMark name={name} />
-        <div className="min-w-0">
-          <p className="display truncate text-[1.15rem] leading-tight text-ink">{name}</p>
-          <p className="mt-0.5 truncate text-xs text-muted">{salon.data?.city ?? 'Banja Luka'}</p>
-        </div>
-      </div>
-
-      <nav aria-label="Glavna navigacija">
+    <aside className="hidden w-[228px] shrink-0 lg:sticky lg:top-0 lg:flex lg:h-[calc(100dvh-3rem)] lg:flex-col">
+      {/* 3rem is the top bar (min-h-12 plus its hairline), so the sidebar's own height accounts for it. */}
+      {/*
+       * No mark or name here: the top bar carries the salon's identity on every width now. The
+       * sidebar starts with the navigation, one gap under the strip.
+       */}
+      <nav aria-label="Glavna navigacija" className="pt-5">
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
@@ -118,20 +113,6 @@ function Sidebar() {
   )
 }
 
-function MobileTopBar() {
-  const salon = useSalon()
-  const name = salon.data?.name ?? 'Studio Lana'
-  return (
-    <div className="flex items-center gap-2.5 px-4 py-3 lg:hidden">
-      <SalonMark name={name} size="sm" />
-      <div className="min-w-0">
-        <p className="display truncate text-[1.05rem] leading-tight text-ink">{name}</p>
-        <p className="text-xs text-muted">{salon.data?.city ?? 'Banja Luka'}</p>
-      </div>
-    </div>
-  )
-}
-
 function MobileNav() {
   return (
     <nav
@@ -193,7 +174,6 @@ export function OwnerLayout() {
       <div className="mx-auto flex w-full max-w-[1480px]">
         <Sidebar />
         <div className="min-w-0 flex-1 pb-20 lg:pb-0">
-          <MobileTopBar />
           <main
             id="main"
             ref={mainRef}

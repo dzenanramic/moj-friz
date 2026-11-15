@@ -1,6 +1,6 @@
 /* Mouse click on empty grid space is a convenience; every action has a keyboard-accessible control. */
 /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import type { MouseEvent } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 
 import { cn } from '@/lib/cn'
 import type { AppointmentView, Hairdresser, TimeBlock, WorkingHoursInterval } from '@/data/types'
@@ -14,8 +14,16 @@ import {
   weekdayIndexFromDateKey,
 } from '@/lib/time'
 
+/**
+ * A phone gets a narrower hour gutter and a narrower column, so two or three hairdressers fit
+ * beside each other before the grid has to scroll sideways; the desks get the roomy ones. Both
+ * are in px for the inline grid template, so the media query is read in JS.
+ */
 const GUTTER_WIDTH = 58
+const GUTTER_WIDTH_NARROW = 44
 const MIN_COLUMN_WIDTH = 186
+const MIN_COLUMN_WIDTH_NARROW = 132
+const NARROW_MEDIA = '(max-width: 639px)'
 const HOUR_HEIGHT = 64
 
 interface CalendarGridProps {
@@ -45,6 +53,9 @@ export function CalendarGrid({
   onOpenAppointment,
   onCreateAt,
 }: CalendarGridProps) {
+  const narrow = useMediaQuery(NARROW_MEDIA)
+  const gutterWidth = narrow ? GUTTER_WIDTH_NARROW : GUTTER_WIDTH
+  const minColumnWidth = narrow ? MIN_COLUMN_WIDTH_NARROW : MIN_COLUMN_WIDTH
   const weekday = weekdayIndexFromDateKey(dateKey)
   const intervalsFor = (hairdresserId: string) =>
     workingHours.filter(
@@ -93,20 +104,24 @@ export function CalendarGrid({
       <div
         className="min-w-full"
         style={{
-          minWidth: GUTTER_WIDTH + hairdressers.length * MIN_COLUMN_WIDTH,
+          minWidth: gutterWidth + hairdressers.length * minColumnWidth,
         }}
       >
         <div
           className="grid"
           style={{
-            gridTemplateColumns: `${GUTTER_WIDTH}px repeat(${hairdressers.length}, minmax(${MIN_COLUMN_WIDTH}px, 1fr))`,
+            gridTemplateColumns: `${gutterWidth}px repeat(${hairdressers.length}, minmax(${minColumnWidth}px, 1fr))`,
           }}
         >
           <div />
           {hairdressers.map((hairdresser) => {
             const intervals = intervalsFor(hairdresser.id)
             return (
-              <div key={hairdresser.id} data-staff={hairdresser.colorKey} className="px-3 pb-3">
+              <div
+                key={hairdresser.id}
+                data-staff={hairdresser.colorKey}
+                className="px-2 pb-2 sm:px-3 sm:pb-3"
+              >
                 <div className="flex items-center gap-2">
                   <span aria-hidden="true" className="staff-bar h-3 w-[3px] rounded-xs" />
                   <p className="truncate text-sm font-semibold text-ink">
@@ -126,7 +141,7 @@ export function CalendarGrid({
         <div
           className="relative grid"
           style={{
-            gridTemplateColumns: `${GUTTER_WIDTH}px repeat(${hairdressers.length}, minmax(${MIN_COLUMN_WIDTH}px, 1fr))`,
+            gridTemplateColumns: `${gutterWidth}px repeat(${hairdressers.length}, minmax(${minColumnWidth}px, 1fr))`,
             height: totalHeight,
           }}
         >
@@ -134,7 +149,7 @@ export function CalendarGrid({
             {hourMarks.map((minute) => (
               <span
                 key={minute}
-                className="tabular absolute right-2 -translate-y-1/2 text-xs text-muted"
+                className="tabular absolute right-1.5 -translate-y-1/2 text-[0.7rem] text-muted sm:right-2 sm:text-xs"
                 style={{ top: ((minute - gridStart) / 60) * HOUR_HEIGHT }}
               >
                 {timeFromMinutes(minute)}
@@ -177,6 +192,20 @@ export function CalendarGrid({
                     style={stretch.style}
                   />
                 ))}
+
+                {/*
+                 * The grid is a choice on a phone now, so a hairdresser with no hours today is
+                 * a column of hatching with nothing to explain it. The hint sits inside the
+                 * open hours, where a tap would otherwise still open a form.
+                 */}
+                {intervals.length === 0 && gridEnd > gridStart ? (
+                  <p
+                    data-ignore-column-click
+                    className="pointer-events-none absolute inset-x-1 top-3 z-[2] rounded-xs px-1 text-center text-[0.7rem] leading-snug text-muted"
+                  >
+                    Ne radi danas
+                  </p>
+                ) : null}
 
                 {intervals.map((interval) => {
                   const start = parseMinutes(interval.start)
@@ -361,4 +390,28 @@ function closedStretchesFor(
 
 function isNumber(value: number | null): value is number {
   return value !== null
+}
+
+/**
+ * True while the viewport matches `query`. The grid needs this in JS because its column template
+ * is an inline style, not a utility class. Without `matchMedia` it reports false: the roomy grid.
+ */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia(query).matches,
+  )
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const list = window.matchMedia(query)
+    const onChange = () => setMatches(list.matches)
+    onChange()
+    list.addEventListener('change', onChange)
+    return () => list.removeEventListener('change', onChange)
+  }, [query])
+
+  return matches
 }

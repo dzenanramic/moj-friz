@@ -3,11 +3,11 @@ import { useMemo } from 'react'
 
 import { StatusPill } from '@/components/ui/Badges'
 import { ButtonLink } from '@/components/ui/Button'
-import { SalonMark } from '@/components/ui/SalonMark'
+import { AppMark } from '@/components/ui/SalonMark'
 import { Avatar, Skeleton, Surface } from '@/components/ui/Layout'
 import { useAppointments, useSalon, useServices } from '@/data/queries'
 import { formatTerminCount } from '@/lib/format'
-import { usePageTitle } from '@/lib/hooks'
+import { APP_NAME, usePageTitle } from '@/lib/hooks'
 import { dayRange, formatDateKey, formatTime, formatWeekday, todayDateKey } from '@/lib/time'
 
 import type { AppointmentView } from '@/data/types'
@@ -112,10 +112,11 @@ export function DemoAccessPage() {
       <DemoBanner />
       <main className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20 lg:py-24">
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-1">
+          {/* The product signs this page; the salon it opens into is named inside the demo. */}
           <p className="flex items-center gap-3">
-            <SalonMark name="Studio Lana" />
-            <span className="display text-[1.15rem] text-ink">Studio Lana</span>
-            <span className="text-[0.8rem] text-muted">Banja Luka</span>
+            <AppMark size="sm" />
+            <span className="display text-[1.15rem] text-ink">{APP_NAME}</span>
+            <span className="text-[0.8rem] text-muted">demo</span>
           </p>
 
           {/*

@@ -28,6 +28,29 @@ test('a fresh demo opens on a working day', async ({ page }) => {
   ).toBeVisible()
 })
 
+test('the top bar names the app, once', async ({ page }, testInfo) => {
+  // The salon's name and mark used to sit in the sidebar, and again in a phone-only header below
+  // it. The top strip is the product now — "Moj friz" for every salon — and the demo notice rides
+  // beside it. The demo salon's own name stays in its data (Postavke → Salon), not in the chrome.
+  await resetDemoState(page)
+  await page.getByRole('link', { name: 'Uđi u demo' }).click()
+  await expect(page.getByRole('heading', { name: 'Danas', exact: true })).toBeVisible()
+
+  await expect(page.getByText('Moj friz', { exact: true })).toHaveCount(1)
+  await expect(page.getByText('Moj friz', { exact: true })).toBeVisible()
+  // The salon is not the banner: its name is not in the chrome on any screen.
+  await expect(page.getByText('Studio Lana', { exact: true })).toHaveCount(0)
+  // The pill says "Demo"; its accessible name carries the whole promise for a screen reader.
+  await expect(page.getByLabel('Demo · podaci nisu stvarni')).toBeVisible()
+
+  // A desk has no second brand column: the sidebar starts with the navigation.
+  test.skip(testInfo.project.name !== 'desktop', 'the sidebar only exists on a wide screen')
+  await expect(page.getByRole('navigation', { name: 'Glavna navigacija' }).first()).toBeVisible()
+  const sidebar = page.locator('aside')
+  await expect(sidebar.getByText('Studio Lana')).toHaveCount(0)
+  await expect(sidebar.getByText('Moj friz')).toHaveCount(0)
+})
+
 test('owner adds, reschedules and cancels an appointment', async ({ page }) => {
   const dateKey = nextOpenDateKey(7)
   const clientName = 'E2E Klijent'
@@ -156,4 +179,43 @@ test('a Sunday is a working day with a full agenda', async ({ page }) => {
   const rows = page.locator('main button:visible').filter({ hasText: /^\d{2}:\d{2}/ })
   await expect(rows.first()).toBeVisible()
   expect(await rows.count()).toBeGreaterThanOrEqual(10)
+})
+
+test('a phone can switch between the agenda and the hour grid', async ({ page }, testInfo) => {
+  // The grid used to be desktop-only. On a phone it is now a choice: the agenda stays the
+  // default, and the switch remembers the other shape for the next visit. A desk keeps the grid
+  // whatever the switch says, so this test only means something on the narrow project.
+  test.skip(testInfo.project.name !== 'mobile', 'the switch is the narrow-screen view picker')
+
+  const dateKey = nextOpenDateKey(7)
+  const agenda = page.getByRole('radio', { name: 'Prikaži listu termina' })
+  const grid = page.getByRole('radio', { name: 'Prikaži raspored po satima' })
+
+  await page.goto('/')
+  await page.evaluate(() => window.localStorage.removeItem('mojfriz.calendarView'))
+  await page.goto(`/kalendar?datum=${dateKey}`)
+  await expect(agenda).toBeVisible()
+  await expect(agenda).toHaveAttribute('aria-checked', 'true')
+
+  // The grid is its own shape: a column per hairdresser, each with its hours under the name.
+  // The agenda has no such column, so it tells the two views apart. The hours depend on the day,
+  // so the test keys on the "HH:MM–HH:MM" line rather than one fixed hour. Both views stay in
+  // the DOM (CSS hides one), so every check is about visibility, not presence.
+  const columnHours = page.getByText(/^\d{2}:\d{2}–\d{2}:\d{2}$/)
+  await expect(columnHours.first()).toBeHidden()
+
+  await grid.click()
+  await expect(grid).toHaveAttribute('aria-checked', 'true')
+  await expect(agenda).toHaveAttribute('aria-checked', 'false')
+  await expect(columnHours.first()).toBeVisible()
+
+  // The choice survives a reload.
+  await page.reload()
+  await expect(grid).toHaveAttribute('aria-checked', 'true')
+  await expect(columnHours.first()).toBeVisible()
+
+  // And the way back is one tap.
+  await agenda.click()
+  await expect(agenda).toHaveAttribute('aria-checked', 'true')
+  await expect(columnHours.first()).toBeHidden()
 })

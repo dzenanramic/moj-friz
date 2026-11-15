@@ -1,3 +1,5 @@
+import { Scissors } from 'lucide-react'
+
 import { cn } from '@/lib/cn'
 import { initials } from '@/lib/text'
 
@@ -7,6 +9,24 @@ import { initials } from '@/lib/text'
  * The owner mark is the brand blue; the public booking page uses `tone="ink"` instead. It is
  * a monogram rather than an app icon: the display face, set tight, on a squared mark.
  */
+/**
+ * The product's own mark: the scissors the tab icon carries. It names Moj friz, not the salon,
+ * so it does not change when a different salon signs in.
+ */
+export function AppMark({ size = 'md' }: { size?: 'md' | 'sm' }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'flex shrink-0 items-center justify-center bg-primary text-on-primary',
+        size === 'sm' ? 'h-8 w-8 rounded-xs' : 'h-9 w-9 rounded-xs',
+      )}
+    >
+      <Scissors className={size === 'sm' ? 'h-4 w-4' : 'h-[1.15rem] w-[1.15rem]'} strokeWidth={2} />
+    </span>
+  )
+}
+
 export function SalonMark({
   name,
   size = 'md',

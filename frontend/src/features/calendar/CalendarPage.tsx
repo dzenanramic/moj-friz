@@ -29,7 +29,9 @@ import {
 import { AppointmentDialog } from '../appointments/AppointmentDialog'
 import { AppointmentListItem } from '../appointments/AppointmentListItem'
 import { CalendarGrid } from './CalendarGrid'
+import { CalendarViewSwitch } from './CalendarViewSwitch'
 import { HairdresserFilter } from './HairdresserFilter'
+import { useCalendarView } from './useCalendarView'
 
 interface DialogState {
   mode: 'create' | 'edit'
@@ -102,6 +104,14 @@ export function CalendarPage() {
 
   const openAppointment = (appointment: AppointmentView) => setDialog({ mode: 'edit', appointment })
 
+  /*
+   * Agenda or hour grid. The grid used to be a desktop-only layout; now it is a choice that
+   * exists on a phone too (the agenda is still the default), and the switch sits beside the
+   * hairdresser filter so the two filters of the page are one row.
+   */
+  const { view, choose: chooseView } = useCalendarView()
+  const showGrid = view === 'grid'
+
   const [swipeNudge, setSwipeNudge] = useState<SwipeDirection | null>(null)
 
   /** One day back on a right swipe, one day on on a left swipe. */
@@ -112,7 +122,11 @@ export function CalendarPage() {
     setSwipeNudge(direction)
     window.setTimeout(() => setSwipeNudge(null), 220)
   }
-  const swipe = useSwipe(shiftDay)
+  /*
+   * On the grid, a sideways finger scrolls the hairdresser columns, so it must not also change
+   * the day: two things moving at once. The agenda keeps the swipe.
+   */
+  const swipe = useSwipe(shiftDay, { enabled: !showGrid })
 
   /** Three weeks from today, with the selected day in it: the strip does not follow each tap. */
   const days = useMemo(() => stableDateStripWindow(today, dateKey), [today, dateKey])
@@ -128,7 +142,18 @@ export function CalendarPage() {
 
   return (
     <div>
-      <PageHeader title="Kalendar" align="start" className="pb-4 sm:pb-5" />
+      {/*
+       * The view switch is a property of the day, not of the schedule under it, so it belongs with
+       * the title. On a phone the header stays one block — title, switch under the title, and a
+       * row that begins with a gap — so the switch sits in a column of its own beside the title
+       * instead of wrapping under it.
+       */}
+      <PageHeader
+        title="Kalendar"
+        actionsWrap="beside"
+        className="pb-4 sm:pb-5"
+        actions={<CalendarViewSwitch value={view} onChange={chooseView} />}
+      />
 
       <div className="mb-5">
         {/* Days first: the date row is the spine of the page. */}
@@ -141,21 +166,23 @@ export function CalendarPage() {
         />
 
         {/* One toolbar under the days: whose schedule, and the action. */}
-        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
+        <div className="mt-3 flex items-center gap-1.5 border-t border-line pt-3">
           <HairdresserFilter
             hairdressers={activeHairdressers}
             value={filter}
             onChange={(next) => updateParams(dateKey, next)}
+            className="min-w-0"
           />
           <Button
             size="md"
-            className="ml-auto"
+            /* A phone gets the round + : the words cost the width the filter needs, and the
+               button's accessible name is still "Novi termin". */
+            className="ml-auto max-sm:w-11 max-sm:rounded-full max-sm:px-0"
             aria-label="Novi termin"
             leftIcon={<Plus aria-hidden="true" className="h-4 w-4" />}
             onClick={() => openCreate()}
           >
             <span className="hidden sm:inline">Novi termin</span>
-            <span className="sm:hidden">Novi</span>
           </Button>
         </div>
       </div>
@@ -189,7 +216,7 @@ export function CalendarPage() {
         />
       ) : (
         <>
-          <div className="hidden lg:block">
+          <div className={cn(!showGrid && 'hidden lg:block')}>
             <CalendarGrid
               dateKey={dateKey}
               now={now}
@@ -200,16 +227,19 @@ export function CalendarPage() {
               onCreateAt={(hairdresserId, time) => openCreate({ hairdresserId, time })}
             />
             <p className="mt-3 text-xs leading-relaxed text-muted">
-              Klik na slobodno vrijeme otvara novi termin. Promjena termina je uvijek kroz formu,
-              bez prevlačenja.
+              <span className="hidden sm:inline">
+                Klik na slobodno vrijeme otvara novi termin. Promjena termina je uvijek kroz formu,
+                bez prevlačenja.
+              </span>
+              <span className="sm:hidden">Klik na slobodno vrijeme otvara novi termin.</span>
             </p>
           </div>
 
-          {/* The agenda takes the same swipe: a thumb resting on the list moves the day too. */}
           <div
             {...swipe}
             className={cn(
               'touch-pan-y lg:hidden',
+              showGrid && 'hidden',
               swipeNudge === 'left' && 'animate-[swipe-left_220ms_cubic-bezier(.2,.8,.2,1)]',
               swipeNudge === 'right' && 'animate-[swipe-right_220ms_cubic-bezier(.2,.8,.2,1)]',
             )}

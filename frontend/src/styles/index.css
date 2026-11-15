@@ -218,6 +218,13 @@
   --radius-lg: 0.625rem;
   --radius-xl: 0.875rem;
 
+  /*
+   * The title's line, as a token: the h1 sets 2.25rem/1.08 on a phone and 2.75rem/1.05 above it.
+   * A page header can line a control up with that line instead of guessing its height.
+   */
+  --text-h1: 2.25rem;
+  --text-h1--line-height: 1.08;
+
   --shadow-card: var(--card-shadow);
   --shadow-sheet: var(--sheet-shadow);
   --shadow-toast: var(--toast-shadow);

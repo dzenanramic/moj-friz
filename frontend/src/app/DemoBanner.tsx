@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { ConfirmDialog } from '@/components/ui/Modal'
+import { AppMark } from '@/components/ui/SalonMark'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { gatewayErrorMessage } from '@/data/gateway'
 import { useResetDemo } from '@/data/queries'
+import { APP_NAME } from '@/lib/hooks'
 
 export function DemoBanner() {
   const navigate = useNavigate()
@@ -16,16 +18,25 @@ export function DemoBanner() {
   return (
     <>
       {/*
-       * Demo chrome, deliberately quiet: a hairline strip, not a coloured bar. The product
-       * below it owns the screen; the demo notice only has to be legible, not loud. The
-       * package preview switch lives in Postavke, where the packages are compared.
+       * The product's name, not the salon's. Whatever salon is signed in, this strip is the
+       * application: one identity for every subscriber, one strip at every width (the phone no
+       * longer needs a second header of its own). The demo notice rides beside it as a small
+       * pill — legible, not loud — and the strip stays a hairline, not a coloured bar. The
+       * salon's own name belongs to its data and shows where it is being worked on: the public
+       * booking page, Postavke → Paket. The package preview switch lives in Postavke too.
        */}
       <div className="border-b border-line bg-paper">
-        <div className="mx-auto flex min-h-10 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
-          <p className="min-w-0 truncate text-xs font-medium text-muted">
-            <span className="sm:hidden">Demo</span>
-            <span className="hidden sm:inline">Demo · podaci nisu stvarni</span>
-          </p>
+        <div className="mx-auto flex min-h-12 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <AppMark size="sm" />
+            <p className="display truncate text-[1.15rem] leading-tight text-ink">{APP_NAME}</p>
+          </div>
+          <span
+            aria-label="Demo · podaci nisu stvarni"
+            className="ml-1 inline-flex shrink-0 items-center rounded-full bg-accent-tint px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-accent-ui uppercase"
+          >
+            Demo
+          </span>
 
           <div className="ml-auto flex items-center gap-1 py-0.5">
             <button

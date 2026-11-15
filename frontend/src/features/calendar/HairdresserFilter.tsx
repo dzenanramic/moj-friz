@@ -16,11 +16,13 @@ export function HairdresserFilter({
   hairdressers,
   value,
   onChange,
+  className,
 }: {
   hairdressers: Hairdresser[]
   /** 'all' or a hairdresser id. */
   value: string
   onChange: (next: string) => void
+  className?: string
 }) {
   const [open, setOpen] = useState(false)
   const selected = hairdressers.find((hairdresser) => hairdresser.id === value)
@@ -42,6 +44,7 @@ export function HairdresserFilter({
             selected
               ? 'bg-surface font-medium text-ink ring-1 ring-inset ring-line'
               : 'text-muted hover:bg-surface hover:text-ink',
+            className,
           )}
         >
           {selected ? (
