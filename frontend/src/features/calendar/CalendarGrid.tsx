@@ -24,7 +24,8 @@ interface CalendarGridProps {
   hairdressers: Hairdresser[]
   workingHours: WorkingHoursInterval[]
   appointments: AppointmentView[]
-  blocks: TimeBlock[]
+  /** Breaks and absences, drawn as shaded bands. The calendar page does not show them. */
+  blocks?: TimeBlock[]
   onOpenAppointment: (appointment: AppointmentView) => void
   onCreateAt: (hairdresserId: string, time: string) => void
 }
@@ -40,7 +41,7 @@ export function CalendarGrid({
   hairdressers,
   workingHours,
   appointments,
-  blocks,
+  blocks = [],
   onOpenAppointment,
   onCreateAt,
 }: CalendarGridProps) {

@@ -1,4 +1,4 @@
-import { Coffee, Eye, Plus } from 'lucide-react'
+import { Coffee, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
@@ -8,8 +8,8 @@ import {
 } from '@/components/date-strip/HorizontalDateStrip'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ErrorState, PageHeader, Panel, Skeleton } from '@/components/ui/Layout'
-import { useAppointments, useHairdressers, useTimeBlocks, useWorkingHours } from '@/data/queries'
-import type { AppointmentView, Hairdresser, TimeBlock } from '@/data/types'
+import { useAppointments, useHairdressers, useWorkingHours } from '@/data/queries'
+import type { AppointmentView } from '@/data/types'
 import { cn } from '@/lib/cn'
 import { useNow, usePageTitle } from '@/lib/hooks'
 import { useSwipe, type SwipeDirection } from '@/lib/swipe'
@@ -19,7 +19,6 @@ import {
   dayRange,
   formatDateCompact,
   formatDateLong,
-  formatTime,
   formatWeekday,
   isValidDateKey,
   stableDateStripWindow,
@@ -51,7 +50,6 @@ export function CalendarPage() {
   const workingHours = useWorkingHours()
   const range = useMemo(() => dayRange(dateKey), [dateKey])
   const appointments = useAppointments(range)
-  const blocks = useTimeBlocks(range)
 
   const activeHairdressers = useMemo(
     () => (hairdressersQuery.data ?? []).filter((hairdresser) => hairdresser.isActive),
@@ -81,25 +79,7 @@ export function CalendarPage() {
       ),
     [appointments.data, filter],
   )
-  const dayBlocks = useMemo(
-    () => (blocks.data ?? []).filter((block) => filter === 'all' || block.hairdresserId === filter),
-    [blocks.data, filter],
-  )
-  const breakCount = dayBlocks.length
-
   const [dialog, setDialog] = useState<DialogState | null>(null)
-  /** Breaks are context, not work: a quiet line by default, one toggle to see them in full. */
-  const [showBreaks, setShowBreaks] = useState(false)
-
-  const agenda = useMemo(
-    () => buildAgenda(dayAppointments, dayBlocks),
-    [dayAppointments, dayBlocks],
-  )
-  /** The agenda keeps the work in front: breaks join only when the owner asks for them. */
-  const visibleAgenda = useMemo(
-    () => (showBreaks ? agenda : agenda.filter((entry) => entry.kind === 'appointment')),
-    [agenda, showBreaks],
-  )
 
   const updateParams = (nextDateKey: string, nextFilter: string) => {
     const next = new URLSearchParams(searchParams)
@@ -144,11 +124,7 @@ export function CalendarPage() {
     day: formatDateCompact(day).slice(0, 5),
     dot: day === today ? 'today' : false,
   }))
-  const pending =
-    appointments.isPending ||
-    blocks.isPending ||
-    workingHours.isPending ||
-    hairdressersQuery.isPending
+  const pending = appointments.isPending || workingHours.isPending || hairdressersQuery.isPending
 
   return (
     <div>
@@ -164,35 +140,13 @@ export function CalendarPage() {
           onChange={(next) => updateParams(next, filter)}
         />
 
-        {/* One toolbar under the days: whose schedule, whether breaks show, and the action. */}
+        {/* One toolbar under the days: whose schedule, and the action. */}
         <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
           <HairdresserFilter
             hairdressers={activeHairdressers}
             value={filter}
             onChange={(next) => updateParams(dateKey, next)}
           />
-          {breakCount > 0 && !pending ? (
-            <button
-              type="button"
-              aria-pressed={showBreaks}
-              onClick={() => setShowBreaks((current) => !current)}
-              className={cn(
-                'inline-flex min-h-11 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors lg:hidden',
-                showBreaks
-                  ? 'bg-primary-tint font-medium text-primary-hover'
-                  : 'text-muted hover:bg-surface hover:text-ink',
-              )}
-            >
-              <Coffee aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-              <span className="whitespace-nowrap">
-                {breakCount} {breakCount === 1 ? 'pauza' : 'pauze'}
-              </span>
-              <Eye
-                aria-hidden="true"
-                className={cn('h-3.5 w-3.5 shrink-0', showBreaks ? 'opacity-100' : 'opacity-50')}
-              />
-            </button>
-          ) : null}
           <Button
             size="md"
             className="ml-auto"
@@ -208,13 +162,12 @@ export function CalendarPage() {
 
       {pending ? (
         <Skeleton className="h-[420px] w-full rounded-lg" />
-      ) : appointments.isError || blocks.isError || workingHours.isError ? (
+      ) : appointments.isError || workingHours.isError ? (
         <ErrorState
           title="Raspored se nije učitao"
           message="Osvježite prikaz ili pokušajte ponovo."
           onRetry={() => {
             void appointments.refetch()
-            void blocks.refetch()
             void workingHours.refetch()
             void hairdressersQuery.refetch()
           }}
@@ -243,7 +196,6 @@ export function CalendarPage() {
               hairdressers={visibleHairdressers}
               workingHours={workingHours.data ?? []}
               appointments={dayAppointments}
-              blocks={dayBlocks}
               onOpenAppointment={openAppointment}
               onCreateAt={(hairdresserId, time) => openCreate({ hairdresserId, time })}
             />
@@ -262,32 +214,22 @@ export function CalendarPage() {
               swipeNudge === 'right' && 'animate-[swipe-right_220ms_cubic-bezier(.2,.8,.2,1)]',
             )}
           >
-            {visibleAgenda.length > 0 ? (
+            {dayAppointments.length > 0 ? (
               <Panel className="py-1">
-                {visibleAgenda.map((entry) =>
-                  entry.kind === 'appointment' ? (
-                    <AppointmentListItem
-                      key={entry.id}
-                      appointment={entry.appointment}
-                      onOpen={openAppointment}
-                    />
-                  ) : (
-                    <BreakRow
-                      key={entry.id}
-                      block={entry.block}
-                      member={activeHairdressers.find(
-                        (hairdresser) => hairdresser.id === entry.block.hairdresserId,
-                      )}
-                    />
-                  ),
-                )}
+                {dayAppointments.map((appointment) => (
+                  <AppointmentListItem
+                    key={appointment.id}
+                    appointment={appointment}
+                    onOpen={openAppointment}
+                  />
+                ))}
               </Panel>
             ) : (
               <EmptyState
                 as="h2"
                 icon={Coffee}
                 title="Nema termina za ovaj dan"
-                description="Slobodno vrijeme je dostupno za novi termin ili pauzu."
+                description="Slobodno vrijeme je dostupno za novi termin."
                 action={
                   <Button
                     variant="secondary"
@@ -313,44 +255,4 @@ export function CalendarPage() {
       ) : null}
     </div>
   )
-}
-
-/**
- * A break is context, not work: one quiet line instead of a row that competes with the
- * real appointments above it.
- */
-function BreakRow({ block, member }: { block: TimeBlock; member?: Hairdresser }) {
-  return (
-    <div className="flex items-center gap-3 border-b border-line px-3 py-2 last:border-b-0">
-      <span className="tabular w-[86px] shrink-0 text-[0.7rem] text-muted">
-        {formatTime(block.startsAt)}–{formatTime(block.endsAt)}
-      </span>
-      <Coffee aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
-      <p className="min-w-0 flex-1 truncate text-xs text-muted">
-        {block.reason}
-        {member ? <span className="text-muted"> · {member.displayName}</span> : null}
-      </p>
-    </div>
-  )
-}
-
-type AgendaEntry =
-  | { kind: 'appointment'; id: string; appointment: AppointmentView }
-  | { kind: 'block'; id: string; block: TimeBlock }
-
-function buildAgenda(appointments: AppointmentView[], blocks: TimeBlock[]): AgendaEntry[] {
-  const entries: AgendaEntry[] = [
-    ...appointments.map((appointment) => ({
-      kind: 'appointment' as const,
-      id: appointment.id,
-      appointment,
-    })),
-    ...blocks.map((block) => ({ kind: 'block' as const, id: block.id, block })),
-  ]
-  return entries.sort((left, right) => {
-    const leftStart = left.kind === 'appointment' ? left.appointment.startsAt : left.block.startsAt
-    const rightStart =
-      right.kind === 'appointment' ? right.appointment.startsAt : right.block.startsAt
-    return new Date(leftStart).getTime() - new Date(rightStart).getTime()
-  })
 }
