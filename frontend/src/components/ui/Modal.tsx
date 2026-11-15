@@ -71,7 +71,7 @@ export function Modal({
               <X aria-hidden="true" className="h-5 w-5" />
             </Button>
           </Dialog.Close>
-          <div className="dialog-sheet-body mt-2.5 pr-1">{children}</div>
+          <div className="dialog-sheet-body mt-2.5">{children}</div>
           {footer ? (
             <div className="mt-6 flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               {footer}

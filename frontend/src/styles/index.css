@@ -422,6 +422,13 @@
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
+  /* Still scrolls, but without a visible track or thumb competing with the form. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dialog-sheet-body::-webkit-scrollbar {
+  display: none;
 }
 
 .dialog-content[data-state='open'] {
