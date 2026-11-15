@@ -1,18 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, CircleSlash, Search, UserPlus, X } from 'lucide-react'
+import { Check, CircleSlash, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import { Avatar, Skeleton } from '@/components/ui/Layout'
+import { DateSelectField } from '@/components/date-strip/DateSelectField'
+import { Skeleton } from '@/components/ui/Layout'
 import { Button } from '@/components/ui/Button'
 import { StatusPill } from '@/components/ui/Badges'
-import { FormError, Input, SelectField, TextField, TextareaField } from '@/components/ui/form'
+import { FormError, SelectField, TextField, TextareaField } from '@/components/ui/form'
 import { ConfirmDialog, Modal } from '@/components/ui/Modal'
 import { gatewayErrorMessage } from '@/data/gateway'
 import {
   useCancelAppointment,
-  useClients,
   useCreateAppointment,
   useHairdressers,
   useOwnerAvailability,
@@ -20,19 +20,14 @@ import {
   useSetAppointmentStatus,
   useUpdateAppointment,
 } from '@/data/queries'
-import type { AppointmentDraft, AppointmentView, Client } from '@/data/types'
+import type { AppointmentDraft, AppointmentView } from '@/data/types'
 import { cn } from '@/lib/cn'
 import { formatDuration, formatKM } from '@/lib/format'
-import { useDebouncedValue } from '@/lib/hooks'
 import {
-  addDaysToDateKey,
   dateKeyFromInstant,
-  capitalizeFirst,
   formatDateKey,
   formatTime,
   formatTimeRange,
-  formatWeekday,
-  rangeDateKeys,
   todayDateKey,
 } from '@/lib/time'
 import { appointmentFormSchema, type AppointmentFormValues } from '@/lib/validation'
@@ -48,12 +43,6 @@ interface AppointmentDialogProps {
   appointment?: AppointmentView
   defaults?: AppointmentDefaults
   onClose: () => void
-}
-
-interface SelectedClient {
-  id: string
-  name: string
-  phone: string
 }
 
 function timeValueFromInstant(instant: string): string {
@@ -74,19 +63,8 @@ export function AppointmentDialog({
   const setStatus = useSetAppointmentStatus()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [confirmCancel, setConfirmCancel] = useState(false)
-  const [selectedClient, setSelectedClient] = useState<SelectedClient | null>(
-    appointment
-      ? {
-          id: appointment.clientId,
-          name: appointment.clientName,
-          phone: appointment.clientPhone,
-        }
-      : null,
-  )
-  const [isNewClient, setIsNewClient] = useState(false)
-  const [clientSearch, setClientSearch] = useState('')
-  const debouncedSearch = useDebouncedValue(clientSearch, 180)
-  const clients = useClients(debouncedSearch, 1, 6)
+  // Editing keeps the appointment's client unless the owner deliberately types a new name.
+  const [keepCurrentClient, setKeepCurrentClient] = useState(Boolean(appointment))
 
   const firstHairdresserId =
     defaults?.hairdresserId ??
@@ -100,8 +78,8 @@ export function AppointmentDialog({
       hairdresserId: firstHairdresserId,
       serviceId: appointment?.serviceId ?? '',
       clientId: appointment?.clientId,
-      newClientName: '',
-      newClientPhone: '',
+      newClientName: appointment?.clientName ?? '',
+      newClientPhone: appointment?.clientPhone ?? '',
       dateKey: appointment
         ? dateKeyFromInstant(appointment.startsAt)
         : (defaults?.dateKey ?? todayDateKey()),
@@ -152,7 +130,6 @@ export function AppointmentDialog({
   }, [selectedHairdresser, services.data, getValues, setValue])
 
   const today = todayDateKey()
-  const dateOptions = useMemo(() => rangeDateKeys(today, addDaysToDateKey(today, 90)), [today])
   const availabilityQuery =
     hairdresserId && serviceId && dateKey
       ? {
@@ -169,8 +146,11 @@ export function AppointmentDialog({
     [availability.data],
   )
 
+  // The times belong to the day they were fetched for. A slow answer for a day the owner has
+  // already left must not overwrite the time of the day now on screen.
   useEffect(() => {
     if (mode !== 'create' || !availability.data) return
+    if (availability.data.dateKey !== getValues('dateKey')) return
     const current = getValues('time')
     if (current && availableTimes.includes(current)) return
     setValue('time', availableTimes[0] ?? '', { shouldValidate: false })
@@ -185,12 +165,16 @@ export function AppointmentDialog({
 
   const onSubmit = form.handleSubmit(async (values) => {
     setSubmitError(null)
+    const clientTyped =
+      values.newClientName !== (appointment?.clientName ?? '') ||
+      values.newClientPhone !== (appointment?.clientPhone ?? '')
+    const clientId = keepCurrentClient && !clientTyped ? values.clientId : undefined
     const draft: AppointmentDraft = {
       hairdresserId: values.hairdresserId,
       serviceId: values.serviceId,
-      clientId: values.clientId,
-      newClientName: values.clientId ? undefined : values.newClientName,
-      newClientPhone: values.clientId ? undefined : values.newClientPhone,
+      clientId,
+      newClientName: clientId ? undefined : values.newClientName,
+      newClientPhone: clientId ? undefined : values.newClientPhone,
       dateKey: values.dateKey,
       time: values.time,
       internalNote: values.internalNote,
@@ -210,32 +194,6 @@ export function AppointmentDialog({
       setSubmitError(gatewayErrorMessage(error))
     }
   })
-
-  const chooseClient = (client: Client) => {
-    setSelectedClient({ id: client.id, name: client.name, phone: client.phoneOriginal })
-    setIsNewClient(false)
-    setClientSearch('')
-    setValue('clientId', client.id, { shouldValidate: true })
-    setValue('newClientName', '')
-    setValue('newClientPhone', '')
-    clearErrors(['newClientName', 'newClientPhone'])
-  }
-
-  const startNewClient = () => {
-    setSelectedClient(null)
-    setIsNewClient(true)
-    setValue('clientId', undefined)
-    clearErrors(['clientId', 'newClientName', 'newClientPhone'])
-  }
-
-  const chooseExisting = () => {
-    setIsNewClient(false)
-    setValue('clientId', undefined)
-    setValue('newClientName', '')
-    setValue('newClientPhone', '')
-    setSelectedClient(null)
-    clearErrors(['newClientName', 'newClientPhone'])
-  }
 
   const pending = createAppointment.isPending || updateAppointment.isPending
   const actionPending = cancelAppointment.isPending || setStatus.isPending
@@ -304,113 +262,35 @@ export function AppointmentDialog({
         <form id="appointment-form" onSubmit={onSubmit} className="space-y-5" noValidate>
           {submitError ? <FormError>{submitError}</FormError> : null}
 
-          <div className="space-y-2">
-            {selectedClient ? (
-              <div className="flex flex-wrap items-center gap-3 rounded-md bg-paper px-3 py-2.5">
-                <Avatar name={selectedClient.name} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-ink">{selectedClient.name}</p>
-                  <p className="mt-0.5 text-xs text-muted">{selectedClient.phone}</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedClient(null)
-                    setValue('clientId', undefined)
-                    clearErrors('newClientName')
-                  }}
-                >
-                  Promijeni
-                </Button>
-              </div>
-            ) : isNewClient ? (
-              <div className="space-y-3 rounded-md bg-paper p-3.5">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <TextField
-                    label="Ime i prezime"
-                    id="new-client-name"
-                    autoComplete="off"
-                    placeholder="npr. Ana Marković"
-                    error={errors.newClientName?.message}
-                    {...register('newClientName')}
-                  />
-                  <TextField
-                    label="Telefon"
-                    id="new-client-phone"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="off"
-                    placeholder="npr. 061 000 001"
-                    error={errors.newClientPhone?.message}
-                    {...register('newClientPhone')}
-                  />
-                </div>
-                <Button type="button" variant="quiet" size="sm" onClick={chooseExisting}>
-                  Izaberi postojećeg klijenta
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="relative">
-                  <Search
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-                  />
-                  <Input
-                    type="search"
-                    className="pl-9"
-                    placeholder="Ime ili telefon klijenta"
-                    aria-label="Pretraži klijente"
-                    value={clientSearch}
-                    onChange={(event) => setClientSearch(event.target.value)}
-                  />
-                </div>
-                <div className="rounded-md bg-paper p-1.5">
-                  {clients.isPending ? (
-                    <div className="space-y-1.5 p-2">
-                      <Skeleton className="h-9 w-full" />
-                      <Skeleton className="h-9 w-full" />
-                    </div>
-                  ) : clients.data && clients.data.items.length > 0 ? (
-                    <ul className="max-h-44 space-y-0.5 overflow-y-auto">
-                      {clients.data.items.map((client) => (
-                        <li key={client.id}>
-                          <button
-                            type="button"
-                            onClick={() => chooseClient(client)}
-                            className="flex min-h-10 w-full items-center gap-2.5 rounded-sm px-2.5 py-1.5 text-left transition-colors hover:bg-surface"
-                          >
-                            <Avatar name={client.name} size="sm" />
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-medium text-ink">
-                                {client.name}
-                              </span>
-                              <span className="block text-xs text-muted">
-                                {client.phoneOriginal}
-                              </span>
-                            </span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="px-2.5 py-2 text-sm text-muted">
-                      Nema rezultata za „{debouncedSearch}“.
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={startNewClient}
-                    className="flex min-h-10 w-full items-center gap-2 rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface"
-                  >
-                    <UserPlus aria-hidden="true" className="h-4 w-4" />
-                    Novi klijent
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Ime i prezime"
+              id="appointment-client-name"
+              autoComplete="off"
+              placeholder="npr. Ana Marković"
+              error={errors.newClientName?.message}
+              {...register('newClientName', {
+                onChange: () => {
+                  setKeepCurrentClient(false)
+                  clearErrors('clientId')
+                },
+              })}
+            />
+            <TextField
+              label="Broj telefona"
+              id="appointment-client-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              placeholder="npr. 061 000 001"
+              error={errors.newClientPhone?.message}
+              {...register('newClientPhone', {
+                onChange: () => {
+                  setKeepCurrentClient(false)
+                  clearErrors('clientId')
+                },
+              })}
+            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -446,23 +326,19 @@ export function AppointmentDialog({
             </SelectField>
           </div>
 
-          <SelectField
+          <DateSelectField
             label="Datum"
             id="appointment-date"
+            value={dateKey ?? ''}
+            onChange={(next) => setValue('dateKey', next, { shouldValidate: true })}
+            startDateKey={today}
             error={errors.dateKey?.message}
             hint={
               selectedService
                 ? `Trajanje usluge: ${formatDuration(selectedService.durationMinutes)}`
                 : undefined
             }
-            {...register('dateKey')}
-          >
-            {dateOptions.map((option) => (
-              <option key={option} value={option}>
-                {dateOptionLabel(option, today)}
-              </option>
-            ))}
-          </SelectField>
+          />
 
           <fieldset>
             <legend className="text-sm font-medium text-ink">Vrijeme</legend>
@@ -674,10 +550,4 @@ function ReadOnlyAppointmentDialog({
       ) : null}
     </Modal>
   )
-}
-
-function dateOptionLabel(dateKey: string, today: string): string {
-  if (dateKey === today) return `Danas — ${formatDateKey(dateKey)}`
-  if (dateKey === addDaysToDateKey(today, 1)) return `Sutra — ${formatDateKey(dateKey)}`
-  return `${capitalizeFirst(formatWeekday(dateKey))}, ${formatDateKey(dateKey)}`
 }
