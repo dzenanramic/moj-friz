@@ -6,59 +6,12 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/Modal'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { gatewayErrorMessage } from '@/data/gateway'
-import { useResetDemo, useSalon, useSetDemoLevel } from '@/data/queries'
-import { cn } from '@/lib/cn'
-
-import type { PlanLevel } from '@/data/types'
-
-function LevelButton({
-  level,
-  active,
-  pending,
-  onClick,
-}: {
-  level: PlanLevel
-  active: boolean
-  pending: boolean
-  onClick: () => void
-}) {
-  const label = level === 'level_1' ? 'Paket 1' : 'Paket 2'
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      aria-label={`Prikaži ${label}`}
-      disabled={pending}
-      onClick={onClick}
-      className={cn(
-        'min-h-11 rounded-sm px-3 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary dark:focus-visible:outline-primary',
-        active
-          ? 'bg-paper text-primary dark:bg-primary dark:text-on-primary'
-          : 'text-on-primary hover:bg-primary-hover dark:text-ink dark:hover:bg-paper',
-      )}
-    >
-      {label}
-    </button>
-  )
-}
+import { useResetDemo } from '@/data/queries'
 
 export function DemoBanner() {
   const navigate = useNavigate()
-  const salon = useSalon()
-  const setLevel = useSetDemoLevel()
   const resetDemo = useResetDemo()
   const [confirmReset, setConfirmReset] = useState(false)
-  const level = salon.data?.plan ?? 'level_2'
-
-  const changeLevel = (next: PlanLevel) => {
-    if (next === level) return
-    setLevel.mutate(next, {
-      onSuccess: () => {
-        toast.success(`Prikaz je prebačen na ${next === 'level_1' ? 'Paket 1' : 'Paket 2'}.`)
-      },
-      onError: (error) => toast.error(gatewayErrorMessage(error)),
-    })
-  }
 
   return (
     <>
@@ -70,10 +23,10 @@ export function DemoBanner() {
           </p>
 
           <div className="ml-auto flex items-center gap-2 py-1">
-            <span className="mr-1.5 hidden text-xs text-on-primary md:inline dark:text-ink">
+            {/* <span className="mr-1.5 hidden text-xs text-on-primary md:inline dark:text-ink">
               Prikaz paketa
-            </span>
-            <LevelButton
+            </span> */}
+            {/* <LevelButton
               level="level_1"
               active={level === 'level_1'}
               pending={setLevel.isPending}
@@ -84,7 +37,7 @@ export function DemoBanner() {
               active={level === 'level_2'}
               pending={setLevel.isPending}
               onClick={() => changeLevel('level_2')}
-            />
+            /> */}
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
