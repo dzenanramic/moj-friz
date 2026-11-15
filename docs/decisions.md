@@ -6,18 +6,55 @@ pilot backend already exists.
 
 ## Founder product decisions
 
-| #   | Decision                       | Chosen default                                                                   | Status                  |
-| --- | ------------------------------ | -------------------------------------------------------------------------------- | ----------------------- |
-| 1   | Public booking outcome         | **Auto-confirm** immediately on submit                                           | Approved for pilot plan |
-| 2   | “Any available hairdresser”    | **Not included**; guest picks a specific hairdresser                             | Approved                |
-| 3   | Public booking lead time       | **60 minutes** ahead                                                             | Approved                |
-| 4   | Public booking horizon         | **30 days** ahead                                                                | Approved                |
-| 5   | Guest cancel/reschedule cutoff | **2 hours** before the appointment                                               | Approved                |
-| 6   | Trial length                   | **14 days**, extendable manually                                                 | Approved                |
-| 7   | Trial expiry behavior          | **Notice only**, manually managed; no feature lock                               | Approved                |
-| 8   | Staff accounts                 | **Owner account only** initially; membership model and `hairdresser_id` retained | Approved                |
-| 9   | Service duration               | **One duration per service**, same for all hairdressers                          | Approved                |
-| 10  | Guest phone verification       | **None** in the controlled pilot; documented impersonation/spam risk             | Approved with risk      |
+| #   | Decision                       | Chosen default                                                                                            | Status                  |
+| --- | ------------------------------ | --------------------------------------------------------------------------------------------------------- | ----------------------- |
+| 1   | Public booking outcome         | **Auto-confirm** immediately on submit                                                                    | Approved for pilot plan |
+| 2   | “Any available hairdresser”    | **Not included**; guest picks a specific hairdresser                                                      | Approved                |
+| 3   | Public booking lead time       | **60 minutes** ahead                                                                                      | Approved                |
+| 4   | Public booking horizon         | **30 days** ahead                                                                                         | Approved                |
+| 5   | Guest cancel/reschedule cutoff | **2 hours** before the appointment                                                                        | Approved                |
+| 6   | Trial length                   | **14 days**, extendable manually                                                                          | Approved                |
+| 7   | Trial expiry behavior          | **Notice only**, manually managed; no feature lock                                                        | Approved                |
+| 8   | Staff accounts                 | **Owner account only** initially; membership model and `hairdresser_id` retained                          | Approved                |
+| 9   | Service duration               | **One duration per service**, same for all hairdressers                                                   | Approved                |
+| 10  | Guest phone verification       | **None** in the controlled pilot; documented impersonation/spam risk                                      | Approved with risk      |
+| 11  | Colour palette                 | **Ink blue + copper** on a paper-cream base; dark is a warm near-black blue. The green palette is dropped | Approved 15.11.2026     |
+
+## Palette (decision 11)
+
+Semantic tokens in `frontend/src/styles/index.css`; components name roles (`bg-paper`, `text-ink`),
+never colours. Dark values live under `.dark`, not in a media query, so a stored choice can win.
+
+| Role                        | Light                                         | Dark                                          |
+| --------------------------- | --------------------------------------------- | --------------------------------------------- |
+| paper / surface / line      | `#F6F2EA` / `#FCFAF6` / `#E2DACB`             | `#12151D` / `#1A1E29` / `#2B3142`             |
+| ink / muted                 | `#1F2430` / `#4F5A6A`                         | `#ECE8DF` / `#A2A8B8`                         |
+| primary / hover / tint / on | `#243B6B` / `#1A2D54` / `#DDE3F0` / `#FCFAF6` | `#8FA6E0` / `#A9BCEA` / `#222C4A` / `#0F1320` |
+| accent / tint / on / ui     | `#D1823A` / `#F8E4CF` / `#1F2430` / `#8A4E12` | `#E39A56` / `#3A2A18` / `#12151D` / `#E39A56` |
+| brick / tint / ink          | `#B4574B` / `#F2DAD5` / `#963F2D`             | `#DB8579` / `#3B2420` / `#F0A398`             |
+| danger / on-danger          | `#A33B2B` / `#FCFAF6`                         | `#E27D6B` / `#1A0F0E`                         |
+
+- Contrast (WCAG 2.2 AA) is enforced by `frontend/src/styles/contrast.test.ts`; the review that
+  produced the values above is recorded with the audit script.
+- Corrections to the founder's first values, all measured: `muted` light `#626877` → `#4F5A6A`
+  (4.02 on `line`, 3.80 on the plum hairdresser card); `brick-ink` and `accent-ui` added because
+  brick as text (4.27) and copper as a 3:1 mark (2.70) fail on cream; `accent-ui` is a text-grade
+  darkened copper so the same tone can be a pending label and a hairdresser bar (5.92 on paper,
+  4.97 on the copper card); hairdresser bar edges 1–6 in light are `#36539A` `#8A4E12` `#983B2F`
+  `#7A5A86` `#8A6D14` `#4B5366`; `on-danger` because white on dark `#E27D6B` is 2.85.
+  `public/theme-boot.css` repeats these values for the first paint; the contrast test fails if the
+  copy drifts.
+- Rules: copper is a fill (the one CTA per screen), never text; `muted` never sits inside a
+  hairdresser tinted card; `line` is a border, not text.
+- Theme: the page starts from `prefers-color-scheme` before React mounts
+  (`frontend/index.html`), an explicit choice is stored in `mojfriz.theme` and wins. The switch is
+  one button (moon in light, sun in dark) on the Postavke page and in the demo bar on every screen,
+  public page included; the site is served with `script-src 'self'`, so no inline script is used.
+- "Javna stranica" in the sidebar is a **sign-out**: it opens the public page in a new tab,
+  deliberately bypassing the demo's owner screens.
+- Hairdresser colours are six seats (`1`–`6`), assigned in `frontend/src/demo/seed.ts`: Lana plum,
+  Amina blue, Milica brick. The blue seat is not the first one so a calendar column in the primary
+  colour never reads as selection. The public booking flow shows no hairdresser colour.
 
 ## Engineering defaults
 

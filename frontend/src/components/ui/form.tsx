@@ -11,7 +11,7 @@ import {
 import { cn } from '@/lib/cn'
 
 const controlBase =
-  'block w-full rounded-md border border-line-strong bg-surface px-3 text-base text-ink outline-none placeholder:text-muted transition-[border-color,box-shadow,background-color] duration-150 hover:border-line-strong focus:border-pine focus:shadow-[0_0_0_3px_var(--color-pine-soft)] disabled:bg-paper disabled:text-muted aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:shadow-[0_0_0_3px_var(--color-danger-soft)]'
+  'block w-full rounded-md border border-line bg-surface px-3 text-base text-ink outline-none placeholder:text-muted transition-[border-color,box-shadow,background-color] duration-150 hover:border-muted focus:border-primary focus:shadow-[0_0_0_3px_var(--primary-tint)] disabled:bg-paper disabled:text-muted aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:shadow-[0_0_0_3px_var(--brick-tint)]'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...props }, ref) {
@@ -228,7 +228,7 @@ export function CheckboxField({
           onChange={(event) => onCheckedChange(event.target.checked)}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="mt-0.5 h-5 w-5 shrink-0 rounded-xs border-line-strong accent-pine"
+          className="mt-0.5 h-5 w-5 shrink-0 rounded-xs border-line accent-primary"
         />
         <span>{label}</span>
       </label>
@@ -245,7 +245,7 @@ export function FormError({ children }: { children: ReactNode }) {
   return (
     <div
       role="alert"
-      className="flex items-start gap-2.5 rounded-md bg-danger-soft px-3.5 py-3 text-sm leading-relaxed text-danger-strong"
+      className="flex items-start gap-2.5 rounded-md bg-brick-tint px-3.5 py-3 text-sm leading-relaxed text-danger"
     >
       <TriangleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
       <span>{children}</span>

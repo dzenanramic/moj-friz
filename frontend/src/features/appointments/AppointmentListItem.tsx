@@ -54,7 +54,7 @@ export function AppointmentListItem({
           <span
             className={cn(
               'truncate text-sm font-semibold sm:text-[0.95rem]',
-              muted ? 'text-muted line-through decoration-line-strong' : 'text-ink',
+              muted ? 'text-muted line-through decoration-line' : 'text-ink',
             )}
           >
             {appointment.clientName}
@@ -80,7 +80,7 @@ export function AppointmentListItem({
       </span>
 
       {interactive ? (
-        <span className="flex w-5 shrink-0 items-center justify-end self-center text-line-strong transition-colors group-hover:text-pine">
+        <span className="flex w-5 shrink-0 items-center justify-end self-center text-muted transition-colors group-hover:text-primary">
           <ChevronRight aria-hidden="true" className="h-4 w-4" />
         </span>
       ) : null}

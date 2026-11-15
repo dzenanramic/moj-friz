@@ -1,6 +1,7 @@
 export type PlanLevel = 'level_1' | 'level_2'
 export type SubscriptionStatus = 'trial' | 'active' | 'cancelled' | 'past_due'
-export type StaffColor = 'pine' | 'slate' | 'clay'
+/** Hairdressers 1–6. The colour belongs to the seat, not to the person, so it can be reassigned. */
+export type StaffColor = '1' | '2' | '3' | '4' | '5' | '6'
 
 /** 0 = ponedjeljak, 6 = nedjelja (ISO-ish, but zero-based). */
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6
@@ -190,7 +191,8 @@ export interface PublicServiceView {
 export interface PublicHairdresserView {
   id: string
   displayName: string
-  colorKey: StaffColor
+  /** The public booking flow does not colour hairdressers: a guest picks a person, not a seat. */
+  colorKey?: StaffColor
   serviceIds: string[]
 }
 

@@ -62,6 +62,7 @@ export async function submitNewClientAppointment(
   await dialog.locator('#appointment-date').selectOption(options.dateKey)
   await expect(dialog.locator('fieldset button').first()).toBeVisible()
   await dialog.locator('fieldset button').first().click()
-  await dialog.getByRole('button', { name: 'Dodaj termin' }).click()
+  // "Dodaj termin" keeps the dialog open for the next booking; the close variant ends it.
+  await dialog.getByRole('button', { name: 'Dodaj i zatvori' }).click()
   await expect(dialog).toBeHidden()
 }

@@ -4,18 +4,24 @@ import { Link, type LinkProps } from 'react-router'
 
 import { cn } from '@/lib/cn'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'quiet' | 'danger' | 'danger-ghost'
+export type ButtonVariant =
+  'primary' | 'accent' | 'secondary' | 'ghost' | 'quiet' | 'danger' | 'danger-ghost'
 
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-pine text-white hover:bg-pine-strong',
-  secondary:
-    'bg-surface text-ink ring-1 ring-inset ring-line hover:ring-line-strong active:ring-line-strong',
-  ghost: 'text-ink hover:bg-pine-soft',
-  quiet: 'text-pine hover:bg-pine-soft',
-  danger: 'bg-danger text-white hover:bg-danger-strong',
-  'danger-ghost': 'text-danger hover:bg-danger-soft hover:text-danger-strong',
+  primary: 'bg-primary text-on-primary hover:bg-primary-hover',
+  /* The one call to action on a screen: copper, which is the only warm fill in the UI. */
+  accent: 'bg-accent text-on-accent hover:brightness-90',
+  secondary: 'bg-surface text-ink ring-1 ring-inset ring-line hover:bg-paper active:bg-paper',
+  ghost: 'text-ink hover:bg-primary-tint',
+  quiet: 'text-primary hover:bg-primary-tint',
+  /*
+   * Destructive actions are the brand's own red, as a quiet outline: a filled red is the
+   * loudest thing on a page and belongs to nothing else here. The text carries the warning.
+   */
+  danger: 'bg-surface text-danger ring-1 ring-inset ring-danger hover:bg-danger-tint',
+  'danger-ghost': 'text-danger hover:bg-danger-tint hover:text-brick',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

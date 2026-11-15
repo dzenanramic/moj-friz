@@ -108,16 +108,7 @@ export function Surface({
   className?: string
   as?: 'section' | 'div' | 'article'
 }) {
-  return (
-    <Tag
-      className={cn(
-        'rounded-xl bg-surface shadow-[0_1px_2px_rgb(20_24_21/0.05),0_14px_36px_-22px_rgb(20_24_21/0.3)]',
-        className,
-      )}
-    >
-      {children}
-    </Tag>
-  )
+  return <Tag className={cn('rounded-xl bg-surface shadow-card', className)}>{children}</Tag>
 }
 
 export function SectionHeading({
@@ -166,7 +157,7 @@ export function EmptyState({
         className,
       )}
     >
-      {Icon ? <Icon aria-hidden="true" className="mb-4 h-6 w-6 text-line-strong" /> : null}
+      {Icon ? <Icon aria-hidden="true" className="mb-4 h-6 w-6 text-muted" /> : null}
       <h3 className="text-ink">{title}</h3>
       {description ? (
         <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted">{description}</p>
@@ -253,15 +244,15 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="rounded-lg bg-danger-soft px-5 py-4 text-sm leading-relaxed text-danger-strong"
+      className="rounded-lg bg-danger-tint px-5 py-4 text-sm leading-relaxed text-danger"
     >
-      <p className="font-semibold text-ink">{title}</p>
+      <p className="font-semibold text-danger">{title}</p>
       {message ? <p className="mt-1">{message}</p> : null}
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 font-medium text-danger underline underline-offset-4 hover:text-danger-strong"
+          className="mt-3 font-medium text-danger underline underline-offset-4 hover:text-brick"
         >
           Pokušaj ponovo
         </button>

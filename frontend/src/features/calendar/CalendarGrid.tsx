@@ -221,23 +221,27 @@ export function CalendarGrid({
                         event.stopPropagation()
                         onOpenAppointment(appointment)
                       }}
+                      /*
+                       * Text on a hairdresser's tinted card is `--staff-ink`, not `muted`: the
+                       * tint is the card, so the card's own pair carries the second line.
+                       */
                       className={cn(
                         'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-[3px] px-2 py-1 text-left transition-colors',
-                        'hover:brightness-[0.97]',
+                        'hover:brightness-[0.96]',
                       )}
                       style={{
                         ...position,
                         borderLeftColor: 'var(--staff)',
                       }}
                     >
-                      <p className="tabular text-[0.68rem] leading-tight font-medium text-muted">
+                      <p className="tabular text-[0.68rem] leading-tight font-medium staff-text">
                         {formatTimeRange(appointment.startsAt, appointment.endsAt)}
                       </p>
                       <p className="truncate text-xs leading-snug font-semibold text-ink">
                         {appointment.clientName}
                       </p>
                       {!compact ? (
-                        <p className="truncate text-[0.68rem] leading-snug text-muted">
+                        <p className="truncate text-[0.68rem] leading-snug staff-text">
                           {appointment.serviceName} ·{' '}
                           {formatDuration(appointment.durationMinutesSnapshot)}
                         </p>

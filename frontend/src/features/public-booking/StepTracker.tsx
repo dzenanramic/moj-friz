@@ -28,7 +28,7 @@ export function StepTracker({ step, onGoTo }: { step: number; onGoTo: (step: num
         className="mt-2 flex h-1 overflow-hidden rounded-full bg-line sm:hidden"
       >
         <span
-          className="block rounded-full bg-pine transition-[width] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]"
+          className="block rounded-full bg-primary transition-[width] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]"
           style={{ width: `${progress * 100}%` }}
         />
       </span>
@@ -58,19 +58,15 @@ export function StepTracker({ step, onGoTo }: { step: number; onGoTo: (step: num
                   aria-hidden="true"
                   className={cn(
                     'tabular flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-[background-color,border-color,color,transform] duration-200',
-                    active && 'border-pine bg-pine text-white',
-                    done && 'border-pine bg-pine-soft text-pine-strong',
-                    !active && !done && 'border-line-strong bg-paper text-muted',
+                    active && 'border-primary bg-primary text-on-primary',
+                    done && 'border-primary bg-primary-tint text-primary',
+                    !active && !done && 'border-line bg-paper text-muted',
                   )}
                 >
                   {done ? <Check className="h-4 w-4" strokeWidth={2.5} /> : index + 1}
                 </span>
                 <span className="min-w-0">
-                  <span
-                    className={cn('block text-xs', active || done ? 'text-muted' : 'text-muted/80')}
-                  >
-                    Korak {index + 1}
-                  </span>
+                  <span className="block text-xs text-muted">Korak {index + 1}</span>
                   <span
                     className={cn(
                       'block truncate text-sm leading-tight',

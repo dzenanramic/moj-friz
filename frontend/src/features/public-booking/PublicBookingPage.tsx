@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type RefCallback } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 
+import { SalonMark } from '@/app/AppShell'
 import { Avatar, Panel, Skeleton } from '@/components/ui/Layout'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { CheckboxField, FormError, TextField } from '@/components/ui/form'
@@ -243,14 +244,21 @@ export function PublicBookingPage() {
       <header className="border-b border-line pb-6">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
           <div>
+            {/* The guest has no owner navigation: the mark, then the salon's name. */}
+            <div className="mb-3 flex items-center gap-2.5">
+              <SalonMark name={salon.name} size="sm" tone="ink" />
+              <span className="text-xs font-medium tracking-wide text-muted uppercase">
+                Rezervacija
+              </span>
+            </div>
             <h1 className="text-ink">{salon.name}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
               <span className="inline-flex items-center gap-1.5">
-                <MapPin aria-hidden="true" className="h-4 w-4 text-line-strong" />
+                <MapPin aria-hidden="true" className="h-4 w-4 text-muted" />
                 {salon.address}, {salon.city}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Phone aria-hidden="true" className="h-4 w-4 text-line-strong" />
+                <Phone aria-hidden="true" className="h-4 w-4 text-muted" />
                 {salon.phone}
               </span>
             </div>
@@ -295,7 +303,7 @@ export function PublicBookingPage() {
                         </span>
                         <ChevronRight
                           aria-hidden="true"
-                          className="h-4 w-4 text-line-strong transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-pine"
+                          className="h-4 w-4 text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
                         />
                       </span>
                     </button>
@@ -325,7 +333,7 @@ export function PublicBookingPage() {
                       aria-pressed={member.id === hairdresserId}
                       className="group flex min-h-[64px] w-full items-center gap-3 rounded-sm px-3 py-3 text-left transition-colors hover:bg-paper active:bg-paper"
                     >
-                      <Avatar name={member.displayName} colorKey={member.colorKey} size="lg" />
+                      <Avatar name={member.displayName} size="lg" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-semibold text-ink">
                           {member.displayName}
@@ -336,7 +344,7 @@ export function PublicBookingPage() {
                       </span>
                       <ChevronRight
                         aria-hidden="true"
-                        className="h-4 w-4 text-line-strong transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-pine"
+                        className="h-4 w-4 text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
                       />
                     </button>
                   </li>
@@ -502,7 +510,7 @@ export function PublicBookingPage() {
                         target="_blank"
                         rel="noreferrer"
                         onClick={(event) => event.stopPropagation()}
-                        className="font-medium text-pine underline underline-offset-4"
+                        className="font-medium text-primary underline underline-offset-4"
                       >
                         obavještenje o privatnosti
                       </a>
@@ -526,9 +534,11 @@ export function PublicBookingPage() {
                   >
                     Nazad na termin
                   </Button>
+                  {/* The one copper action in the booking flow. */}
                   <Button
                     type="submit"
                     size="lg"
+                    variant="accent"
                     loading={createBooking.isPending}
                     disabled={!selectedSlot}
                   >
@@ -652,7 +662,7 @@ function BookingSummary({
           Otkazivanje ili promjena do {salon.rescheduleCutoffMinutes / 60} sata prije termina.
         </p>
       </div>
-      <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-pine-strong">
+      <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary-hover">
         <Check aria-hidden="true" className="h-3.5 w-3.5" />
         Bez prijave i bez plaćanja unaprijed
       </p>

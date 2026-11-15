@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { Avatar, Skeleton } from '@/components/ui/Layout'
 import { Button } from '@/components/ui/Button'
-import { StatusIndicator } from '@/components/ui/Badges'
+import { StatusPill } from '@/components/ui/Badges'
 import { FormError, Input, SelectField, TextField, TextareaField } from '@/components/ui/form'
 import { ConfirmDialog, Modal } from '@/components/ui/Modal'
 import { gatewayErrorMessage } from '@/data/gateway'
@@ -85,6 +85,8 @@ export function AppointmentDialog({
   )
   const [isNewClient, setIsNewClient] = useState(false)
   const [clientSearch, setClientSearch] = useState('')
+  /** 'create' adds a term; 'close' only checks and closes while the owner keeps booking. */
+  const [submitIntent, setSubmitIntent] = useState<'create' | 'close'>('create')
   const debouncedSearch = useDebouncedValue(clientSearch, 180)
   const clients = useClients(debouncedSearch, 1, 6)
 
@@ -200,11 +202,24 @@ export function AppointmentDialog({
       if (mode === 'edit' && appointment) {
         await updateAppointment.mutateAsync({ id: appointment.id, draft })
         toast.success('Termin je sačuvan.')
+        onClose()
       } else {
         await createAppointment.mutateAsync(draft)
         toast.success('Termin je dodan.')
+        if (submitIntent === 'close') {
+          onClose()
+          return
+        }
+        // Adding booking after booking: the client and time reset, the schedule stays put.
+        setSelectedClient(null)
+        setIsNewClient(false)
+        setClientSearch('')
+        setValue('clientId', undefined)
+        setValue('newClientName', '')
+        setValue('newClientPhone', '')
+        setValue('internalNote', '')
+        setSubmitError(null)
       }
-      onClose()
     } catch (error) {
       setSubmitError(gatewayErrorMessage(error))
     }
@@ -284,7 +299,7 @@ export function AppointmentDialog({
         description={
           mode === 'edit' && appointment ? (
             <span className="inline-flex flex-wrap items-center gap-2">
-              <StatusIndicator status={appointment.status} />
+              <StatusPill status={appointment.status} />
               <span>
                 {appointment.clientName} · {formatDateKey(dateKeyFromInstant(appointment.startsAt))}
               </span>
@@ -299,11 +314,26 @@ export function AppointmentDialog({
             <Button variant="secondary" onClick={close} disabled={pending}>
               Odustani
             </Button>
+            {mode === 'create' ? (
+              <Button
+                type="submit"
+                form="appointment-form"
+                variant="secondary"
+                loading={pending}
+                disabled={!hairdresserId || !serviceId}
+                onClick={() => setSubmitIntent('close')}
+              >
+                Dodaj i zatvori
+              </Button>
+            ) : null}
+            {/* The one copper action on the screen: the commit. */}
             <Button
+              variant="accent"
               type="submit"
               form="appointment-form"
               loading={pending}
               disabled={!hairdresserId || !serviceId}
+              onClick={() => setSubmitIntent('create')}
             >
               {mode === 'edit' ? 'Sačuvaj izmjene' : 'Dodaj termin'}
             </Button>
@@ -417,7 +447,7 @@ export function AppointmentDialog({
                   <button
                     type="button"
                     onClick={startNewClient}
-                    className="flex min-h-10 w-full items-center gap-2 rounded-sm px-2.5 py-2 text-sm font-medium text-pine transition-colors hover:bg-surface"
+                    className="flex min-h-10 w-full items-center gap-2 rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface"
                   >
                     <UserPlus aria-hidden="true" className="h-4 w-4" />
                     Novi klijent
@@ -510,7 +540,9 @@ export function AppointmentDialog({
                         }}
                         className={cn(
                           'tabular min-h-9 rounded-sm px-1 text-sm font-medium transition-colors',
-                          active ? 'bg-pine text-white' : 'bg-surface text-ink hover:bg-pine-soft',
+                          active
+                            ? 'bg-primary text-on-primary'
+                            : 'bg-surface text-ink hover:bg-primary-tint',
                         )}
                       >
                         {slotTime}
@@ -524,7 +556,7 @@ export function AppointmentDialog({
                 </p>
               )}
               {showTimeWarning ? (
-                <p className="mt-2 text-xs font-medium text-amber-ink">
+                <p className="mt-2 text-xs font-medium text-accent-ui">
                   Izabrano vrijeme nije među slobodnim terminima. Provjerite raspored.
                 </p>
               ) : null}
@@ -641,7 +673,7 @@ function ReadOnlyAppointmentDialog({
           <p className="text-sm font-semibold text-ink">{appointment.clientName}</p>
           <p className="mt-0.5 text-xs text-muted">{appointment.clientPhone}</p>
         </div>
-        <StatusIndicator status={appointment.status} />
+        <StatusPill status={appointment.status} />
       </div>
       <dl className="mt-1 grid gap-3 sm:grid-cols-2">
         <div>

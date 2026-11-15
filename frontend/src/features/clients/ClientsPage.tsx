@@ -88,7 +88,7 @@ export function ClientsPage() {
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="text-sm font-medium text-pine underline underline-offset-4"
+                className="text-sm font-medium text-primary underline underline-offset-4"
               >
                 Obriši pretragu
               </button>
@@ -114,11 +114,11 @@ export function ClientsPage() {
                     </div>
                     {client.notes ? (
                       <span className="hidden shrink-0 items-center gap-1.5 text-xs text-muted sm:inline-flex">
-                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-amber" />
+                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-muted" />
                         Napomena
                       </span>
                     ) : null}
-                    <span className="flex w-6 shrink-0 items-center justify-center self-stretch text-line-strong transition-colors group-hover:text-pine">
+                    <span className="flex w-6 shrink-0 items-center justify-center self-stretch text-muted transition-colors group-hover:text-primary">
                       <ChevronRight aria-hidden="true" className="h-4 w-4" />
                     </span>
                   </Link>

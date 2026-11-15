@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { ConfirmDialog } from '@/components/ui/Modal'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { gatewayErrorMessage } from '@/data/gateway'
 import { useResetDemo, useSalon, useSetDemoLevel } from '@/data/queries'
 import { cn } from '@/lib/cn'
@@ -31,7 +32,7 @@ function LevelButton({
       onClick={onClick}
       className={cn(
         'min-h-8 rounded-sm px-2.5 text-xs font-medium transition-colors',
-        active ? 'bg-paper text-pine-strong' : 'text-paper hover:bg-pine-strong',
+        active ? 'bg-paper text-primary' : 'text-on-primary hover:bg-primary-hover',
       )}
     >
       {label}
@@ -59,7 +60,7 @@ export function DemoBanner() {
 
   return (
     <>
-      <div className="bg-pine text-paper">
+      <div className="bg-primary text-on-primary">
         <div className="mx-auto flex min-h-10 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
           <p className="min-w-0 truncate text-xs font-semibold">
             <span className="sm:hidden">Demo</span>
@@ -67,7 +68,7 @@ export function DemoBanner() {
           </p>
 
           <div className="ml-auto flex items-center gap-1">
-            <span className="mr-1.5 hidden text-xs text-paper md:inline">Prikaz paketa</span>
+            <span className="mr-1.5 hidden text-xs text-on-primary md:inline">Prikaz paketa</span>
             <LevelButton
               level="level_1"
               active={level === 'level_1'}
@@ -83,12 +84,13 @@ export function DemoBanner() {
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
-              className="ml-2 inline-flex min-h-8 items-center gap-1.5 rounded-sm px-2 text-xs font-medium text-paper transition-colors hover:bg-pine-strong"
+              className="ml-2 inline-flex min-h-8 items-center gap-1.5 rounded-sm px-2 text-xs font-medium text-on-primary transition-colors hover:bg-primary-hover"
               aria-label="Resetuj demo"
             >
               <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Resetuj demo</span>
             </button>
+            <ThemeToggle />
           </div>
         </div>
       </div>
@@ -116,12 +118,13 @@ export function DemoBanner() {
 
 export function PublicDemoBar() {
   return (
-    <div className="bg-pine text-paper">
+    <div className="bg-primary text-on-primary">
       <div className="mx-auto flex min-h-11 w-full max-w-5xl items-center gap-3 px-4 text-xs sm:px-8">
         <span className="font-semibold">Demo · podaci nisu stvarni</span>
+        <ThemeToggle />
         <a
           href="/"
-          className="ml-auto inline-flex min-h-11 items-center rounded-xs px-2 font-medium text-paper underline decoration-paper underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
+          className="ml-auto inline-flex min-h-11 items-center rounded-xs px-2 font-medium text-on-primary underline decoration-on-primary underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
         >
           Demo početna
         </a>

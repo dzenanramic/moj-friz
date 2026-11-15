@@ -1,0 +1,56 @@
+/*
+ * Boot-only overrides for the stored theme choice, used twice from index.html under opposite
+ * `prefers-color-scheme` media queries. The `:root.stored-*` classes are set by theme-boot.js
+ * before the app renders; without them this file changes nothing.
+ */
+:root.stored-light {
+  --paper: #f6f2ea;
+  --surface: #fcfaf6;
+  --line: #e2dacb;
+  --ink: #1f2430;
+  --muted: #4f5a6a;
+  --primary: #243b6b;
+  --primary-hover: #1a2d54;
+  --primary-tint: #dde3f0;
+  --on-primary: #fcfaf6;
+  --accent: #d1823a;
+  --accent-tint: #f8e4cf;
+  --on-accent: #1f2430;
+  --accent-ui: #8a4e12;
+  --brick: #b4574b;
+  --brick-tint: #f2dad5;
+  --brick-ink: #963f2d;
+  --danger: #a33b2b;
+  --on-danger: #fcfaf6;
+  --scheme: light;
+  --card-shadow: 0 1px 2px rgb(31 36 48 / 0.05), 0 14px 36px -22px rgb(31 36 48 / 0.3);
+  --sheet-shadow: 0 24px 60px -28px rgb(31 36 48 / 0.35);
+  --toast-shadow: 0 14px 40px -16px rgb(31 36 48 / 0.4);
+  color-scheme: light;
+}
+
+:root.stored-dark:not(.light) {
+  --paper: #12151d;
+  --surface: #1a1e29;
+  --line: #2b3142;
+  --ink: #ece8df;
+  --muted: #a2a8b8;
+  --primary: #8fa6e0;
+  --primary-hover: #a9bcea;
+  --primary-tint: #222c4a;
+  --on-primary: #0f1320;
+  --accent: #e39a56;
+  --accent-tint: #3a2a18;
+  --on-accent: #12151d;
+  --accent-ui: #e39a56;
+  --brick: #db8579;
+  --brick-tint: #3b2420;
+  --brick-ink: #f0a398;
+  --danger: #e27d6b;
+  --on-danger: #1a0f0e;
+  --scheme: dark;
+  --card-shadow: 0 1px 0 0 rgb(255 255 255 / 0.03);
+  --sheet-shadow: 0 24px 60px -28px rgb(0 0 0 / 0.7);
+  --toast-shadow: 0 14px 40px -16px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}

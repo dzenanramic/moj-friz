@@ -36,8 +36,8 @@ export function MobileSelectionBar({
           type="button"
           onClick={onEdit}
           className={cn(
-            'inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-sm px-2 text-sm font-medium text-pine transition-colors',
-            'hover:bg-pine-soft',
+            'inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-sm px-2 text-sm font-medium text-primary transition-colors',
+            'hover:bg-primary-tint',
           )}
         >
           <Pencil aria-hidden="true" className="h-3.5 w-3.5" />

@@ -111,15 +111,19 @@ export function HorizontalDateStrip({
               className={cn(
                 'flex min-h-[64px] min-w-[68px] shrink-0 snap-center flex-col items-center justify-center gap-0.5 rounded-md border px-2 py-2 transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98]',
                 selected
-                  ? 'border-pine bg-pine text-white shadow-[0_8px_18px_-14px_rgb(20_24_21/0.9)]'
-                  : 'border-line bg-surface text-ink hover:border-line-strong hover:bg-paper',
+                  ? 'border-primary bg-primary text-on-primary shadow-card'
+                  : 'border-line bg-surface text-ink hover:border-muted hover:bg-paper',
                 cellClassName?.(item, selected),
               )}
             >
               <span
                 className={cn(
                   'text-[0.7rem] leading-none',
-                  selected ? 'text-white/80' : item.dot === 'today' ? 'text-pine' : 'text-muted',
+                  selected
+                    ? 'text-on-primary/80'
+                    : item.dot === 'today'
+                      ? 'text-primary'
+                      : 'text-muted',
                 )}
               >
                 {item.weekday}
@@ -131,7 +135,7 @@ export function HorizontalDateStrip({
                 <span
                   className={cn(
                     'text-[0.65rem] leading-none',
-                    selected ? 'text-white/80' : item.muted ? 'text-line-strong' : 'text-muted',
+                    selected ? 'text-on-primary/80' : 'text-muted',
                   )}
                 >
                   {item.hint}
@@ -141,7 +145,11 @@ export function HorizontalDateStrip({
                   aria-hidden="true"
                   className={cn(
                     'mt-0.5 h-1 w-1 rounded-full',
-                    selected ? 'bg-amber' : item.dot === 'today' ? 'bg-pine' : 'bg-transparent',
+                    selected
+                      ? 'bg-on-primary'
+                      : item.dot === 'today'
+                        ? 'bg-primary'
+                        : 'bg-transparent',
                   )}
                 />
               ) : null}

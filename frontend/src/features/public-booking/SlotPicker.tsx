@@ -60,7 +60,7 @@ export function SlotPicker({
           <button
             type="button"
             onClick={() => onPickNextOpen(nextOpenDate)}
-            className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-pine transition-colors hover:bg-pine-soft"
+            className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-tint"
           >
             Prvi slobodan dan: {formatDateLong(nextOpenDate)}
             <ChevronRight aria-hidden="true" className="h-4 w-4" />
@@ -91,8 +91,8 @@ export function SlotPicker({
                   className={cn(
                     'tabular inline-flex min-h-11 items-center justify-center rounded-sm text-sm font-medium transition-[background-color,color,box-shadow,transform] duration-150 active:scale-[0.97]',
                     active
-                      ? 'bg-pine text-white'
-                      : 'bg-paper text-ink ring-1 ring-inset ring-line hover:bg-pine-soft hover:ring-pine/30',
+                      ? 'bg-primary text-on-primary'
+                      : 'bg-paper text-ink ring-1 ring-inset ring-line hover:bg-primary-tint hover:ring-primary/30',
                   )}
                 >
                   {formatTime(slot.startsAt)}

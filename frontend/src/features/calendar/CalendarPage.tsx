@@ -180,7 +180,7 @@ export function CalendarPage() {
               className={cn(
                 'inline-flex min-h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors',
                 showBreaks
-                  ? 'bg-pine-soft font-medium text-pine-strong'
+                  ? 'bg-primary-tint font-medium text-primary-hover'
                   : 'text-muted hover:bg-surface hover:text-ink',
               )}
             >
@@ -320,10 +320,10 @@ function BreakRow({ block, member }: { block: TimeBlock; member?: Hairdresser })
       <span className="tabular w-[86px] shrink-0 text-[0.7rem] text-muted">
         {formatTime(block.startsAt)}–{formatTime(block.endsAt)}
       </span>
-      <Coffee aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-line-strong" />
+      <Coffee aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
       <p className="min-w-0 flex-1 truncate text-xs text-muted">
         {block.reason}
-        {member ? <span className="text-line-strong"> · {member.displayName}</span> : null}
+        {member ? <span className="text-muted"> · {member.displayName}</span> : null}
       </p>
     </div>
   )

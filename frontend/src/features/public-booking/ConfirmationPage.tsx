@@ -2,7 +2,7 @@ import { Check, Clipboard, ExternalLink, X } from 'lucide-react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 
-import { StatusIndicator } from '@/components/ui/Badges'
+import { StatusPill } from '@/components/ui/Badges'
 import { Button, buttonClassName } from '@/components/ui/Button'
 import { ErrorState, Skeleton, Surface } from '@/components/ui/Layout'
 import { useManagementAppointment } from '@/data/queries'
@@ -63,14 +63,14 @@ export function ConfirmationPage() {
         <span
           className={cn(
             'mb-5 inline-flex items-center gap-2 rounded-full py-1.5 pr-4 pl-1.5 text-sm font-medium',
-            isCancelled ? 'bg-danger-soft text-danger-strong' : 'bg-pine-soft text-pine-strong',
+            isCancelled ? 'bg-danger-tint text-danger' : 'bg-primary-tint text-primary-hover',
           )}
         >
           <span
             aria-hidden="true"
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded-full',
-              isCancelled ? 'bg-danger text-white' : 'bg-pine text-white',
+              isCancelled ? 'bg-danger text-on-danger' : 'bg-primary text-on-primary',
             )}
           >
             {isCancelled ? (
@@ -93,7 +93,7 @@ export function ConfirmationPage() {
         <div className="px-6 py-6 sm:px-8 sm:py-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <p className="text-sm text-muted">{data.salonName}</p>
-            <StatusIndicator status={data.status} />
+            <StatusPill status={data.status} />
           </div>
 
           <div className="mt-6 grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -102,7 +102,7 @@ export function ConfirmationPage() {
               <p className="tabular mt-1 text-4xl leading-none font-semibold text-ink sm:text-5xl">
                 {formatDateKey(dateKey)}
               </p>
-              <p className="tabular mt-3 text-2xl font-semibold text-pine-strong">
+              <p className="tabular mt-3 text-2xl font-semibold text-primary">
                 {formatTimeRange(data.startsAt, data.endsAt)}
               </p>
             </div>
@@ -117,8 +117,8 @@ export function ConfirmationPage() {
           </div>
         </div>
 
-        <div className="bg-pine-soft px-6 py-6 sm:px-8">
-          <h2 className="text-base font-semibold text-pine-strong">Privatni link</h2>
+        <div className="bg-primary-tint px-6 py-6 sm:px-8">
+          <h2 className="text-base font-semibold text-primary">Privatni link</h2>
           <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-ink">
             Nismo poslali SMS ni e-mail. Link važi do{' '}
             {formatDateKey(dateKeyFromInstant(data.managementExpiresAt))}. Ako ga izgubite,
@@ -131,13 +131,13 @@ export function ConfirmationPage() {
               value={managementUrl}
               aria-label="Privatni link za upravljanje terminom"
               onFocus={(event) => event.currentTarget.select()}
-              className="min-h-11 w-full flex-1 rounded-md bg-surface px-3 py-2 text-xs text-muted"
+              className="min-h-11 w-full flex-1 rounded-md bg-surface px-3 py-2 text-xs text-ink ring-1 ring-inset ring-line"
             />
             <Button
               variant="secondary"
               leftIcon={
                 copied ? (
-                  <Check aria-hidden="true" className="h-4 w-4 text-pine" />
+                  <Check aria-hidden="true" className="h-4 w-4 text-primary" />
                 ) : (
                   <Clipboard aria-hidden="true" className="h-4 w-4" />
                 )
@@ -153,7 +153,8 @@ export function ConfirmationPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <a href={managementUrl} className={buttonClassName('primary', 'md')}>
+            {/* The one copper action: what the guest came to do after booking. */}
+            <a href={managementUrl} className={buttonClassName('accent', 'md')}>
               Upravljaj terminom
               <ExternalLink aria-hidden="true" className="h-4 w-4" />
             </a>

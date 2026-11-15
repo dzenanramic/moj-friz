@@ -6,3 +6,6 @@ test-results
 pnpm-lock.yaml
 
 .artifacts
+
+# Local tool output (not source)
+.taste-skill

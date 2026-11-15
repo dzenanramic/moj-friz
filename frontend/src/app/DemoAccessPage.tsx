@@ -2,7 +2,7 @@ import { ArrowUpRight, CalendarDays, Clock3, ShieldCheck } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link } from 'react-router'
 
-import { StatusIndicator } from '@/components/ui/Badges'
+import { StatusPill } from '@/components/ui/Badges'
 import { Avatar, Skeleton, Surface } from '@/components/ui/Layout'
 import { useAppointments, useSalon, useServices } from '@/data/queries'
 import { formatTerminCount } from '@/lib/format'
@@ -89,7 +89,7 @@ function PreviewRow({ appointment }: { appointment: AppointmentView }) {
           {appointment.serviceName} · {appointment.hairdresserName}
         </span>
       </span>
-      <StatusIndicator status={appointment.status} className="hidden sm:inline-flex" />
+      <StatusPill status={appointment.status} className="hidden sm:inline-flex" />
       <Avatar name={appointment.clientName} size="sm" />
     </li>
   )
@@ -108,7 +108,7 @@ export function DemoAccessPage() {
           <p className="flex items-center gap-2.5 text-sm font-medium text-ink">
             <span
               aria-hidden="true"
-              className="flex h-7 w-7 items-center justify-center rounded-sm bg-pine text-xs font-semibold text-paper"
+              className="flex h-7 w-7 items-center justify-center rounded-sm bg-primary text-xs font-semibold text-on-primary"
             >
               SL
             </span>
@@ -124,14 +124,14 @@ export function DemoAccessPage() {
           <div className="hero-enter-3 mt-8 flex flex-col gap-2.5 sm:flex-row">
             <Link
               to="/danas"
-              className="inline-flex min-h-12 items-center justify-center rounded-md bg-pine px-6 text-base font-medium text-white transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:bg-pine-strong active:translate-y-0 active:scale-[0.985]"
+              className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-6 text-base font-medium text-on-accent transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:brightness-90 active:translate-y-0 active:scale-[0.985]"
             >
               Uđi u demo
             </Link>
             {isLevelTwo ? (
               <a
                 href={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-surface px-6 text-base font-medium text-ink transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:bg-pine-soft active:translate-y-0 active:scale-[0.985]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-surface px-6 text-base font-medium text-ink transition-[background-color,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:bg-primary-tint active:translate-y-0 active:scale-[0.985]"
               >
                 Otvori javnu stranicu
                 <ArrowUpRight aria-hidden="true" className="h-4 w-4 text-muted" />
@@ -144,14 +144,14 @@ export function DemoAccessPage() {
           </div>
 
           <p className="mt-5 flex items-start gap-2 text-sm leading-relaxed text-muted">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-pine" />
+            <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             Bez prijave. Podaci su izmišljeni, ostaju u ovom pregledniku i nisu stvarna rezervacija.
           </p>
 
           <dl className="mt-12 grid gap-8 sm:grid-cols-2">
             <div>
               <dt className="flex items-center gap-2 text-sm font-semibold text-ink">
-                <Clock3 aria-hidden="true" className="h-4 w-4 text-pine" />
+                <Clock3 aria-hidden="true" className="h-4 w-4 text-primary" />
                 Za vlasnicu
               </dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted">
@@ -160,7 +160,7 @@ export function DemoAccessPage() {
             </div>
             <div>
               <dt className="flex items-center gap-2 text-sm font-semibold text-ink">
-                <CalendarDays aria-hidden="true" className="h-4 w-4 text-pine" />
+                <CalendarDays aria-hidden="true" className="h-4 w-4 text-primary" />
                 Za klijenta
               </dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted">
@@ -177,7 +177,7 @@ export function DemoAccessPage() {
           <ol className="mt-10 grid gap-px overflow-hidden rounded-md bg-line sm:grid-cols-3">
             {JOURNEY.map((item, index) => (
               <li key={item.title} className="bg-paper px-4 py-4">
-                <p className="tabular text-xs font-semibold text-pine">0{index + 1}</p>
+                <p className="tabular text-xs font-semibold text-primary">0{index + 1}</p>
                 <p className="mt-1.5 text-sm font-semibold text-ink">{item.title}</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted">{item.detail}</p>
               </li>

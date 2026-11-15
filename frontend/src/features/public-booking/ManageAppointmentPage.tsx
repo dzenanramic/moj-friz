@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 
-import { StatusIndicator } from '@/components/ui/Badges'
+import { StatusPill } from '@/components/ui/Badges'
 import { Button, buttonClassName } from '@/components/ui/Button'
 import { Skeleton, Surface } from '@/components/ui/Layout'
 import { FormError } from '@/components/ui/form'
@@ -121,7 +121,7 @@ export function ManageAppointmentPage() {
               {data.salonAddress}, {data.salonCity}
             </p>
           </div>
-          <StatusIndicator status={data.status} />
+          <StatusPill status={data.status} />
         </div>
 
         <dl className="grid gap-x-8 gap-y-4 px-6 pb-6 text-sm sm:grid-cols-2 sm:px-8">
@@ -154,7 +154,7 @@ export function ManageAppointmentPage() {
             <dd className="mt-0.5 font-medium text-ink">
               <a
                 href={callHref}
-                className="inline-flex items-center gap-1.5 underline decoration-line-strong underline-offset-4 hover:text-pine"
+                className="inline-flex items-center gap-1.5 underline decoration-line underline-offset-4 hover:text-primary"
               >
                 <Phone aria-hidden="true" className="h-3.5 w-3.5" />
                 {data.salonPhone}
@@ -222,6 +222,7 @@ export function ManageAppointmentPage() {
 
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <Button
+                    variant="accent"
                     onClick={submitReschedule}
                     disabled={!newStartsAt}
                     loading={reschedule.isPending}
@@ -241,7 +242,7 @@ export function ManageAppointmentPage() {
           <p className="bg-paper px-6 py-4 text-sm leading-relaxed text-muted sm:px-8">
             Izmjene su zatvorene {data.cancellationCutoffMinutes / 60} sata prije termina. Za hitne
             promjene pozovite salon na{' '}
-            <a href={callHref} className="font-medium text-pine underline underline-offset-4">
+            <a href={callHref} className="font-medium text-primary underline underline-offset-4">
               {data.salonPhone}
             </a>
             .

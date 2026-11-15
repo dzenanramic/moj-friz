@@ -40,7 +40,7 @@ export function HairdresserFilter({
           className={cn(
             'inline-flex min-h-9 max-w-[11rem] items-center gap-2 rounded-md px-2.5 text-sm transition-colors',
             selected
-              ? 'bg-surface font-medium text-ink'
+              ? 'bg-surface font-medium text-ink ring-1 ring-inset ring-line'
               : 'text-muted hover:bg-surface hover:text-ink',
           )}
         >
@@ -125,7 +125,7 @@ function FilterOption({
         <UsersRound aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
       )}
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {checked ? <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-pine" /> : null}
+      {checked ? <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" /> : null}
     </button>
   )
 }

@@ -84,21 +84,21 @@ const HAIRDRESSERS: Hairdresser[] = [
     id: 'hd-lana',
     displayName: 'Lana Jovanović',
     isActive: true,
-    colorKey: 'pine',
+    colorKey: '4',
     serviceIds: ['svc-zensko', 'svc-feniranje', 'svc-bojenje', 'svc-pramenovi', 'svc-svecana'],
   },
   {
     id: 'hd-amina',
     displayName: 'Amina Hadžić',
     isActive: true,
-    colorKey: 'slate',
+    colorKey: '1',
     serviceIds: ['svc-zensko', 'svc-musko', 'svc-feniranje', 'svc-bojenje'],
   },
   {
     id: 'hd-milica',
     displayName: 'Milica Savić',
     isActive: true,
-    colorKey: 'clay',
+    colorKey: '3',
     serviceIds: ['svc-zensko', 'svc-musko', 'svc-feniranje', 'svc-pramenovi', 'svc-svecana'],
   },
 ]
@@ -445,7 +445,7 @@ export function createSeedState(now: Date = new Date()): DemoState {
 }
 
 export function staffColorFor(hairdresserId: string): StaffColor {
-  return HAIRDRESSER_BY_ID.get(hairdresserId)?.colorKey ?? 'pine'
+  return HAIRDRESSER_BY_ID.get(hairdresserId)?.colorKey ?? '1'
 }
 
 export function demoServiceById(serviceId: string): SalonService | undefined {

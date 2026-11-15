@@ -46,7 +46,7 @@ test('guest books, reschedules and cancels a Level 2 appointment', async ({ page
   await expect(confirm).toBeVisible()
   await confirm.getByRole('button', { name: 'Da, otkaži termin' }).click()
   await expect(page.getByText('Termin je otkazan.', { exact: true })).toBeVisible()
-  await expect(page.getByText('Otkazan', { exact: true })).toBeVisible()
+  await expect(page.getByText('Otkazano')).toBeVisible()
 })
 
 test('Level 1 shows an honest lock instead of public booking', async ({ page }) => {

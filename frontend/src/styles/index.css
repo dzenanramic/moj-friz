@@ -18,36 +18,184 @@
   font-feature-settings: 'tnum' 1;
 }
 
+/*
+ * Ink blue + copper on paper. Components name roles, never colours.
+ *
+ * Theming has two layers. The values are defined three ways — `:root`, `.dark`, and a
+ * `prefers-color-scheme: dark` block that skips an explicit light choice — because
+ * frontend/index.html applies the stored choice (localStorage `mojfriz.theme`) by adding
+ * `.dark` / `.light` to <html> before the first paint, so the page never flashes the wrong
+ * mode. src/lib/theme.ts writes the same classes from React.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --paper: #f6f2ea;
+  --surface: #fcfaf6;
+  --line: #e2dacb;
+  --ink: #1f2430;
+  --muted: #4f5a6a;
+  --primary: #243b6b;
+  --primary-hover: #1a2d54;
+  --primary-tint: #dde3f0;
+  --on-primary: #fcfaf6;
+  --accent: #d1823a;
+  --accent-tint: #f8e4cf;
+  --on-accent: #1f2430;
+  --accent-ui: #8a4e12;
+  --brick: #b4574b;
+  --brick-tint: #f2dad5;
+  --brick-ink: #963f2d;
+  --danger: #a33b2b;
+  --on-danger: #fcfaf6;
+  --scheme: light;
+
+  /* Hairdressers 1–6: `bar` the edge, `soft` the card, `ink` text on the card. */
+  --staff-1-bar: #36539a;
+  --staff-1-soft: #d3dbee;
+  --staff-1-ink: #243b6b;
+  --staff-2-bar: #8a4e12;
+  --staff-2-soft: #f3dcc0;
+  --staff-2-ink: #5c3c10;
+  --staff-3-bar: #983b2f;
+  --staff-3-soft: #ebcfc9;
+  --staff-3-ink: #7a2a20;
+  --staff-4-bar: #7a5a86;
+  --staff-4-soft: #e3d5e6;
+  --staff-4-ink: #5a3d66;
+  --staff-5-bar: #8a6d14;
+  --staff-5-soft: #ede0b8;
+  --staff-5-ink: #5a4a0f;
+  --staff-6-bar: #4b5366;
+  --staff-6-soft: #d9dce3;
+  --staff-6-ink: #3a4152;
+
+  /* Cards lift with a soft ink shadow on paper; there is nothing to cast it onto in dark. */
+  --card-shadow: 0 1px 2px rgb(31 36 48 / 0.05), 0 14px 36px -22px rgb(31 36 48 / 0.3);
+  --sheet-shadow: 0 24px 60px -28px rgb(31 36 48 / 0.35);
+  --toast-shadow: 0 14px 40px -16px rgb(31 36 48 / 0.4);
+
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #12151d;
+  --surface: #1a1e29;
+  --line: #2b3142;
+  --ink: #ece8df;
+  --muted: #a2a8b8;
+  --primary: #8fa6e0;
+  --primary-hover: #a9bcea;
+  --primary-tint: #222c4a;
+  --on-primary: #0f1320;
+  --accent: #e39a56;
+  --accent-tint: #3a2a18;
+  --on-accent: #12151d;
+  --accent-ui: #e39a56;
+  --brick: #db8579;
+  --brick-tint: #3b2420;
+  --brick-ink: #f0a398;
+  --danger: #e27d6b;
+  --on-danger: #1a0f0e;
+  --scheme: dark;
+
+  --staff-1-bar: #8fa6e0;
+  --staff-1-soft: #222c4a;
+  --staff-1-ink: #b9c9ee;
+  --staff-2-bar: #e39a56;
+  --staff-2-soft: #3a2a18;
+  --staff-2-ink: #f0c08c;
+  --staff-3-bar: #db8579;
+  --staff-3-soft: #3b2420;
+  --staff-3-ink: #efaaa0;
+  --staff-4-bar: #b493c2;
+  --staff-4-soft: #2e2236;
+  --staff-4-ink: #cbb0d4;
+  --staff-5-bar: #cdae4a;
+  --staff-5-soft: #332c12;
+  --staff-5-ink: #e0c977;
+  --staff-6-bar: #9aa3b8;
+  --staff-6-soft: #262b36;
+  --staff-6-ink: #b9c0cf;
+
+  --card-shadow: 0 1px 0 0 rgb(255 255 255 / 0.03);
+  --sheet-shadow: 0 24px 60px -28px rgb(0 0 0 / 0.7);
+  --toast-shadow: 0 14px 40px -16px rgb(0 0 0 / 0.7);
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --paper: #12151d;
+    --surface: #1a1e29;
+    --line: #2b3142;
+    --ink: #ece8df;
+    --muted: #a2a8b8;
+    --primary: #8fa6e0;
+    --primary-hover: #a9bcea;
+    --primary-tint: #222c4a;
+    --on-primary: #0f1320;
+    --accent: #e39a56;
+    --accent-tint: #3a2a18;
+    --on-accent: #12151d;
+    --accent-ui: #e39a56;
+    --brick: #db8579;
+    --brick-tint: #3b2420;
+    --brick-ink: #f0a398;
+    --danger: #e27d6b;
+    --on-danger: #1a0f0e;
+    --scheme: dark;
+
+    --staff-1-bar: #8fa6e0;
+    --staff-1-soft: #222c4a;
+    --staff-1-ink: #b9c9ee;
+    --staff-2-bar: #e39a56;
+    --staff-2-soft: #3a2a18;
+    --staff-2-ink: #f0c08c;
+    --staff-3-bar: #db8579;
+    --staff-3-soft: #3b2420;
+    --staff-3-ink: #efaaa0;
+    --staff-4-bar: #b493c2;
+    --staff-4-soft: #2e2236;
+    --staff-4-ink: #cbb0d4;
+    --staff-5-bar: #cdae4a;
+    --staff-5-soft: #332c12;
+    --staff-5-ink: #e0c977;
+    --staff-6-bar: #9aa3b8;
+    --staff-6-soft: #262b36;
+    --staff-6-ink: #b9c0cf;
+
+    --card-shadow: 0 1px 0 0 rgb(255 255 255 / 0.03);
+    --sheet-shadow: 0 24px 60px -28px rgb(0 0 0 / 0.7);
+    --toast-shadow: 0 14px 40px -16px rgb(0 0 0 / 0.7);
+
+    color-scheme: dark;
+  }
+}
+
 @theme {
   --font-sans:
     'Instrument Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Surfaces: paper is the page, surface is anything that should lift off it. */
-  --color-paper: #f1f1ec;
-  --color-surface: #fbfbf7;
-  --color-ink: #141815;
-  --color-muted: #566057;
-  --color-line: #e2e3dd;
-  --color-line-strong: #b9beb5;
-
-  --color-pine: #1e5a45;
-  --color-pine-strong: #164433;
-  --color-pine-soft: #e5eee8;
-
-  --color-amber: #b96f22;
-  --color-amber-ink: #8a4d12;
-  --color-amber-soft: #f8ecdb;
-
-  --color-danger: #a2382f;
-  --color-danger-strong: #852a23;
-  --color-danger-soft: #f7e7e4;
-
-  --color-staff-pine: #1e5a45;
-  --color-staff-pine-soft: #e5eee8;
-  --color-staff-slate: #41597a;
-  --color-staff-slate-soft: #e7ecf3;
-  --color-staff-clay: #8a4a3b;
-  --color-staff-clay-soft: #f2e6e1;
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-tint: var(--primary-tint);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-on-accent: var(--on-accent);
+  --color-accent-ui: var(--accent-ui);
+  --color-brick: var(--brick);
+  --color-brick-tint: var(--brick-tint);
+  --color-brick-ink: var(--brick-ink);
+  --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
 
   /* Radii stay deliberate: 6px for controls, 10px for surfaces, 14px for sheets. */
   --radius-xs: 0.25rem;
@@ -56,8 +204,9 @@
   --radius-lg: 0.625rem;
   --radius-xl: 0.875rem;
 
-  --shadow-sheet: 0 24px 60px -28px rgb(20 24 21 / 0.35);
-  --shadow-toast: 0 14px 40px -16px rgb(20 24 21 / 0.4);
+  --shadow-card: var(--card-shadow);
+  --shadow-sheet: var(--sheet-shadow);
+  --shadow-toast: var(--toast-shadow);
 
   --animate-fade-in: fade-in 160ms ease-out;
 }
@@ -137,19 +286,20 @@
     cursor: not-allowed;
   }
 
+  /* A visible focus ring on every surface, in the brand colour of the mode. */
   :focus-visible {
-    outline: 2px solid var(--color-pine);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 
   ::selection {
-    background-color: var(--color-amber-soft);
+    background-color: var(--color-accent-tint);
     color: var(--color-ink);
   }
 
   input[type='date'],
   input[type='time'] {
-    color-scheme: light;
+    color-scheme: var(--scheme, light dark);
   }
 }
 
@@ -172,19 +322,40 @@
   }
 }
 
-[data-staff='pine'] {
-  --staff: var(--color-staff-pine);
-  --staff-soft: var(--color-staff-pine-soft);
+[data-staff='1'] {
+  --staff: var(--staff-1-bar);
+  --staff-soft: var(--staff-1-soft);
+  --staff-ink: var(--staff-1-ink);
 }
 
-[data-staff='slate'] {
-  --staff: var(--color-staff-slate);
-  --staff-soft: var(--color-staff-slate-soft);
+[data-staff='2'] {
+  --staff: var(--staff-2-bar);
+  --staff-soft: var(--staff-2-soft);
+  --staff-ink: var(--staff-2-ink);
 }
 
-[data-staff='clay'] {
-  --staff: var(--color-staff-clay);
-  --staff-soft: var(--color-staff-clay-soft);
+[data-staff='3'] {
+  --staff: var(--staff-3-bar);
+  --staff-soft: var(--staff-3-soft);
+  --staff-ink: var(--staff-3-ink);
+}
+
+[data-staff='4'] {
+  --staff: var(--staff-4-bar);
+  --staff-soft: var(--staff-4-soft);
+  --staff-ink: var(--staff-4-ink);
+}
+
+[data-staff='5'] {
+  --staff: var(--staff-5-bar);
+  --staff-soft: var(--staff-5-soft);
+  --staff-ink: var(--staff-5-ink);
+}
+
+[data-staff='6'] {
+  --staff: var(--staff-6-bar);
+  --staff-soft: var(--staff-6-soft);
+  --staff-ink: var(--staff-6-ink);
 }
 
 .staff-bar {
@@ -196,7 +367,7 @@
 }
 
 .staff-text {
-  color: var(--staff);
+  color: var(--staff-ink);
 }
 
 .skip-link {
@@ -207,7 +378,7 @@
   transform: translateY(-200%);
   border-radius: var(--radius-md);
   background-color: var(--color-ink);
-  color: var(--color-surface);
+  color: var(--color-paper);
   padding: 0.75rem 1rem;
   font-weight: 600;
   transition: transform 120ms ease-out;
@@ -215,14 +386,14 @@
 
 .skip-link:focus {
   transform: translateY(0);
-  outline-color: var(--color-amber);
+  outline-color: var(--color-accent);
 }
 
 .dialog-overlay {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background-color: rgb(20 24 21 / 0.42);
+  background-color: rgb(18 21 29 / 0.45);
 }
 
 .dialog-overlay[data-state='open'] {
@@ -238,7 +409,7 @@
   overflow-y: auto;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background-color: var(--color-surface);
-  box-shadow: var(--shadow-sheet);
+  box-shadow: var(--sheet-shadow);
 }
 
 .dialog-sheet {
@@ -273,22 +444,22 @@
 }
 
 .calendar-now-line {
-  border-top: 2px solid var(--color-amber);
+  border-top: 2px solid var(--color-accent);
 }
 
 .calendar-now-label {
-  background-color: var(--color-amber);
-  color: #ffffff;
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 [data-sonner-toaster] {
   --normal-bg: var(--color-ink);
   --normal-text: var(--color-paper);
   --normal-border: var(--color-ink);
-  --success-bg: var(--color-pine);
-  --success-text: #ffffff;
+  --success-bg: var(--color-primary);
+  --success-text: var(--color-on-primary);
   --error-bg: var(--color-danger);
-  --error-text: #ffffff;
+  --error-text: var(--color-on-danger);
   --border-radius: 0.5rem;
   font-family: var(--font-sans);
 }

@@ -1,18 +1,28 @@
+import type { ReactNode } from 'react'
+
 import type { AppointmentStatus, StaffColor } from '@/data/types'
 import { cn } from '@/lib/cn'
 
+/**
+ * Status names as a noun (a pill, a heading): "Otkazano", "Potvrđeno". In a sentence about the
+ * appointment itself, write "Termin je otkazan" instead of bending these.
+ */
 export const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  confirmed: 'Potvrđen',
-  completed: 'Završen',
-  cancelled: 'Otkazan',
+  confirmed: 'Potvrđeno',
+  completed: 'Završeno',
+  cancelled: 'Otkazano',
   no_show: 'Nedolazak',
 }
 
+/*
+ * A finished appointment is closed, not in play: neutral. Only a no-show and a
+ * cancellation carry the alarm colour.
+ */
 const statusDotColors: Record<AppointmentStatus, string> = {
-  confirmed: 'bg-pine',
-  completed: 'bg-line-strong',
-  cancelled: 'bg-line-strong',
-  no_show: 'bg-amber',
+  confirmed: 'bg-primary',
+  completed: 'bg-muted',
+  cancelled: 'bg-danger',
+  no_show: 'bg-accent-ui',
 }
 
 /**
@@ -30,7 +40,11 @@ export function StatusIndicator({
     <span
       className={cn(
         'inline-flex items-center gap-2 text-xs font-medium whitespace-nowrap',
-        status === 'no_show' ? 'text-amber-ink' : 'text-muted',
+        status === 'no_show'
+          ? 'text-accent-ui'
+          : status === 'cancelled'
+            ? 'text-danger'
+            : 'text-muted',
         className,
       )}
     >
@@ -57,7 +71,7 @@ export function ActiveState({
     <span className="inline-flex items-center gap-2 text-xs font-medium text-muted">
       <span
         aria-hidden="true"
-        className={cn('h-1.5 w-1.5 rounded-full', active ? 'bg-pine' : 'bg-line-strong')}
+        className={cn('h-1.5 w-1.5 rounded-full', active ? 'bg-primary' : 'bg-muted')}
       />
       {active ? labelOn : labelOff}
     </span>
@@ -80,6 +94,66 @@ export function StaffName({
     >
       <span aria-hidden="true" className="staff-bar h-1.5 w-1.5 rounded-full" />
       {name}
+    </span>
+  )
+}
+
+const statusPill: Record<AppointmentStatus, { className: string; dot: string }> = {
+  confirmed: {
+    className: 'border-primary bg-primary-tint text-primary',
+    dot: 'bg-primary',
+  },
+  completed: {
+    className: 'border-line bg-surface text-muted',
+    dot: 'bg-muted',
+  },
+  cancelled: {
+    className: 'border-danger bg-brick-tint text-danger',
+    dot: 'bg-danger',
+  },
+  no_show: {
+    className: 'border-accent-ui bg-accent-tint text-accent-ui',
+    dot: 'bg-accent-ui',
+  },
+}
+
+/**
+ * The same status as a pill, for places that need the state to hold a row (a confirmation,
+ * a detail sheet): tinted fill, a border in the status colour, and the word in that colour.
+ * The border matters in dark mode, where tints cannot carry the shape on their own.
+ */
+export function StatusPill({
+  status,
+  className,
+}: {
+  status: AppointmentStatus
+  className?: string
+}) {
+  const pill = statusPill[status]
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap',
+        pill.className,
+        className,
+      )}
+    >
+      <span aria-hidden="true" className={cn('h-1.5 w-1.5 rounded-full', pill.dot)} />
+      {STATUS_LABELS[status]}
+    </span>
+  )
+}
+
+/** A break or an absence: not an appointment, so it reads muted on a neutral fill. */
+export function PausedPill({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full bg-line px-2.5 py-1 text-xs font-medium whitespace-nowrap text-muted',
+        className,
+      )}
+    >
+      {children}
     </span>
   )
 }

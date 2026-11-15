@@ -107,14 +107,14 @@ export function HairdressersPage() {
                             key={weekday}
                             className={cn(
                               'inline-flex items-center gap-1.5',
-                              works ? 'text-ink' : 'text-line-strong',
+                              works ? 'text-ink' : 'text-muted',
                             )}
                           >
                             <span
                               aria-hidden="true"
                               className={cn(
                                 'h-1.5 w-1.5 rounded-full',
-                                works ? 'bg-pine' : 'bg-line',
+                                works ? 'bg-primary' : 'bg-line',
                               )}
                             />
                             {isoWeekdayLabel(weekday, true)}

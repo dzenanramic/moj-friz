@@ -143,7 +143,7 @@ export function PackagePage() {
             </p>
           ) : null}
         </div>
-        <div className="mt-4 flex items-start gap-3 rounded-lg bg-amber-soft px-4 py-3.5 text-sm leading-relaxed text-amber-ink">
+        <div className="mt-4 flex items-start gap-3 rounded-lg bg-accent-tint px-4 py-3.5 text-sm leading-relaxed text-accent-ui ring-1 ring-inset ring-accent-ui/40">
           <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
             Kad probni period istekne, prikazuje se obavještenje. Pristup se ne blokira automatski;
@@ -164,7 +164,7 @@ export function PackagePage() {
                 key={item.level}
                 className={cn(
                   'flex flex-col rounded-lg px-5 py-6 sm:px-7',
-                  active ? 'bg-pine-soft' : 'bg-surface',
+                  active ? 'bg-primary-tint ring-1 ring-inset ring-primary/25' : 'bg-surface',
                 )}
               >
                 <div className="flex items-baseline justify-between gap-3">
@@ -173,7 +173,7 @@ export function PackagePage() {
                     <p className="mt-0.5 text-sm text-muted">{item.description}</p>
                   </div>
                   {active ? (
-                    <span className="shrink-0 text-xs font-medium text-pine-strong">
+                    <span className="shrink-0 text-xs font-medium text-primary-hover">
                       Prikazuje se
                     </span>
                   ) : null}
@@ -194,7 +194,7 @@ export function PackagePage() {
                         aria-hidden="true"
                         className={cn(
                           'mt-0.5 h-4 w-4 shrink-0',
-                          active ? 'text-pine-strong' : 'text-pine',
+                          active ? 'text-primary-hover' : 'text-primary',
                         )}
                       />
                       {feature}
@@ -237,7 +237,7 @@ export function PackagePage() {
               href={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-medium text-pine transition-colors hover:text-pine-strong"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
             >
               Otvori javnu stranicu
               <ExternalLink aria-hidden="true" className="h-4 w-4" />

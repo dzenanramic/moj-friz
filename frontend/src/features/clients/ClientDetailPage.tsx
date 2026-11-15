@@ -88,12 +88,12 @@ export function ClientDetailPage() {
           <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-muted">
             <a
               href={callHref}
-              className="tabular inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:text-pine"
+              className="tabular inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line underline-offset-4 transition-colors hover:text-primary"
             >
               <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted" />
               {person.phoneOriginal}
             </a>
-            <span aria-hidden="true" className="text-line-strong">
+            <span aria-hidden="true" className="text-muted">
               ·
             </span>
             <span>
@@ -229,7 +229,7 @@ function HistoryRow({ appointment, today }: { appointment: AppointmentView; toda
         <span
           className={cn(
             'block truncate text-sm font-medium text-ink',
-            cancelled && 'line-through decoration-line-strong',
+            cancelled && 'line-through decoration-line',
           )}
         >
           {appointment.serviceName}

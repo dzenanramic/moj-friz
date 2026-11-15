@@ -166,7 +166,7 @@ export function WorkingHoursPage() {
                           <span className="text-sm text-ink">{block.reason}</span>
                           <StaffName
                             name={member?.displayName ?? 'Frizer'}
-                            colorKey={member?.colorKey ?? 'pine'}
+                            colorKey={member?.colorKey ?? '1'}
                           />
                           <Button
                             variant="ghost"
@@ -197,7 +197,7 @@ export function WorkingHoursPage() {
 }
 
 function DayHours({ intervals }: { intervals: WorkingHoursInterval[] }) {
-  if (intervals.length === 0) return <span className="text-sm text-line-strong">Ne radi</span>
+  if (intervals.length === 0) return <span className="text-sm text-muted">Ne radi</span>
   return (
     <span className="tabular text-sm font-medium text-ink">
       {intervals.map((interval) => `${interval.start}–${interval.end}`).join(', ')}

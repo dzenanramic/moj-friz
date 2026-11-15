@@ -76,16 +76,16 @@ export function TodayPage() {
       {next ? (
         <section
           aria-label="Sljedeći termin"
-          className="relative overflow-hidden rounded-lg bg-pine-soft"
+          className="relative overflow-hidden rounded-lg bg-primary-tint"
         >
-          <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-pine" />
+          <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-primary" />
           <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:px-7 sm:py-6">
             <div className="flex min-w-0 flex-1 items-center gap-5">
-              <p className="tabular text-3xl leading-none font-semibold text-pine-strong sm:text-4xl">
+              <p className="tabular text-3xl leading-none font-semibold text-primary sm:text-4xl">
                 {formatTime(next.startsAt)}
               </p>
               <div className="min-w-0">
-                <p className="text-xs font-medium text-pine-strong">Sljedeći termin</p>
+                <p className="text-xs font-medium text-primary">Sljedeći termin</p>
                 <p className="mt-1 truncate text-lg font-semibold text-ink">{next.clientName}</p>
                 <p className="mt-0.5 truncate text-sm text-muted">
                   {next.serviceName} · {next.hairdresserName} · do {formatTime(next.endsAt)}
@@ -158,7 +158,7 @@ export function TodayPage() {
                   ))
                 ) : (
                   <div className="flex items-center gap-3 px-3 py-5 sm:px-4">
-                    <Sun aria-hidden="true" className="h-4 w-4 shrink-0 text-line-strong" />
+                    <Sun aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" />
                     <p className="text-sm text-muted">Današnji termini su završeni.</p>
                   </div>
                 )}

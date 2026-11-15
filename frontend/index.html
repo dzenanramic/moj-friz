@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#1f5a46" />
+    <meta name="theme-color" content="#f6f2ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#12151d" media="(prefers-color-scheme: dark)" />
     <meta name="referrer" content="no-referrer" />
     <meta
       name="description"
@@ -11,6 +12,15 @@
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Studio Lana — demo</title>
+    <!--
+      Theme, first paint. The CSS already follows prefers-color-scheme; theme-boot.css is a file
+      (not an inline style, the site is served with `style-src 'self'`) that only corrects the
+      case where the owner stored a choice that disagrees with the system.
+    -->
+    <link rel="stylesheet" href="/theme-boot.css" media="(prefers-color-scheme: dark)" />
+    <link rel="stylesheet" href="/theme-boot.css" media="(prefers-color-scheme: light)" />
+    <!-- Loaded before the app module, so the stored choice is on <html> before React renders. -->
+    <script type="module" src="/theme-boot.js"></script>
   </head>
   <body>
     <div id="root"></div>

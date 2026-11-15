@@ -59,6 +59,16 @@ export default tseslint.config(
     },
   },
   {
+    // Static files served as-is from public/ (the first-paint theme).
+    files: ['public/**/*.js'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.mjs'],
     languageOptions: {
       globals: {

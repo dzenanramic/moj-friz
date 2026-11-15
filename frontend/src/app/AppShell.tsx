@@ -31,12 +31,22 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/postavke', label: 'Postavke', icon: Settings2 },
 ]
 
-function SalonMark({ name, size = 'md' }: { name: string; size?: 'md' | 'sm' }) {
+/** The owner mark is the brand blue; the public booking page uses `tone="ink"` instead. */
+export function SalonMark({
+  name,
+  size = 'md',
+  tone = 'brand',
+}: {
+  name: string
+  size?: 'md' | 'sm'
+  tone?: 'brand' | 'ink'
+}) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-sm bg-pine text-sm font-semibold text-paper',
+        'flex shrink-0 items-center justify-center rounded-sm text-sm font-semibold',
+        tone === 'brand' ? 'bg-primary text-on-primary' : 'bg-ink text-paper',
         size === 'sm' ? 'h-8 w-8' : 'h-9 w-9',
       )}
     >
@@ -83,7 +93,7 @@ function Sidebar() {
                       aria-hidden="true"
                       className={cn(
                         'h-[1.1rem] w-[1.1rem]',
-                        isActive ? 'text-pine' : 'text-line-strong',
+                        isActive ? 'text-primary' : 'text-muted',
                       )}
                     />
                     {item.label}
@@ -101,7 +111,7 @@ function Sidebar() {
             href={`/rezervacija/${salon.data?.slug ?? 'studio-lana'}`}
             target="_blank"
             rel="noreferrer"
-            className="flex min-h-10 items-center gap-2 text-sm font-medium text-pine transition-colors hover:text-pine-strong"
+            className="flex min-h-10 items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
           >
             <ExternalLink aria-hidden="true" className="h-4 w-4" />
             Javna stranica
@@ -158,7 +168,7 @@ function MobileNav() {
               className={({ isActive }) =>
                 cn(
                   'flex min-h-14 flex-col items-center justify-center gap-1 text-[0.7rem] font-medium transition-colors',
-                  isActive ? 'text-pine' : 'text-muted',
+                  isActive ? 'text-primary' : 'text-muted',
                 )
               }
             >
@@ -166,7 +176,7 @@ function MobileNav() {
                 <>
                   <item.icon
                     aria-hidden="true"
-                    className={cn('h-5 w-5', isActive ? 'text-pine' : 'text-line-strong')}
+                    className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-muted')}
                   />
                   {item.label}
                 </>
