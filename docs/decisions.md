@@ -44,6 +44,8 @@ never colours. Dark values live under `.dark`, not in a media query, so a stored
   `#7A5A86` `#8A6D14` `#4B5366`; `on-danger` because white on dark `#E27D6B` is 2.85.
   `public/theme-boot.css` repeats these values for the first paint; the contrast test fails if the
   copy drifts.
+- One commit per sheet: "Dodaj termin" adds the term and closes the sheet, "Sačuvaj izmjene"
+  saves and closes; "Odustani" is the way out without saving.
 - Rules: copper is a fill (the one CTA per screen), never text; `muted` never sits inside a
   hairdresser tinted card; `line` is a border, not text.
 - Theme: the page starts from `prefers-color-scheme` before React mounts

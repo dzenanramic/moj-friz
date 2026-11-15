@@ -85,8 +85,6 @@ export function AppointmentDialog({
   )
   const [isNewClient, setIsNewClient] = useState(false)
   const [clientSearch, setClientSearch] = useState('')
-  /** 'create' adds a term; 'close' only checks and closes while the owner keeps booking. */
-  const [submitIntent, setSubmitIntent] = useState<'create' | 'close'>('create')
   const debouncedSearch = useDebouncedValue(clientSearch, 180)
   const clients = useClients(debouncedSearch, 1, 6)
 
@@ -206,19 +204,7 @@ export function AppointmentDialog({
       } else {
         await createAppointment.mutateAsync(draft)
         toast.success('Termin je dodan.')
-        if (submitIntent === 'close') {
-          onClose()
-          return
-        }
-        // Adding booking after booking: the client and time reset, the schedule stays put.
-        setSelectedClient(null)
-        setIsNewClient(false)
-        setClientSearch('')
-        setValue('clientId', undefined)
-        setValue('newClientName', '')
-        setValue('newClientPhone', '')
-        setValue('internalNote', '')
-        setSubmitError(null)
+        onClose()
       }
     } catch (error) {
       setSubmitError(gatewayErrorMessage(error))
@@ -314,26 +300,13 @@ export function AppointmentDialog({
             <Button variant="secondary" onClick={close} disabled={pending}>
               Odustani
             </Button>
-            {mode === 'create' ? (
-              <Button
-                type="submit"
-                form="appointment-form"
-                variant="secondary"
-                loading={pending}
-                disabled={!hairdresserId || !serviceId}
-                onClick={() => setSubmitIntent('close')}
-              >
-                Dodaj i zatvori
-              </Button>
-            ) : null}
-            {/* The one copper action on the screen: the commit. */}
+            {/* The one copper action on the screen: add or save, then the sheet closes. */}
             <Button
               variant="accent"
               type="submit"
               form="appointment-form"
               loading={pending}
               disabled={!hairdresserId || !serviceId}
-              onClick={() => setSubmitIntent('create')}
             >
               {mode === 'edit' ? 'Sačuvaj izmjene' : 'Dodaj termin'}
             </Button>
