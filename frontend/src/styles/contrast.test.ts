@@ -82,6 +82,11 @@ function pairs(): Array<[string, string, number]> {
   text('on-primary', 'primary')
   text('on-primary', 'primary-hover')
   text('on-accent', 'accent')
+  /* The one call to action: a solid ink fill with paper text, no border. */
+  text('surface', 'ink')
+  /* `accent-ui` as a 3:1 mark on the page: the nav's active rule and the no-show pill.
+     It is not a button border. */
+  text('accent-ui', 'paper', 3)
   text('primary', 'paper')
   text('primary', 'surface')
   text('primary', 'primary-tint')

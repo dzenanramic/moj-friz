@@ -20,6 +20,41 @@ pilot backend already exists.
 | 10  | Guest phone verification       | **None** in the controlled pilot; documented impersonation/spam risk                                      | Approved with risk      |
 | 11  | Colour palette                 | **Ink blue + copper** on a paper-cream base; dark is a warm near-black blue. The green palette is dropped | Approved 15.11.2026     |
 | 12  | Demo seed                      | **Every day has work**: all seven weekdays are demo working days (Sunday opens later and shorter) and each day shows **at least 10 appointments** | Approved 15.11.2026     |
+| 13  | Visual direction               | **Print, not SaaS**: a display serif for the salon's voice, copper as a rule (never a button border or fill), hierarchy from hairlines and density rather than repeated rounded cards | Implemented 15.11.2026 |
+
+## Visual direction (decision 13)
+
+The palette below is unchanged. What changed is how it is spent: one focal element per screen, and
+beneath it a quiet, ruled, ledgery surface.
+
+- **Type.** Two faces, one job each. **Fraunces Variable** (`--font-display`, imported in
+  `src/main.tsx` via `@fontsource-variable/fraunces/opsz.css`) carries the salon's voice and only
+  that: `h1`, the `.display` utility, and the salon wordmark. Everything else — every label, button,
+  column and number — stays Instrument Sans. The optical-size axis (`opsz 96`, `SOFT 0`, `WONK 0`) is
+  why this face was chosen: large sizes get its printed cut rather than a blown-up text weight.
+  Latin Extended is bundled, so `Ž`, `š` and `č` resolve here and not in a system fallback.
+- **Numbers are never set in the display face.** A clock time is read, not admired: the "now"
+  appointments and the day tally stay in the sans with `.tabular` figures. A serif's `1` and `:` do
+  not line up as a time.
+- **Copper is a rule, never a button border or the loudest fill.** `Button variant="accent"` is a
+  solid ink fill (dark mode: the brand blue, because `ink` is near-white there and a cream block
+  would out-shout the page) with **no border**. The 3px copper margin rule marks the active sidebar
+  screen and the hero headline. Contrast is enforced by `contrast.test.ts` (`surface` on `ink`,
+  `accent-ui` on `paper` ≥ 3:1).
+- **Hierarchy from a ground ladder, not a card kit.** page `paper` → section rule (a heading over a
+  hairline, `SectionHeading`) → object `Panel` (one hairline border, `rounded-md`) → elevated
+  `Surface` (shadow; sheets, the launcher preview, the confirmation only). `SectionHeading` is ruled
+  rather than boxed so a section is not a card.
+- **The calendar is a book, not a spreadsheet.** Gridlines use `--rule-grid` (a hairline token, also
+  mirrored in `public/theme-boot.css`); hours outside a hairdresser's day and breaks are hatched
+  (`.closed-hatch`), so closed time never reads as a bookable slot.
+- **Demo chrome is quiet.** The demo bar is a hairline strip, not a coloured bar; the Paket 1/2
+  preview switch lives in Postavke → Paket and nowhere else.
+- **`/danas` reads the day in the order it is worked**: the chair in use now, else the next
+  appointment, else — once the day is over — the day's tally. The history is below it, never first.
+  A fresh demo must never open on a closed salon: the seed fills the current day whatever weekday
+  it is (`e2e/owner.spec.ts`, "a fresh demo opens on a working day").
+
 
 ## Palette (decision 11)
 
@@ -48,7 +83,9 @@ never colours. Dark values live under `.dark`, not in a media query, so a stored
 - One commit per sheet: "Dodaj termin" adds the term and closes the sheet, "Sačuvaj izmjene"
   saves and closes; "Odustani" is the way out without saving.
 - Rules: copper is a fill (the one CTA per screen), never text; `muted` never sits inside a
-  hairdresser tinted card; `line` is a border, not text.
+  hairdresser tinted card; `line` is a border, not text. **Amended by decision 13:** the one CTA on
+  a screen is a solid ink or brand-blue fill with no border, and copper appears as a rule (nav,
+  hero), never as text and never as a button border; the text-safe warm tone stays `accent-ui`.
 - Theme: the page starts from `prefers-color-scheme` before React mounts
   (`frontend/index.html`), an explicit choice is stored in `mojfriz.theme` and wins. The switch is
   one button (moon in light, sun in dark) on the Postavke page and in the demo bar on every screen,

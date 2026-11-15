@@ -75,6 +75,9 @@
   --sheet-shadow: 0 24px 60px -28px rgb(31 36 48 / 0.35);
   --toast-shadow: 0 14px 40px -16px rgb(31 36 48 / 0.4);
 
+  /* Gridlines are a hairline, not a border: the book stays free space with a faint ruled grid. */
+  --rule-grid: rgb(31 36 48 / 0.055);
+
   color-scheme: light;
 }
 
@@ -121,6 +124,8 @@
   --card-shadow: 0 1px 0 0 rgb(255 255 255 / 0.03);
   --sheet-shadow: 0 24px 60px -28px rgb(0 0 0 / 0.7);
   --toast-shadow: 0 14px 40px -16px rgb(0 0 0 / 0.7);
+
+  --rule-grid: rgb(255 255 255 / 0.05);
 
   color-scheme: dark;
 }
@@ -170,6 +175,8 @@
     --sheet-shadow: 0 24px 60px -28px rgb(0 0 0 / 0.7);
     --toast-shadow: 0 14px 40px -16px rgb(0 0 0 / 0.7);
 
+    --rule-grid: rgb(255 255 255 / 0.05);
+
     color-scheme: dark;
   }
 }
@@ -177,6 +184,13 @@
 @theme {
   --font-sans:
     'Instrument Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /*
+   * The display face carries the salon's voice — the mark, the two public headlines, the
+   * landing time. It never carries a UI label, a number column or a button. Falls back to a
+   * system serif rather than to the sans, so a missing font still reads as a headline.
+   */
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, 'Times New Roman', serif;
 
   --color-paper: var(--paper);
   --color-surface: var(--surface);
@@ -233,8 +247,8 @@
   }
 
   /*
-   * One type scale for the whole app. Headings stay in sentence case and keep
-   * their natural letter spacing; size and weight carry the hierarchy.
+   * One type scale for the whole app. Two faces, one job each: the headline is the display
+   * serif, everything below it is the sans. Size and weight carry the hierarchy.
    */
   h1,
   h2,
@@ -243,15 +257,22 @@
   }
 
   h1 {
-    font-size: 2rem;
-    line-height: 1.12;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    line-height: 1.08;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    /* The optical size axis is why this face was chosen: let it set to its large cut. */
+    font-variation-settings:
+      'opsz' 96,
+      'SOFT' 0,
+      'WONK' 0;
   }
 
   @media (min-width: 640px) {
     h1 {
-      font-size: 2.5rem;
-      line-height: 1.08;
+      font-size: 2.75rem;
+      line-height: 1.05;
     }
   }
 
@@ -370,6 +391,34 @@
   /* Times line up in columns, so they get tabular figures — not a different face. */
   .tabular {
     font-family: 'Instrument Sans Tabular', var(--font-sans);
+  }
+
+  /*
+   * The display face, for the named few places that carry the salon's voice. Declared as a
+   * utility so the choice is greppable and cannot leak onto a label or a number column.
+   */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    font-variation-settings:
+      'opsz' 96,
+      'SOFT' 0,
+      'WONK' 0;
+    text-wrap: balance;
+  }
+
+  /* Hours the salon is shut, and a break inside an open day: hatched, so neither reads as a
+     free slot. Two tones of `line`, never a colour, because neither is an alarm. */
+  .closed-hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--color-line) 0,
+      var(--color-line) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+    background-color: color-mix(in srgb, var(--color-line) 35%, transparent);
   }
 }
 

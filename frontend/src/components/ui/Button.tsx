@@ -11,8 +11,13 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-on-primary hover:bg-primary-hover',
-  /* The one call to action on a screen: copper, which is the only warm fill in the UI. */
-  accent: 'bg-accent text-on-accent hover:brightness-90',
+  /*
+   * The one call to action on a screen: a solid ink fill with paper text, no border.
+   * In dark mode `ink` is near-white, so the fill becomes the brand blue instead: a cream
+   * block would be the loudest thing on a dark page, which is the opposite of quiet.
+   */
+  accent:
+    'bg-ink text-surface hover:brightness-110 dark:bg-primary dark:text-on-primary dark:hover:bg-primary-hover dark:hover:brightness-100',
   secondary: 'bg-surface text-ink ring-1 ring-inset ring-line hover:bg-paper active:bg-paper',
   ghost: 'text-ink hover:bg-primary-tint',
   quiet: 'text-primary hover:bg-primary-tint',

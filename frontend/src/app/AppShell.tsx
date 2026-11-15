@@ -3,10 +3,10 @@ import { useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
 import { Skeleton } from '@/components/ui/Layout'
+import { SalonMark } from '@/components/ui/SalonMark'
 import { usePackageInfo, useSalon } from '@/data/queries'
 import { cn } from '@/lib/cn'
 import { formatKM } from '@/lib/format'
-import { initials } from '@/lib/text'
 
 import { DemoBanner, PublicDemoBar } from './DemoBanner'
 
@@ -25,30 +25,6 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/postavke', label: 'Postavke', icon: Settings2 },
 ]
 
-/** The owner mark is the brand blue; the public booking page uses `tone="ink"` instead. */
-export function SalonMark({
-  name,
-  size = 'md',
-  tone = 'brand',
-}: {
-  name: string
-  size?: 'md' | 'sm'
-  tone?: 'brand' | 'ink'
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'flex shrink-0 items-center justify-center rounded-sm text-sm font-semibold',
-        tone === 'brand' ? 'bg-primary text-on-primary' : 'bg-ink text-paper',
-        size === 'sm' ? 'h-8 w-8' : 'h-9 w-9',
-      )}
-    >
-      {initials(name)}
-    </span>
-  )
-}
-
 function Sidebar() {
   const salon = useSalon()
   const packageInfo = usePackageInfo()
@@ -60,7 +36,7 @@ function Sidebar() {
       <div className="flex items-center gap-3 px-4 pb-8 pt-6">
         <SalonMark name={name} />
         <div className="min-w-0">
-          <p className="truncate text-sm leading-tight font-semibold text-ink">{name}</p>
+          <p className="display truncate text-[1.15rem] leading-tight text-ink">{name}</p>
           <p className="mt-0.5 truncate text-xs text-muted">{salon.data?.city ?? 'Banja Luka'}</p>
         </div>
       </div>
@@ -74,15 +50,24 @@ function Sidebar() {
                 end={item.end}
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors',
+                    // The active screen is marked with a copper margin rule, the way a bookmark
+                    // sits in a book — not with a filled card that competes with the content.
+                    'relative flex min-h-10 items-center gap-3 rounded-sm px-3 text-sm transition-colors',
                     isActive
-                      ? 'bg-surface font-medium text-ink'
+                      ? 'font-medium text-ink'
                       : 'text-muted hover:bg-surface hover:text-ink',
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-accent-ui transition-opacity',
+                        isActive ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
                     <item.icon
                       aria-hidden="true"
                       className={cn(
@@ -140,7 +125,7 @@ function MobileTopBar() {
     <div className="flex items-center gap-2.5 px-4 py-3 lg:hidden">
       <SalonMark name={name} size="sm" />
       <div className="min-w-0">
-        <p className="truncate text-sm leading-tight font-semibold text-ink">{name}</p>
+        <p className="display truncate text-[1.05rem] leading-tight text-ink">{name}</p>
         <p className="text-xs text-muted">{salon.data?.city ?? 'Banja Luka'}</p>
       </div>
     </div>

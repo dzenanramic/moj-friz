@@ -47,6 +47,29 @@ export function nextDateKeyOnWeekday(weekday: number, startOffset = 1): string {
   throw new Error('No such weekday found')
 }
 
+/** The demo's own localStorage key (see src/demo/gateway.ts). */
+const DEMO_STORAGE_KEY = 'mojfriz.demo.v1'
+
+/**
+ * Start from a fresh seed.
+ *
+ * The suite shares one origin, so a test that changes the package level or adds appointments
+ * would otherwise decide what the next test opens on. Every test drops the stored state first;
+ * the app then seeds the current day.
+ */
+export async function resetDemoState(page: Page): Promise<void> {
+  await page.goto('/')
+  await page.evaluate((key) => window.localStorage.removeItem(key), DEMO_STORAGE_KEY)
+  await page.reload()
+}
+
+/** The package preview switch lives in Postavke → Paket, not in the demo bar. */
+export async function previewPackage(page: Page, level: 'Paket 1' | 'Paket 2'): Promise<void> {
+  await page.goto('/postavke')
+  await page.getByRole('button', { name: `Prikaži ${level} u demou` }).click()
+  await expect(page.getByText(`Demo prikaz je prebačen na ${level}.`)).toBeVisible()
+}
+
 /**
  * A future date the demo has appointments on. Every day of the week is a demo working day —
  * Sunday included — and the seed fills three weeks ahead, so any day in that window is open.

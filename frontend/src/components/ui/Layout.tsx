@@ -32,7 +32,7 @@ export function PageHeader({
       className={cn(
         // By default the actions drop under a long description on a phone. `align="start"`
         // asks for the actions to sit in the title's row at every width instead.
-        'flex flex-col gap-5 pb-7 sm:flex-row sm:justify-between sm:gap-8 sm:pb-9',
+        'flex flex-col gap-5  sm:flex-row sm:justify-between sm:gap-8 sm:pb-9',
         align === 'end' ? 'sm:items-end' : 'sm:items-start',
         align === 'start' &&
           'max-sm:flex-row max-sm:flex-wrap max-sm:items-start max-sm:gap-x-4 max-sm:gap-y-3',
@@ -69,8 +69,10 @@ export function PageHeader({
 }
 
 /**
- * The standard content block: no border, slightly lifted from the page.
- * Use it for sections that group real content, never for a single line.
+ * A content object on the page: a list, a day, a client's history. It reads as an object
+ * because it has a boundary (one hairline), not because it floats — the only thing that floats
+ * in this system is a `Surface` (a sheet, a confirmation). Use a Panel for sections that group
+ * real content, never for a single line.
  */
 export function Panel({
   children,
@@ -86,7 +88,13 @@ export function Panel({
   const hasPadding =
     className?.includes('p-') || className?.includes('px-') || className?.includes('py-')
   return (
-    <Tag className={cn('rounded-lg bg-surface', !hasPadding && 'px-3 py-4 sm:px-4', className)}>
+    <Tag
+      className={cn(
+        'rounded-md border border-line bg-surface',
+        !hasPadding && 'px-3 py-4 sm:px-4',
+        className,
+      )}
+    >
       {children}
     </Tag>
   )
@@ -130,8 +138,15 @@ export function SectionHeading({
   as?: 'h2' | 'h3'
   className?: string
 }) {
+  // Ruled, not boxed: a section is a heading over a hairline with its action on the right,
+  // the way a ledger opens a group. Only an object (Panel) gets a full boundary.
   return (
-    <div className={cn('flex flex-wrap items-end justify-between gap-3', className)}>
+    <div
+      className={cn(
+        'flex flex-wrap items-end justify-between gap-3 border-b border-line pb-2.5',
+        className,
+      )}
+    >
       <div>
         <Heading className="text-ink">{title}</Heading>
         {description ? (

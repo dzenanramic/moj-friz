@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef, useState, type RefCallback } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 
-import { SalonMark } from '@/app/AppShell'
 import { Avatar, Panel, Skeleton } from '@/components/ui/Layout'
 import { Button, ButtonLink } from '@/components/ui/Button'
+import { SalonMark } from '@/components/ui/SalonMark'
 import { CheckboxField, FormError, TextField } from '@/components/ui/form'
 import { gatewayErrorMessage, isGatewayError } from '@/data/gateway'
 import { useCreatePublicBooking, usePublicAvailability, usePublicCatalog } from '@/data/queries'
@@ -250,15 +250,15 @@ export function PublicBookingPage() {
       <header className="border-b border-line pb-6">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
           <div>
-            {/* The guest has no owner navigation: the mark, then the salon's name. */}
+            {/* The guest has no owner navigation: the mark, the salon's name, then the address. */}
             <div className="mb-3 flex items-center gap-2.5">
               <SalonMark name={salon.name} size="sm" tone="ink" />
-              <span className="text-xs font-medium tracking-wide text-muted uppercase">
-                Rezervacija
-              </span>
+              <span className="text-xs text-muted">Rezervacija termina</span>
             </div>
-            <h1 className="text-ink">{salon.name}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+            <h1 className="display text-[2.5rem] leading-[1.05] text-ink sm:text-[3rem]">
+              {salon.name}
+            </h1>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
               <span className="inline-flex items-center gap-1.5">
                 <MapPin aria-hidden="true" className="h-4 w-4 text-muted" />
                 {salon.address}, {salon.city}
@@ -313,7 +313,8 @@ export function PublicBookingPage() {
                             {service.name}
                           </span>
                           <span className="mt-0.5 block text-xs text-muted">
-                            {formatDuration(service.durationMinutes)} ·{' '}
+                            {formatDuration(service.durationMinutes)}
+                            <span aria-hidden="true"> · </span>
                             {countHairdressers(service, hairdressers)}
                           </span>
                         </span>
@@ -675,10 +676,11 @@ function BookingSummary({
   slot?: { startsAt: string; endsAt: string }
 }) {
   return (
-    <div className="sticky top-6 rounded-lg bg-surface px-5 py-5">
+    <div className="sticky top-6 rounded-md border border-line bg-surface px-5 py-5">
       <p className="text-sm text-muted">Vaš termin</p>
-      <p className="mt-0.5 text-xl font-semibold text-ink">{salon.name}</p>
-      <dl className="mt-4 space-y-3 text-sm">
+      <p className="display mt-0.5 text-[1.5rem] leading-tight text-ink">{salon.name}</p>
+      {/* Labelled rows, not middle-dot strings: a guest reads down one column of facts. */}
+      <dl className="mt-5 border-t border-line">
         <SummaryRow label="Usluga" value={service?.name ?? 'Nije izabrana'} />
         <SummaryRow label="Frizer" value={hairdresser?.displayName ?? 'Nije izabran'} />
         {/* The day is known once the service and the hairdresser are: only the time waits. */}
@@ -691,11 +693,9 @@ function BookingSummary({
           value={slot ? `${formatTime(slot.startsAt)}–${formatTime(slot.endsAt)}` : '—'}
         />
         {service ? (
-          <>
-            <SummaryRow label="Trajanje" value={formatDuration(service.durationMinutes)} />
-            <SummaryRow label="Cijena" value={formatKM(service.priceMinor)} />
-          </>
+          <SummaryRow label="Trajanje" value={formatDuration(service.durationMinutes)} />
         ) : null}
+        {service ? <SummaryRow label="Cijena" value={formatKM(service.priceMinor)} /> : null}
       </dl>
       <div className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-muted">
         <p className="flex items-start gap-1.5">
@@ -717,9 +717,9 @@ function BookingSummary({
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="flex items-baseline justify-between gap-4 border-b border-line py-2.5 last:border-b-0">
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-0.5 text-sm font-medium text-ink">{value}</dd>
+      <dd className="text-right text-sm font-medium text-ink">{value}</dd>
     </div>
   )
 }

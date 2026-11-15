@@ -25,14 +25,15 @@ Click **Uđi u demo**.
 
 ### 0:30 — Today
 
-Show the day headline, completed appointments, statuses and the next appointment panel.
+Show the card at the top of the page, the statuses under it, and the history below.
 
-> „Vlasnica odmah vidi šta je završeno, šta slijedi i ko je u smjeni. Kada je dan gotov, to je jasno
-> označeno — nema lažnog broja termina.“
+> „Vlasnica odmah vidi šta je sada u stolici, šta slijedi, a kada je dan gotov — koliko je od
+> deset termina završeno i ko nije došao. Nijedan broj na ekranu nije izmišljen u letu; sve je iz
+> rasporeda.“
 
-If the current day is late/closed:
+If the current day is late/closed, the top card is the day's tally instead:
 
-> „Pošto je sada kraj dana, današnji termini su završeni. Otvorimo sutra da vidite pun raspored.“
+> „Pošto je sada kraj dana, gore je rezime današnjeg rada. Otvorimo sutra da vidite pun raspored.“
 
 ### 1:00 — Calendar, filter and break
 

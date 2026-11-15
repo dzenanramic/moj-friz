@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { formatSalonDateLong, nextOpenDateKey } from './helpers'
+import { formatSalonDateLong, nextOpenDateKey, previewPackage, resetDemoState } from './helpers'
 
 test('guest books, reschedules and cancels a Level 2 appointment', async ({ page }) => {
   const dateKey = nextOpenDateKey(2)
@@ -50,9 +50,9 @@ test('guest books, reschedules and cancels a Level 2 appointment', async ({ page
 })
 
 test('Level 1 shows an honest lock instead of public booking', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Prikaži Paket 1' }).click()
-  await expect(page.getByText('Prikaz je prebačen na Paket 1.')).toBeVisible()
+  // The package switch lives in Postavke, and the level is stored: start from Paket 2.
+  await resetDemoState(page)
+  await previewPackage(page, 'Paket 1')
   await page.goto('/rezervacija/studio-lana')
   await expect(
     page.getByRole('heading', { name: /Online rezervacije su isključene/ }),

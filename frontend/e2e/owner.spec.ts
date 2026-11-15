@@ -4,14 +4,35 @@ import {
   formatSalonDateLong,
   nextDateKeyOnWeekday,
   nextOpenDateKey,
+  resetDemoState,
   submitNewClientAppointment,
 } from './helpers'
+
+test('a fresh demo opens on a working day', async ({ page }) => {
+  // The first screen of a booking demo must never be a closed salon: the seed fills the
+  // current day whatever weekday it is, so the launcher and /danas both show real work.
+  await resetDemoState(page)
+  await expect(page.getByRole('heading', { name: 'Digitalna knjiga termina' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Uđi u demo' }).click()
+  await expect(page.getByRole('heading', { name: 'Danas', exact: true })).toBeVisible()
+  await expect(page.getByText('Salon je danas zatvoren')).toHaveCount(0)
+
+  // The day itself is on the page: its appointments are listed, one row each.
+  await expect(page.getByRole('heading', { name: 'Današnji termini' })).toBeVisible()
+  await expect(
+    page
+      .locator('main button:visible')
+      .filter({ hasText: /^\d{2}:\d{2}/ })
+      .first(),
+  ).toBeVisible()
+})
 
 test('owner adds, reschedules and cancels an appointment', async ({ page }) => {
   const dateKey = nextOpenDateKey(7)
   const clientName = 'E2E Klijent'
 
-  await page.goto('/')
+  await resetDemoState(page)
   await page.getByRole('link', { name: 'Uđi u demo' }).click()
   await expect(page.getByRole('heading', { name: 'Danas', exact: true })).toBeVisible()
 
@@ -130,8 +151,9 @@ test('a Sunday is a working day with a full agenda', async ({ page }) => {
     'aria-label',
     formatSalonDateLong(sundayKey),
   )
-  // The agenda lists the day's appointments: ten or more, one row each.
-  const rows = page.locator('main button').filter({ hasText: /^\d{2}:\d{2}/ })
+  // The agenda lists the day's appointments: ten or more, one row each. Both layouts are in
+  // the DOM (grid for desktop, agenda for a phone), so look at the visible ones only.
+  const rows = page.locator('main button:visible').filter({ hasText: /^\d{2}:\d{2}/ })
   await expect(rows.first()).toBeVisible()
   expect(await rows.count()).toBeGreaterThanOrEqual(10)
 })

@@ -1,4 +1,8 @@
 import '@fontsource-variable/instrument-sans/wght.css'
+// The display face: only the optical-size axis, so large sizes get the lighter, more printed
+// cut of the serif instead of a blown-up text weight. Latin Extended is bundled, so Ž, š and č
+// resolve here rather than falling through to a system serif.
+import '@fontsource-variable/fraunces/opsz.css'
 import './styles/index.css'
 
 import { StrictMode } from 'react'

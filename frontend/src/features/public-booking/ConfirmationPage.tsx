@@ -87,7 +87,9 @@ export function ConfirmationPage() {
           </span>
           {isCancelled ? 'Termin je otkazan' : 'Termin je potvrđen'}
         </span>
-        <h1 className="text-ink">{isCancelled ? 'Termin je otkazan' : 'Vidimo se u salonu'}</h1>
+        <h1 className="display text-[2.5rem] leading-[1.05] text-ink sm:text-[3rem]">
+          {isCancelled ? 'Termin je otkazan' : 'Vidimo se u salonu'}
+        </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           {isCancelled
             ? 'Ovaj termin više nije aktivan. Možete otvoriti početnu stranu salona i rezervisati novi termin.'
@@ -186,7 +188,10 @@ export function ConfirmationPage() {
 
         <div className="px-6 py-4 text-xs leading-relaxed text-muted sm:px-8">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="whitespace-nowrap">{data.salonName} ·</span>
+            <span className="whitespace-nowrap">{data.salonName}</span>
+            <span aria-hidden="true" className="text-line">
+              ·
+            </span>
             <span>
               {data.salonAddress}, {data.salonCity}
             </span>

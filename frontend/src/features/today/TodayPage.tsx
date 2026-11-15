@@ -12,14 +12,12 @@ import {
   dayRange,
   formatDateCompact,
   formatDateKey,
-  formatTime,
   todayDateKey,
   weekdayIndexFromDateKey,
 } from '@/lib/time'
 
 import { AppointmentDialog } from '../appointments/AppointmentDialog'
 import { AppointmentListItem } from '../appointments/AppointmentListItem'
-
 interface DialogState {
   mode: 'create' | 'edit'
   appointment?: AppointmentView
@@ -55,11 +53,23 @@ export function TodayPage() {
   }, [today, workingHours.data])
 
   const active = (appointments.data ?? []).filter((item) => item.status !== 'cancelled')
+  const nowMs = now.getTime()
+  const inProgress = active.find(
+    (item) =>
+      item.status === 'confirmed' &&
+      new Date(item.startsAt).getTime() <= nowMs &&
+      new Date(item.endsAt).getTime() > nowMs,
+  )
   const upcoming = active.filter(
-    (item) => item.status === 'confirmed' && new Date(item.endsAt).getTime() > now.getTime(),
+    (item) => item.status === 'confirmed' && new Date(item.startsAt).getTime() > nowMs,
   )
   const finished = active.filter((item) => item.status === 'completed' || item.status === 'no_show')
-  const next = upcoming[0]
+
+  // The clock the page leads with: the chair that is occupied now, otherwise the next one.
+  const focal = inProgress ?? upcoming[0]
+  // Keep the focal appointment out of the list under it, so the day is not read twice.
+  const later = (inProgress ? upcoming : upcoming.slice(1)).filter((item) => item.id !== focal?.id)
+  const earlier = finished.filter((item) => item.id !== focal?.id)
 
   const openAppointment = (appointment: AppointmentView) => setDialog({ mode: 'edit', appointment })
 
@@ -68,7 +78,9 @@ export function TodayPage() {
       <PageHeader
         title="Danas"
         align="start"
-        className="pb-6 sm:pb-8"
+        // sm:pb-8 comes after the component's default pb-7/sm:pb-9, so it wins on wider screens;
+        // there is no pb-6 on the phone, hence `sm:` rather than a plain override.
+        className="sm:pb-8"
         actions={
           <>
             <ButtonLink
@@ -102,32 +114,6 @@ export function TodayPage() {
         />
       ) : null}
 
-      {next ? (
-        <section
-          aria-label="Sljedeći termin"
-          className="relative overflow-hidden rounded-lg bg-primary-tint"
-        >
-          <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-primary" />
-          <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:px-7 sm:py-6">
-            <div className="flex min-w-0 flex-1 items-center gap-5">
-              <p className="tabular text-3xl leading-none font-semibold text-primary sm:text-4xl">
-                {formatTime(next.startsAt)}
-              </p>
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-primary">Sljedeći termin</p>
-                <p className="mt-1 truncate text-lg font-semibold text-ink">{next.clientName}</p>
-                <p className="mt-0.5 truncate text-sm text-muted">
-                  {next.serviceName} · {next.hairdresserName} · do {formatTime(next.endsAt)}
-                </p>
-              </div>
-            </div>
-            <Button variant="secondary" size="sm" onClick={() => openAppointment(next)}>
-              Detalji
-            </Button>
-          </div>
-        </section>
-      ) : null}
-
       {appointments.isPending ? (
         <Panel className="mt-7">
           <div className="space-y-4">
@@ -159,57 +145,42 @@ export function TodayPage() {
           }
         />
       ) : (
-        <div className="mt-8 grid gap-8">
-          <div className="space-y-8">
-            <section aria-labelledby="upcoming-heading">
-              <div className="mb-3 flex items-baseline justify-between gap-3">
-                <h2 id="upcoming-heading" className="text-base font-semibold text-ink">
-                  Predstojeći
-                </h2>
-                <span className="text-xs text-muted">
-                  {upcoming.length > 0 ? formatTerminCount(upcoming.length) : 'Nema preostalih'}
-                </span>
-              </div>
-              <Panel className="py-1">
-                {upcoming.length > 0 ? (
-                  upcoming.map((appointment) => (
-                    <AppointmentListItem
-                      key={appointment.id}
-                      appointment={appointment}
-                      onOpen={openAppointment}
-                      showPrice
-                    />
-                  ))
-                ) : (
-                  <div className="flex items-center gap-3 px-3 py-5 sm:px-4">
-                    <Sun aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" />
-                    <p className="text-sm text-muted">Današnji termini su završeni.</p>
-                  </div>
-                )}
+        <div className="mt-8 space-y-8">
+          {later.length > 0 ? (
+            <section aria-labelledby="later-heading">
+              <DaySectionHeading
+                id="later-heading"
+                title={inProgress ? 'Kasnije danas' : 'Predstojeći'}
+                meta={formatTerminCount(later.length)}
+              />
+              <Panel className="mt-3 py-1">
+                {later.map((appointment) => (
+                  <AppointmentListItem
+                    key={appointment.id}
+                    appointment={appointment}
+                    onOpen={openAppointment}
+                    showPrice
+                  />
+                ))}
               </Panel>
             </section>
+          ) : null}
 
-            {finished.length > 0 ? (
-              <section aria-labelledby="finished-heading">
-                <div className="mb-3 flex items-baseline justify-between gap-3">
-                  <h2 id="finished-heading" className="text-base font-semibold text-ink">
-                    Završeno danas
-                  </h2>
-                  <span className="text-xs text-muted">{formatTerminCount(finished.length)}</span>
-                </div>
-                <Panel className="py-1">
-                  {finished.map((appointment) => (
-                    <AppointmentListItem
-                      key={appointment.id}
-                      appointment={appointment}
-                      onOpen={openAppointment}
-                      showPrice
-                    />
-                  ))}
-                </Panel>
-              </section>
-            ) : null}
-          </div>
+          {earlier.length > 0 ? (
+            <section aria-labelledby="finished-heading">
+              <DaySectionHeading id="finished-heading" title="Današnji termini" />
+              <Panel className="mt-3 py-1">
+                {earlier.map((appointment) => (
+                  <AppointmentListItem
+                    key={appointment.id}
+                    appointment={appointment}
+                    onOpen={openAppointment}
+                    showPrice
+                  />
+                ))}
+              </Panel>
+            </section>
+          ) : null}
         </div>
       )}
 
@@ -221,6 +192,18 @@ export function TodayPage() {
           onClose={() => setDialog(null)}
         />
       ) : null}
+    </div>
+  )
+}
+
+/** A ledger section: the title over a hairline, the count at the right of the rule. */
+function DaySectionHeading({ id, title, meta }: { id: string; title: string; meta?: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
+      <h2 id={id} className="text-base font-semibold text-ink">
+        {title}
+      </h2>
+      {meta ? <span className="text-xs text-muted">{meta}</span> : null}
     </div>
   )
 }

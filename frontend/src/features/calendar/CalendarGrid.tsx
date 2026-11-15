@@ -89,7 +89,7 @@ export function CalendarGrid({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg bg-surface py-2">
+    <div className="overflow-x-auto rounded-md border border-line bg-surface py-2">
       <div
         className="min-w-full"
         style={{
@@ -156,6 +156,7 @@ export function CalendarGrid({
               (appointment) => appointment.hairdresserId === hairdresser.id,
             )
             const staffBlocks = blocks.filter((block) => block.hairdresserId === hairdresser.id)
+            const closedStretches = closedStretchesFor(intervals, gridStart, gridEnd)
             return (
               <div
                 key={hairdresser.id}
@@ -163,6 +164,20 @@ export function CalendarGrid({
                 className="relative cursor-copy bg-paper"
                 onClick={(event) => handleColumnClick(event, hairdresser.id)}
               >
+                {/*
+                 * Hours outside this hairdresser's day are hatched paper; open hours are the
+                 * surface. Free space in the day therefore reads as the page, and a slot
+                 * nobody can book never looks like one somebody can.
+                 */}
+                {closedStretches.map((stretch) => (
+                  <div
+                    key={stretch.key}
+                    aria-hidden="true"
+                    className="closed-hatch pointer-events-none absolute inset-x-0"
+                    style={stretch.style}
+                  />
+                ))}
+
                 {intervals.map((interval) => {
                   const start = parseMinutes(interval.start)
                   const end = parseMinutes(interval.end)
@@ -186,8 +201,11 @@ export function CalendarGrid({
                   <div
                     key={minute}
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 border-t border-line"
-                    style={{ top: ((minute - gridStart) / 60) * HOUR_HEIGHT }}
+                    className="pointer-events-none absolute inset-x-0 border-t"
+                    style={{
+                      top: ((minute - gridStart) / 60) * HOUR_HEIGHT,
+                      borderTopColor: 'var(--rule-grid)',
+                    }}
                   />
                 ))}
 
@@ -197,7 +215,7 @@ export function CalendarGrid({
                     <div
                       key={block.id}
                       data-ignore-column-click
-                      className="pointer-events-none absolute inset-x-1 z-[2] overflow-hidden rounded-xs bg-paper px-1.5 py-1"
+                      className="closed-hatch pointer-events-none absolute inset-x-1 z-[2] overflow-hidden rounded-xs px-1.5 py-1"
                       style={position}
                       title={`${block.reason}: ${formatTimeRange(block.startsAt, block.endsAt)}`}
                     >
@@ -286,6 +304,59 @@ function parseMinutes(time: string): number | null {
   const match = /^(\d{2}):(\d{2})$/.exec(time)
   if (!match) return null
   return Number(match[1]) * 60 + Number(match[2])
+}
+
+interface ClosedStretch {
+  key: string
+  style: { top: number; height: number }
+}
+
+/**
+ * The hours of the grid a hairdresser is not working, as one stretch per gap: before the day
+ * starts, after it ends, and between two intervals (a split shift). Each is hatched, so it
+ * cannot be read as a free slot.
+ */
+function closedStretchesFor(
+  intervals: WorkingHoursInterval[],
+  gridStart: number,
+  gridEnd: number,
+): ClosedStretch[] {
+  const open = intervals
+    .map((interval) => ({ start: parseMinutes(interval.start), end: parseMinutes(interval.end) }))
+    .filter((interval): interval is { start: number; end: number } =>
+      Boolean(interval.start !== null && interval.end !== null),
+    )
+    .map((interval) => ({
+      start: Math.max(interval!.start, gridStart),
+      end: Math.min(interval!.end, gridEnd),
+    }))
+    .filter((interval) => interval.end > interval.start)
+    .sort((a, b) => a.start - b.start)
+
+  const stretches: ClosedStretch[] = []
+  let cursor = gridStart
+  for (const interval of open) {
+    if (interval.start > cursor) {
+      stretches.push({
+        key: `closed-${cursor}-${interval.start}`,
+        style: {
+          top: ((cursor - gridStart) / 60) * HOUR_HEIGHT,
+          height: ((interval.start - cursor) / 60) * HOUR_HEIGHT,
+        },
+      })
+    }
+    cursor = Math.max(cursor, interval.end)
+  }
+  if (cursor < gridEnd) {
+    stretches.push({
+      key: `closed-${cursor}-${gridEnd}`,
+      style: {
+        top: ((cursor - gridStart) / 60) * HOUR_HEIGHT,
+        height: ((gridEnd - cursor) / 60) * HOUR_HEIGHT,
+      },
+    })
+  }
+  return stretches
 }
 
 function isNumber(value: number | null): value is number {

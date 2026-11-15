@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 
 import { StatusPill } from '@/components/ui/Badges'
 import { ButtonLink } from '@/components/ui/Button'
+import { SalonMark } from '@/components/ui/SalonMark'
 import { Avatar, Skeleton, Surface } from '@/components/ui/Layout'
 import { useAppointments, useSalon, useServices } from '@/data/queries'
 import { formatTerminCount } from '@/lib/format'
@@ -13,6 +14,10 @@ import type { AppointmentView } from '@/data/types'
 
 import { DemoBanner } from './DemoBanner'
 
+/**
+ * The live day: the copy promises a book of appointments, so the page shows one rather than
+ * describing it. Every number here is read from the demo data, and the strip under it says so.
+ */
 function DayPreview() {
   const today = todayDateKey()
   const range = useMemo(() => dayRange(today), [today])
@@ -25,12 +30,12 @@ function DayPreview() {
 
   return (
     <Surface as="section" aria-labelledby="preview-heading" className="overflow-hidden">
-      <div className="flex items-baseline justify-between gap-4 px-6 pt-6 pb-4">
+      <div className="flex items-end justify-between gap-4 border-b border-line px-6 pt-6 pb-4">
         <div>
           <h2 id="preview-heading" className="text-sm font-normal text-muted">
             {formatWeekday(today)}
           </h2>
-          <p className="tabular mt-1 text-5xl leading-none font-semibold text-ink">
+          <p className="tabular mt-1 text-[2.5rem] leading-none font-medium text-ink">
             {formatDateKey(today).slice(0, 5)}
           </p>
         </div>
@@ -45,7 +50,7 @@ function DayPreview() {
         </p>
       </div>
 
-      <ul className="px-6 pb-5">
+      <ul className="px-6 py-2">
         {appointments.isPending ? (
           <li className="space-y-3 py-2">
             <Skeleton className="h-10 w-full" />
@@ -63,7 +68,7 @@ function DayPreview() {
         )}
       </ul>
 
-      <p className="bg-paper px-6 py-3 text-xs leading-relaxed text-muted">
+      <p className="border-t border-line bg-paper px-6 py-3 text-xs leading-relaxed text-muted">
         Primjer rasporeda, izmišljeni podaci.
         {/* Never print a count that has not loaded yet: "0 usluga" reads as a broken salon. */}
         {services.data ? ` Ukupno ${services.data.length} usluga u katalogu.` : null}
@@ -74,7 +79,7 @@ function DayPreview() {
 
 function PreviewRow({ appointment }: { appointment: AppointmentView }) {
   return (
-    <li className="flex items-center gap-3 py-3">
+    <li className="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
       <span className="tabular w-11 shrink-0 text-sm font-semibold text-ink">
         {formatTime(appointment.startsAt)}
       </span>
@@ -107,18 +112,22 @@ export function DemoAccessPage() {
       <DemoBanner />
       <main className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20 lg:py-24">
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-1">
-          <p className="flex items-center gap-2.5 text-sm font-medium text-ink">
-            <span
-              aria-hidden="true"
-              className="flex h-7 w-7 items-center justify-center rounded-sm bg-primary text-xs font-semibold text-on-primary"
-            >
-              SL
-            </span>
-            Studio Lana, Banja Luka
+          <p className="flex items-center gap-3">
+            <SalonMark name="Studio Lana" />
+            <span className="display text-[1.15rem] text-ink">Studio Lana</span>
+            <span className="text-[0.8rem] text-muted">Banja Luka</span>
           </p>
 
-          <h1 className="hero-enter-2 mt-7 text-ink">Digitalna knjiga termina</h1>
-          <p className="mt-5 max-w-[50ch] text-base leading-relaxed text-muted sm:text-lg">
+          {/*
+           * The hero: the headline, hung off a copper margin rule the way a page is hung off the
+           * edge of the sheet. It is the only large display type above the fold.
+           */}
+          <div className="mt-8 border-l-2 border-accent-ui pl-5 sm:pl-6">
+            <h1 className="display text-[2.75rem] leading-[1.02] text-ink sm:text-[3.75rem]">
+              Digitalna knjiga termina
+            </h1>
+          </div>
+          <p className="hero-enter-2 mt-6 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">
             Raspored za tri frizera, ručni termini, pauze i online rezervacije sa privatnim linkom
             za klijenta.
           </p>
@@ -154,7 +163,7 @@ export function DemoAccessPage() {
         </div>
 
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-2">
-          <dl className="grid gap-8 sm:grid-cols-2">
+          <dl className="grid gap-6 sm:grid-cols-2">
             <div>
               <dt className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <Clock3 aria-hidden="true" className="h-4 w-4 text-primary" />
@@ -176,16 +185,26 @@ export function DemoAccessPage() {
           </dl>
 
           <p className="mt-8 text-sm leading-relaxed text-muted">
-            Paket 1 prikazuje osnovni raspored; Paket 2 otključava javnu stranicu. Prekidač je u
-            traci iznad.
+            Prikaz paketa je u Postavkama: Paket 1 je osnovni raspored, Paket 2 otključava javnu
+            stranicu.
           </p>
 
-          <ol className="mt-10 grid gap-px overflow-hidden rounded-md bg-line sm:grid-cols-3">
+          {/*
+           * A ruled margin, not three outlined boxes: this really is a sequence, so it keeps its
+           * numbers, but the numbers sit in their own column like a list of steps in a manual.
+           */}
+          <ol className="mt-8 border-t border-line">
             {JOURNEY.map((item, index) => (
-              <li key={item.title} className="bg-paper px-4 py-4">
-                <p className="tabular text-xs font-semibold text-primary">0{index + 1}</p>
-                <p className="mt-1.5 text-sm font-semibold text-ink">{item.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted">{item.detail}</p>
+              <li key={item.title} className="flex gap-4 border-b border-line py-4">
+                <span className="tabular w-6 shrink-0 pt-0.5 text-xs font-medium text-accent-ui">
+                  0{index + 1}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-ink">{item.title}</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-muted">
+                    {item.detail}
+                  </span>
+                </span>
               </li>
             ))}
           </ol>

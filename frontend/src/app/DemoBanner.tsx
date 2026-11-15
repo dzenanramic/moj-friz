@@ -15,39 +15,29 @@ export function DemoBanner() {
 
   return (
     <>
-      <div className="bg-primary text-on-primary dark:border-b dark:border-line dark:bg-surface dark:text-ink">
-        <div className="mx-auto flex min-h-11 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
-          <p className="min-w-0 truncate text-xs font-semibold">
+      {/*
+       * Demo chrome, deliberately quiet: a hairline strip, not a coloured bar. The product
+       * below it owns the screen; the demo notice only has to be legible, not loud. The
+       * package preview switch lives in Postavke, where the packages are compared.
+       */}
+      <div className="border-b border-line bg-paper">
+        <div className="mx-auto flex min-h-10 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
+          <p className="min-w-0 truncate text-xs font-medium text-muted">
             <span className="sm:hidden">Demo</span>
             <span className="hidden sm:inline">Demo · podaci nisu stvarni</span>
           </p>
 
-          <div className="ml-auto flex items-center gap-2 py-1">
-            {/* <span className="mr-1.5 hidden text-xs text-on-primary md:inline dark:text-ink">
-              Prikaz paketa
-            </span> */}
-            {/* <LevelButton
-              level="level_1"
-              active={level === 'level_1'}
-              pending={setLevel.isPending}
-              onClick={() => changeLevel('level_1')}
-            />
-            <LevelButton
-              level="level_2"
-              active={level === 'level_2'}
-              pending={setLevel.isPending}
-              onClick={() => changeLevel('level_2')}
-            /> */}
+          <div className="ml-auto flex items-center gap-1 py-0.5">
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
-              className="ml-2 inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-sm px-3 text-xs font-medium text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary dark:text-ink dark:hover:bg-paper dark:focus-visible:outline-primary"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-sm px-2.5 text-xs font-medium text-muted transition-colors hover:bg-surface hover:text-ink"
               aria-label="Resetuj demo"
             >
               <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Resetuj demo</span>
             </button>
-            <ThemeToggle className="h-11 w-11 dark:text-ink dark:hover:bg-paper dark:focus-visible:outline-primary" />
+            <ThemeToggle className="h-9 w-9 text-muted hover:bg-surface hover:text-ink" />
           </div>
         </div>
       </div>
@@ -75,13 +65,13 @@ export function DemoBanner() {
 
 export function PublicDemoBar() {
   return (
-    <div className="bg-primary text-on-primary">
-      <div className="mx-auto flex min-h-11 w-full max-w-5xl items-center gap-3 px-4 text-xs sm:px-8">
-        <span className="font-semibold">Demo · podaci nisu stvarni</span>
-        <ThemeToggle />
+    <div className="border-b border-line bg-paper">
+      <div className="mx-auto flex min-h-10 w-full max-w-5xl items-center gap-3 px-4 text-xs sm:px-8">
+        <span className="font-medium text-muted">Demo · podaci nisu stvarni</span>
+        <ThemeToggle className="h-9 w-9 text-muted hover:bg-surface hover:text-ink" />
         <a
           href="/"
-          className="ml-auto inline-flex min-h-11 items-center rounded-xs px-2 font-medium text-on-primary underline decoration-on-primary underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-primary"
+          className="ml-auto inline-flex min-h-9 items-center rounded-xs px-2 font-medium text-muted underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink"
         >
           Demo početna
         </a>

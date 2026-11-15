@@ -66,7 +66,7 @@ export function StepTracker({ step, onGoTo }: { step: number; onGoTo: (step: num
                   {done ? <Check className="h-4 w-4" strokeWidth={2.5} /> : index + 1}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-xs text-muted">Korak {index + 1}</span>
+                  {/* The number is already in the circle above: the label alone names the step. */}
                   <span
                     className={cn(
                       'block truncate text-sm leading-tight',
