@@ -134,7 +134,7 @@ export function DemoAccessPage() {
           </p>
 
           <div className="hero-enter-3 mt-8 flex flex-col gap-2.5 sm:flex-row">
-            <ButtonLink to="/danas" variant="accent" size="lg">
+            <ButtonLink to="/kalendar" variant="accent" size="lg">
               Uđi u demo
             </ButtonLink>
             {isLevelTwo ? (
@@ -151,6 +151,7 @@ export function DemoAccessPage() {
                 Online rezervacije su u Paketu 2
               </span>
             )}
+
           </div>
 
           <p className="mt-5 flex items-start gap-2 text-sm leading-relaxed text-muted">
@@ -161,7 +162,7 @@ export function DemoAccessPage() {
 
         <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
           <DayPreview />
-        </div>
+              </div>
 
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-2">
           <dl className="grid gap-6 sm:grid-cols-2">
