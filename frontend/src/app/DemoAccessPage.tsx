@@ -11,7 +11,6 @@ import {
   useServices,
   useWorkingHours,
 } from '@/data/queries'
-import { formatTerminCount } from '@/lib/format'
 import { useNow, usePageTitle } from '@/lib/hooks'
 import { dayRange, formatDateKey, formatTime, formatWeekday, todayDateKey } from '@/lib/time'
 
