@@ -1,16 +1,25 @@
 import { ArrowUpRight, CalendarDays, Clock3, ShieldCheck } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { StatusPill } from '@/components/ui/Badges'
 import { ButtonLink } from '@/components/ui/Button'
-import { AppMark } from '@/components/ui/SalonMark'
 import { Avatar, Skeleton, Surface } from '@/components/ui/Layout'
-import { useAppointments, useSalon, useServices } from '@/data/queries'
+import {
+  useAppointments,
+  useHairdressers,
+  useSalon,
+  useServices,
+  useWorkingHours,
+} from '@/data/queries'
 import { formatTerminCount } from '@/lib/format'
-import { APP_NAME, usePageTitle } from '@/lib/hooks'
+import { useNow, usePageTitle } from '@/lib/hooks'
 import { dayRange, formatDateKey, formatTime, formatWeekday, todayDateKey } from '@/lib/time'
 
 import type { AppointmentView } from '@/data/types'
+
+import { CalendarGrid } from '@/features/calendar/CalendarGrid'
+import { CalendarViewSwitch } from '@/features/calendar/CalendarViewSwitch'
+import type { CalendarView } from '@/features/calendar/useCalendarView'
 
 import { DemoBanner } from './DemoBanner'
 
@@ -19,17 +28,27 @@ import { DemoBanner } from './DemoBanner'
  * describing it. Every number here is read from the demo data, and the strip under it says so.
  */
 function DayPreview() {
-  const today = todayDateKey()
+  const now = useNow()
+  const today = todayDateKey(now)
   const range = useMemo(() => dayRange(today), [today])
   const appointments = useAppointments(range)
   const services = useServices()
+  const hairdressersQuery = useHairdressers()
+  const workingHours = useWorkingHours()
   const active = (appointments.data ?? []).filter(
     (appointment) => appointment.status !== 'cancelled',
   )
   const nextConfirmed = active.find((appointment) => appointment.status === 'confirmed')
+  const activeHairdressers = (hairdressersQuery.data ?? []).filter(
+    (hairdresser) => hairdresser.isActive,
+  )
+  const [view, setView] = useState<CalendarView>('agenda')
+  const pending =
+    appointments.isPending ||
+    (view === 'grid' && (hairdressersQuery.isPending || workingHours.isPending))
 
   return (
-    <Surface as="section" aria-labelledby="preview-heading" className="overflow-hidden">
+    <Surface as="section" aria-labelledby="preview-heading" className="min-w-0 overflow-hidden">
       <div className="flex items-end justify-between gap-4 border-b border-line px-6 pt-6 pb-4">
         <div>
           <h2 id="preview-heading" className="text-sm font-normal text-muted">
@@ -39,34 +58,40 @@ function DayPreview() {
             {formatDateKey(today).slice(0, 5)}
           </p>
         </div>
-        <p className="text-right text-sm text-muted">
-          {appointments.isPending ? 'Učitavanje…' : formatTerminCount(active.length)}
-          {nextConfirmed ? (
-            <>
-              <br />
-              sljedeće u {formatTime(nextConfirmed.startsAt)}
-            </>
-          ) : null}
-        </p>
+        <div className="flex flex-col items-end gap-2">
+          <CalendarViewSwitch value={view} onChange={setView} />
+        </div>
       </div>
 
-      <ul className="px-6 py-2">
-        {appointments.isPending ? (
-          <li className="space-y-3 py-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </li>
-        ) : active.length > 0 ? (
-          active
-            .slice(0, 4)
-            .map((appointment) => <PreviewRow key={appointment.id} appointment={appointment} />)
-        ) : (
-          <li className="py-4 text-sm leading-relaxed text-muted">
-            Danas nema termina u prikazu. Otvorite kalendar i izaberite drugi dan.
-          </li>
-        )}
-      </ul>
+      {pending ? (
+        <div className="space-y-3 px-6 py-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      ) : view === 'grid' ? (
+        <div className="min-w-0 overflow-x-auto px-2 py-2">
+          <CalendarGrid
+            dateKey={today}
+            now={now}
+            hairdressers={activeHairdressers}
+            workingHours={workingHours.data ?? []}
+            appointments={active}
+            onOpenAppointment={() => {}}
+            onCreateAt={() => {}}
+          />
+        </div>
+      ) : active.length > 0 ? (
+        <ul className="px-6 py-2">
+          {active.slice(0, 4).map((appointment) => (
+            <PreviewRow key={appointment.id} appointment={appointment} />
+          ))}
+        </ul>
+      ) : (
+        <p className="px-6 py-4 text-sm leading-relaxed text-muted">
+          Danas nema termina u prikazu. Otvorite kalendar i izaberite drugi dan.
+        </p>
+      )}
 
       <p className="border-t border-line bg-paper px-6 py-3 text-xs leading-relaxed text-muted">
         Primjer rasporeda, izmišljeni podaci.
@@ -110,14 +135,9 @@ export function DemoAccessPage() {
   return (
     <div className="min-h-dvh bg-paper">
       <DemoBanner />
-      <main className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20 lg:py-24">
+      <main className="mx-auto grid w-full max-w-6xl gap-12 px-4  sm:px-8  lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20 lg:py-24">
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-1">
           {/* The product signs this page; the salon it opens into is named inside the demo. */}
-          <p className="flex items-center gap-3">
-            <AppMark size="sm" />
-            <span className="brand text-[1.15rem] text-ink">{APP_NAME}</span>
-            <span className="text-[0.8rem] text-muted">demo</span>
-          </p>
 
           {/*
            * The hero: the headline, hung off a copper margin rule the way a page is hung off the
@@ -128,10 +148,6 @@ export function DemoAccessPage() {
               Digitalna knjiga termina
             </h1>
           </div>
-          <p className="hero-enter-2 mt-6 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">
-            Raspored za tri frizera, ručni termini, pauze i online rezervacije sa privatnim linkom
-            za klijenta.
-          </p>
 
           <div className="hero-enter-3 mt-8 flex flex-col gap-2.5 sm:flex-row">
             <ButtonLink to="/kalendar" variant="accent" size="lg">
@@ -148,10 +164,9 @@ export function DemoAccessPage() {
               </ButtonLink>
             ) : (
               <span className="inline-flex min-h-12 items-center justify-center px-1 text-sm text-muted">
-                Online rezervacije su u Paketu 2
+                Online rezervacije su u Plus paketu
               </span>
             )}
-
           </div>
 
           <p className="mt-5 flex items-start gap-2 text-sm leading-relaxed text-muted">
@@ -160,16 +175,16 @@ export function DemoAccessPage() {
           </p>
         </div>
 
-        <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
+        <div className="min-w-0 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
           <DayPreview />
-              </div>
+        </div>
 
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-2">
           <dl className="grid gap-6 sm:grid-cols-2">
             <div>
               <dt className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <Clock3 aria-hidden="true" className="h-4 w-4 text-primary" />
-                Za vlasnicu
+                Za vlasnike
               </dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted">
                 Danas, kalendar, brzi unos termina i pauze.
@@ -187,8 +202,8 @@ export function DemoAccessPage() {
           </dl>
 
           <p className="mt-8 text-sm leading-relaxed text-muted">
-            Prikaz paketa je u Postavkama: Paket 1 je osnovni raspored, Paket 2 otključava javnu
-            stranicu.
+            Prikaz paketa je u Postavkama: Osnovni paket je osnovni raspored, Plus paket otključava
+            javnu stranicu.
           </p>
 
           {/*
