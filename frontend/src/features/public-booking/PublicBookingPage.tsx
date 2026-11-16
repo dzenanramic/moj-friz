@@ -1,12 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Check, ChevronRight, Clock3, MapPin, Phone } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type RefCallback } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 
 import { Avatar, Panel, Skeleton } from '@/components/ui/Layout'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { SalonMark } from '@/components/ui/SalonMark'
 import { CheckboxField, FormError, TextField } from '@/components/ui/form'
 import { gatewayErrorMessage, isGatewayError } from '@/data/gateway'
 import { useCreatePublicBooking, usePublicAvailability, usePublicCatalog } from '@/data/queries'
@@ -251,30 +250,13 @@ export function PublicBookingPage() {
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
           <div>
             {/* The guest has no owner navigation: the mark, the salon's name, then the address. */}
-            <div className="mb-3 flex items-center gap-2.5">
+            {/* <div className="mb-3 flex items-center gap-2.5">
               <SalonMark name={salon.name} size="sm" tone="ink" />
-              <span className="text-xs text-muted">Rezervacija termina</span>
-            </div>
+            </div> */}
             <h1 className="display text-[2.5rem] leading-[1.05] text-ink sm:text-[3rem]">
               {salon.name}
             </h1>
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin aria-hidden="true" className="h-4 w-4 text-muted" />
-                {salon.address}, {salon.city}
-              </span>
-              {salon.phone ? (
-                <a
-                  href={`tel:${salon.phone.replace(/\s+/g, '')}`}
-                  className="inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 hover:text-primary"
-                >
-                  <Phone aria-hidden="true" className="h-4 w-4 text-muted" />
-                  {salon.phone}
-                </a>
-              ) : null}
-            </div>
           </div>
-          <p className="text-sm text-muted">Rezervacija bez korisničkog naloga</p>
         </div>
       </header>
 
@@ -290,7 +272,6 @@ export function PublicBookingPage() {
                   headingRefs.current[0] = node
                 }}
                 title="Izaberite uslugu"
-                description="Cijena i trajanje su isti kod svih frizera."
               />
               <ul className="mt-2">
                 {services.map((service) => {
@@ -348,7 +329,7 @@ export function PublicBookingPage() {
                   headingRefs.current[1] = node
                 }}
                 title="Izaberite frizera"
-                description={`Za uslugu ${selectedService?.name ?? ''}.`}
+                description={selectedService?.name}
               />
               <ul className="mt-2">
                 {eligibleHairdressers.map((member) => {
@@ -370,9 +351,6 @@ export function PublicBookingPage() {
                         <span className="min-w-0 flex-1">
                           <span className="block text-sm font-semibold text-ink">
                             {member.displayName}
-                          </span>
-                          <span className="mt-0.5 block text-xs text-muted">
-                            Slobodni termini po rasporedu
                           </span>
                         </span>
                         {selected ? (
@@ -414,22 +392,17 @@ export function PublicBookingPage() {
                 title="Izaberite termin"
                 description={
                   selectedService && selectedHairdresser
-                    ? `Usluga: ${selectedService.name} · Frizer: ${selectedHairdresser.displayName}`
+                    ? `${selectedService.name} · ${selectedHairdresser.displayName}`
                     : undefined
                 }
               />
               <div className="mt-5">
-                <p className="mb-2 text-sm font-medium text-ink">Datum</p>
                 <DateStrip
                   dates={dates}
                   selected={effectiveDateKey}
                   onSelect={chooseDate}
                   dayInfo={dayInfo}
                 />
-                <p className="mt-2 text-xs leading-relaxed text-muted">
-                  Rezervacija je moguća najkasnije {formatLead(salon.bookingLeadMinutes)} prije
-                  termina i najviše {salon.bookingHorizonDays} dana unaprijed.
-                </p>
               </div>
 
               {bookingError ? (
@@ -439,7 +412,7 @@ export function PublicBookingPage() {
               ) : null}
 
               <div className="mt-5">
-                <p className="mb-2 text-sm font-medium text-ink">Slobodni termini</p>
+                <p className="mb-2 text-sm font-medium text-ink">Termini</p>
                 <SlotPicker
                   availability={availability.data}
                   selected={startsAt ?? undefined}
@@ -470,7 +443,7 @@ export function PublicBookingPage() {
                   headingRefs.current[3] = node
                 }}
                 title="Vaši podaci"
-                description="Termin se potvrđuje odmah. Potvrdu ne šaljemo SMS-om ni e-mailom."
+                description="Potvrda odmah, bez SMS-a i e-maila."
               />
 
               <dl className="mt-5 overflow-hidden rounded-md bg-paper">
@@ -517,7 +490,7 @@ export function PublicBookingPage() {
                   inputMode="tel"
                   autoComplete="tel"
                   placeholder="npr. 06X XXX XXX"
-                  hint="Broj koristimo samo za kontakt u vezi termina."
+                  hint="Samo za kontakt u vezi termina."
                   error={form.formState.errors.phone?.message}
                   {...form.register('phone')}
                 />
@@ -545,8 +518,8 @@ export function PublicBookingPage() {
                   error={form.formState.errors.consent?.message}
                   label={
                     <>
-                      Slažem se da salon koristi moje ime i broj telefona radi zakazivanja i
-                      kontakta u vezi termina. Pročitajte{' '}
+                      Slažem se da salon koristi moje ime i broj telefona za zakazivanje i kontakt.
+                      Pročitajte{' '}
                       <a
                         href="/privatnost"
                         target="_blank"
@@ -562,9 +535,7 @@ export function PublicBookingPage() {
                 />
 
                 <p className="text-xs leading-relaxed text-muted">
-                  Nakon potvrde dobićete privatan link za izmjenu ili otkazivanje termina. Sačuvajte
-                  ga — bez njega ne možete upravljati terminom. Link nije dokaz vlasništva broja
-                  telefona.
+                  Nakon potvrde dobićete privatni link za izmjenu ili otkazivanje. Sačuvajte ga.
                 </p>
 
                 <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
@@ -602,9 +573,7 @@ export function PublicBookingPage() {
           />
         </aside>
       </div>
-      <p className="mt-4 text-xs leading-relaxed text-muted">
-        Demo prikaz — ne unosite stvarne podatke. Rezervacija ne šalje poruke niti naplaćuje uslugu.
-      </p>
+      <p className="mt-4 text-xs leading-relaxed text-muted">Demo prikaz — izmišljeni podaci.</p>
 
       <MobileSelectionBar
         summary={selectionSummary}
@@ -677,8 +646,7 @@ function BookingSummary({
 }) {
   return (
     <div className="sticky top-6 rounded-md border border-line bg-surface px-5 py-5">
-      <p className="text-sm text-muted">Vaš termin</p>
-      <p className="display mt-0.5 text-[1.5rem] leading-tight text-ink">{salon.name}</p>
+      <p className="display text-[1.5rem] leading-tight text-ink">{salon.name}</p>
       {/* Labelled rows, not middle-dot strings: a guest reads down one column of facts. */}
       <dl className="mt-5 border-t border-line">
         <SummaryRow label="Usluga" value={service?.name ?? 'Nije izabrana'} />
@@ -698,19 +666,11 @@ function BookingSummary({
         {service ? <SummaryRow label="Cijena" value={formatKM(service.priceMinor)} /> : null}
       </dl>
       <div className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-muted">
-        <p className="flex items-start gap-1.5">
-          <Clock3 aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          Rezervacija najkasnije {formatLead(salon.bookingLeadMinutes)} prije termina, najviše{' '}
-          {salon.bookingHorizonDays} dana unaprijed.
-        </p>
-        <p className="mt-2">
-          Otkazivanje ili promjena do {salon.rescheduleCutoffMinutes / 60} sata prije termina.
+        <p>
+          Rezervacija do {salon.bookingHorizonDays} dana unaprijed. Promjena do{' '}
+          {salon.rescheduleCutoffMinutes / 60} h prije.
         </p>
       </div>
-      <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary-hover">
-        <Check aria-hidden="true" className="h-3.5 w-3.5" />
-        Bez prijave i bez plaćanja unaprijed
-      </p>
     </div>
   )
 }
@@ -722,12 +682,6 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
       <dd className="text-right text-sm font-medium text-ink">{value}</dd>
     </div>
   )
-}
-
-function formatLead(minutes: number): string {
-  if (minutes < 60) return `${minutes} minuta`
-  const hours = minutes / 60
-  return hours === 1 ? '1 sat' : `${hours} sata`
 }
 
 function BookingSkeleton() {

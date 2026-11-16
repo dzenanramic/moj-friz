@@ -29,7 +29,7 @@ export function MobileSelectionBar({
     <div className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface shadow-[0_-8px_24px_-20px_rgb(20_24_21/0.5)] lg:hidden">
       <div className="flex w-full items-center gap-3 px-4 py-2">
         <div className="min-w-0 flex-1">
-          <p className="text-[0.7rem] font-medium tracking-wide text-muted uppercase">Vaš izbor</p>
+          <p className="text-[0.7rem] font-medium tracking-wide text-muted uppercase">Izbor</p>
           <p className="mt-0.5 truncate text-sm font-medium text-ink">{picked.join(' · ')}</p>
         </div>
         <button
