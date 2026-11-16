@@ -298,12 +298,13 @@ export function CalendarGrid({
                             tight ? 'leading-tight' : 'leading-snug',
                           )}
                         >
+                          {appointment.serviceName}
+                          <br />
                           {appointment.clientName}
                         </p>
                       ) : null}
                       {showService ? (
                         <p className="truncate text-[0.68rem] leading-snug staff-text">
-                          {appointment.serviceName} ·{' '}
                           {formatDuration(appointment.durationMinutesSnapshot)}
                         </p>
                       ) : null}
