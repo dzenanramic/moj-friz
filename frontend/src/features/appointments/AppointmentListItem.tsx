@@ -1,4 +1,4 @@
-import { ChevronRight, Globe } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 import { StatusIndicator } from '@/components/ui/Badges'
 import type { AppointmentView } from '@/data/types'
@@ -60,12 +60,6 @@ export function AppointmentListItem({
             {appointment.clientName}
           </span>
           <span className="flex shrink-0 items-center gap-3">
-            {appointment.source === 'online' ? (
-              <span className="inline-flex items-center gap-1 text-xs text-muted">
-                <Globe aria-hidden="true" className="h-3 w-3" />
-                Online
-              </span>
-            ) : null}
             <StatusIndicator status={appointment.status} />
           </span>
         </span>

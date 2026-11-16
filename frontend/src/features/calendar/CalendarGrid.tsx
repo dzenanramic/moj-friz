@@ -80,7 +80,7 @@ export function CalendarGrid({
     const end = minutesOfDayFromInstant(endsAt)
     return {
       top: ((start - gridStart) / 60) * HOUR_HEIGHT,
-      height: Math.max(((end - start) / 60) * HOUR_HEIGHT, 26),
+      height: Math.max(((end - start) / 60) * HOUR_HEIGHT, 44),
     }
   }
 
@@ -264,7 +264,7 @@ export function CalendarGrid({
                   // duration promises: a clipped line is worse than a shorter card.
                   const height = position.height
                   const tight = height < 40
-                  const showName = height >= 32
+                  const showName = height >= 40
                   const showService = height >= 54
                   return (
                     <button
@@ -281,10 +281,12 @@ export function CalendarGrid({
                       className={cn(
                         'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-[3px] px-2 text-left transition-colors',
                         'hover:brightness-[0.96]',
-                        tight ? 'py-0.5' : 'py-1',
+                        tight ? 'py-0.5 pb-1' : 'py-1 pb-1.5',
                       )}
                       style={{
-                        ...position,
+                        top: position.top,
+                        minHeight: position.height,
+                        height: 'auto',
                         borderLeftColor: 'var(--staff)',
                       }}
                     >
