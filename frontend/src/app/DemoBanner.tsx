@@ -29,7 +29,7 @@ export function DemoBanner() {
         <div className="mx-auto flex min-h-12 w-full max-w-[1600px] items-center gap-3 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             <AppMark size="sm" />
-            <p className="display truncate text-[1.15rem] leading-tight text-ink">{APP_NAME}</p>
+            <p className="brand truncate text-[1.15rem] leading-tight text-ink">{APP_NAME}</p>
           </div>
           <span
             aria-label="Demo · podaci nisu stvarni"

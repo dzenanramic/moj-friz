@@ -1,24 +1,6 @@
 @import 'tailwindcss';
 
 /*
- * Instrument Sans is a single variable file for every weight. This second face
- * reuses it with tabular figures so times align in columns without switching
- * to a different typeface.
- */
-@font-face {
-  font-family: 'Instrument Sans Tabular';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400 700;
-  src: url('/node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2')
-    format('woff2-variations');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  font-feature-settings: 'tnum' 1;
-}
-
-/*
  * Ink blue + copper on paper. Components name roles, never colours.
  *
  * Theming has two layers. The values are defined three ways — `:root`, `.dark`, and a
@@ -190,7 +172,7 @@
    * landing time. It never carries a UI label, a number column or a button. Falls back to a
    * system serif rather than to the sans, so a missing font still reads as a headline.
    */
-  --font-display: 'Fraunces Variable', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-display: var(--font-sans);
 
   --color-paper: var(--paper);
   --color-surface: var(--surface);
@@ -270,10 +252,6 @@
     font-weight: 500;
     letter-spacing: -0.015em;
     /* The optical size axis is why this face was chosen: let it set to its large cut. */
-    font-variation-settings:
-      'opsz' 96,
-      'SOFT' 0,
-      'WONK' 0;
   }
 
   @media (min-width: 640px) {
@@ -397,7 +375,7 @@
 
   /* Times line up in columns, so they get tabular figures — not a different face. */
   .tabular {
-    font-family: 'Instrument Sans Tabular', var(--font-sans);
+    font-variant-numeric: tabular-nums;
   }
 
   /*
@@ -408,11 +386,14 @@
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.015em;
-    font-variation-settings:
-      'opsz' 96,
-      'SOFT' 0,
-      'WONK' 0;
     text-wrap: balance;
+  }
+
+  /* The product mark: Fraunces with softness and a large optical size. */
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   /* Hours the salon is shut, and a break inside an open day: hatched, so neither reads as a

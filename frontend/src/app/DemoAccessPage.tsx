@@ -115,7 +115,7 @@ export function DemoAccessPage() {
           {/* The product signs this page; the salon it opens into is named inside the demo. */}
           <p className="flex items-center gap-3">
             <AppMark size="sm" />
-            <span className="display text-[1.15rem] text-ink">{APP_NAME}</span>
+            <span className="brand text-[1.15rem] text-ink">{APP_NAME}</span>
             <span className="text-[0.8rem] text-muted">demo</span>
           </p>
 
