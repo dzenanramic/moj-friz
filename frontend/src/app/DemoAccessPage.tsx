@@ -38,7 +38,6 @@ function DayPreview() {
   const active = (appointments.data ?? []).filter(
     (appointment) => appointment.status !== 'cancelled',
   )
-  const nextConfirmed = active.find((appointment) => appointment.status === 'confirmed')
   const activeHairdressers = (hairdressersQuery.data ?? []).filter(
     (hairdresser) => hairdresser.isActive,
   )
@@ -135,7 +134,7 @@ export function DemoAccessPage() {
   return (
     <div className="min-h-dvh bg-paper">
       <DemoBanner />
-      <main className="mx-auto grid w-full max-w-6xl gap-12 px-4  sm:px-8  lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20 lg:py-24">
+      <main className="mx-auto grid w-full max-w-6xl gap-12 px-4  sm:px-8  lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)] lg:items-center lg:gap-x-20">
         <div className="hero-enter max-w-xl lg:col-start-1 lg:row-start-1">
           {/* The product signs this page; the salon it opens into is named inside the demo. */}
 
