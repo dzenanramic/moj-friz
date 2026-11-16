@@ -466,10 +466,7 @@ export function PublicBookingPage() {
                   }
                 />
                 {selectedService ? (
-                  <SummaryLine
-                    label="Cijena"
-                    value={`${formatDuration(selectedService.durationMinutes)} · ${formatKM(selectedService.priceMinor)}`}
-                  />
+                  <SummaryLine label="Cijena" value={` ${formatKM(selectedService.priceMinor)}`} />
                 ) : null}
               </dl>
 

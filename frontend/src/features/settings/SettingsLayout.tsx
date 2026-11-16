@@ -24,7 +24,7 @@ function AppearanceSetting() {
       <div className="min-w-0">
         <p className="text-sm font-medium text-ink">Izgled</p>
         <p className="mt-0.5 text-xs leading-relaxed text-muted">
-          {theme === 'dark' ? 'Tamna tema' : 'Svjetla tema'} · izbor se pamti u ovom pregledniku.
+          {theme === 'dark' ? 'Tamna tema' : 'Svijetla tema'} · izbor se pamti u ovom pregledniku.
           Bez izbora stranica prati postavku telefona.
         </p>
       </div>
