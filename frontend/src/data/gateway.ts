@@ -16,6 +16,8 @@ import type {
   PublicSalonCatalog,
   SalonProfile,
   SalonService,
+  SalonStatistics,
+  StatisticsQuery,
   TimeBlock,
   WorkingHoursInterval,
   Hairdresser,
@@ -88,6 +90,8 @@ export interface SalonGateway {
 
   listClients(search: string, page: number, pageSize: number): Promise<Paginated<Client>>
   getClient(id: string): Promise<ClientDetail>
+
+  getStatistics(query: StatisticsQuery): Promise<SalonStatistics>
 
   getPublicSalon(slug: string): Promise<PublicSalonCatalog>
   getPublicAvailability(query: PublicAvailabilityQuery): Promise<AvailabilityDay>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDuration, formatKM, terminology } from './format'
+import { formatDuration, formatKM, formatPercent, terminology } from './format'
 import { isValidPhone, normalizePhone } from './phone'
 
 describe('money and duration formatting', () => {
@@ -15,6 +15,13 @@ describe('money and duration formatting', () => {
     expect(formatDuration(30)).toBe('30 min')
     expect(formatDuration(60)).toBe('1 h')
     expect(formatDuration(150)).toBe('2 h 30 min')
+  })
+
+  it('formats rates as percentages with a Bosnian decimal comma', () => {
+    expect(formatPercent(0.625)).toBe('63%')
+    expect(formatPercent(0.625, 1)).toBe('62,5%')
+    expect(formatPercent(0)).toBe('0%')
+    expect(formatPercent(Number.NaN)).toBe('0%')
   })
 
   it('uses Bosnian plural forms', () => {

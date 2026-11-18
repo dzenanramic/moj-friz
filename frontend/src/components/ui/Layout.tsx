@@ -153,12 +153,14 @@ export function Surface({
 }
 
 export function SectionHeading({
+  id,
   title,
   description,
   action,
   as: Heading = 'h2',
   className,
 }: {
+  id?: string
   title: string
   description?: ReactNode
   action?: ReactNode
@@ -175,7 +177,9 @@ export function SectionHeading({
       )}
     >
       <div>
-        <Heading className="text-ink">{title}</Heading>
+        <Heading id={id} className="text-ink">
+          {title}
+        </Heading>
         {description ? (
           <p className="mt-1.5 max-w-[58ch] text-sm leading-relaxed text-muted">{description}</p>
         ) : null}

@@ -251,6 +251,85 @@ export interface PackageInfo {
   trialEndsAt: string | null
 }
 
+/** The two retrospective windows the owner can read. Both end on the day before today. */
+export type StatisticsPeriod = 'last_7_days' | 'last_30_days'
+
+export interface StatisticsQuery {
+  period: StatisticsPeriod
+  /** The salon's current date key; the report ends on the day before it. */
+  today: string
+}
+
+export interface StatisticsPeriodRange {
+  from: string
+  to: string
+}
+
+export interface StatisticsSummary {
+  /** Completed and no-show appointments: the visits that reached the calendar. */
+  appointments: number
+  completed: number
+  noShow: number
+  cancelled: number
+  /** Completed appointments only, at the price saved on the appointment. */
+  revenueMinor: number
+  averageTicketMinor: number | null
+  /** The value of the appointments the client did not attend. */
+  lostRevenueMinor: number
+  bookedMinutes: number
+  availableMinutes: number
+  onlineAppointments: number
+  manualAppointments: number
+  uniqueClients: number
+}
+
+export interface StatisticsRates {
+  /** Completed minutes over working minutes, with breaks and absences removed. */
+  occupancy: number
+  noShowRate: number
+  cancellationRate: number
+  onlineShare: number
+}
+
+export interface StatisticsStaffRow {
+  hairdresserId: string
+  name: string
+  colorKey: StaffColor
+  appointments: number
+  revenueMinor: number
+  bookedMinutes: number
+  availableMinutes: number
+  occupancy: number
+}
+
+export interface StatisticsServiceRow {
+  serviceId: string
+  name: string
+  appointments: number
+  revenueMinor: number
+}
+
+export interface StatisticsWeekdayRow {
+  weekday: Weekday
+  appointments: number
+}
+
+/** Only the hours that actually have an appointment, busiest first. */
+export interface StatisticsHourRow {
+  hour: number
+  appointments: number
+}
+
+export interface SalonStatistics {
+  period: StatisticsPeriodRange
+  summary: StatisticsSummary
+  rates: StatisticsRates
+  staff: StatisticsStaffRow[]
+  services: StatisticsServiceRow[]
+  weekdays: StatisticsWeekdayRow[]
+  hours: StatisticsHourRow[]
+}
+
 export interface DemoSalonSnapshot {
   profile: SalonProfile
   hairdressers: Hairdresser[]

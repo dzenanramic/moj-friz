@@ -14,7 +14,8 @@ product.
 - Rate limiting, server-side idempotency, abuse controls or phone verification.
 - Backup, restore, export or deletion procedures.
 - Privacy compliance, legal review or data-processing agreements.
-- Marketplace, reviews, loyalty, inventory, reporting, AI, native apps, multi-location support.
+- Marketplace, reviews, loyalty, inventory, advanced reporting, AI, native apps, multi-location
+  support.
 - Week view (planned before pilot sign-off), recurring appointments, overnight shifts.
 - Editing services, hairdressers, weekly hours or salon policy in the demo; those screens are
   read-only except time blocks and the demo package switch.
@@ -27,9 +28,13 @@ product.
   pre-booked and every working hairdresser gets appointments, so a day opened late is still a day of
   work, not a page of finished history. The demo script says this openly.
 - Every day of the week is a demo working day, Sunday included, and the seed guarantees at least ten
-  appointments a day for three weeks (seven days back, twenty ahead). A state seeded on an earlier
-  day is reseeded when it is next opened: the demo moves with the calendar, and guest bookings the
-  stored state holds are carried over with their private links. Edits made within the day are kept.
+  appointments a day for three weeks ahead, with thirty days of completed history behind it. A state
+  seeded on an earlier day is reseeded when it is next opened: the demo moves with the calendar, and
+  guest bookings the stored state holds are carried over with their private links. Edits made within
+  the day are kept.
+- The statistics in Postavke are a read-only demo report computed from the stored appointments,
+  working hours and time blocks. They are not a server-side report, have no export, no comparison
+  with an earlier period and no cohort analysis, and they reset with the demo.
 - The demo’s scheduling and conflict rules are client-side illustrations. They are **not** the
   production scheduling guarantee and do not exercise PostgreSQL exclusion constraints.
 - The guest management token is hashed in localStorage and travels in a URL fragment, but the link

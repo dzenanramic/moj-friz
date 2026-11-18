@@ -26,6 +26,15 @@ export function formatDuration(minutes: number): string {
   return `${hours} h ${rest} min`
 }
 
+/**
+ * A rate is stored as 0–1 and read as a percentage. Bosnian uses a comma for decimals and no
+ * space before the sign, so the value is formatted here rather than through a locale default.
+ */
+export function formatPercent(value: number, fractionDigits = 0): string {
+  const percentage = Number.isFinite(value) ? value * 100 : 0
+  return `${percentage.toFixed(fractionDigits).replace('.', ',')}%`
+}
+
 export function formatDurationLong(minutes: number): string {
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60

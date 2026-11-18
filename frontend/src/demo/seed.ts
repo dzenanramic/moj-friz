@@ -129,6 +129,38 @@ const CLIENT_NAMES = [
   'Adnan Hodžić',
   'Petar Stanković',
   'Elena Radić',
+  'Katarina Simić',
+  'Tamara Đurić',
+  'Nataša Kralj',
+  'Vesna Perić',
+  'Jovana Lukić',
+  'Bojana Šarić',
+  'Maida Kovač',
+  'Selma Alić',
+  'Aida Softić',
+  'Amra Delić',
+  'Goran Zorić',
+  'Dejan Vasić',
+  'Vladimir Petrović',
+  'Damir Mujić',
+  'Emir Salihović',
+  'Haris Omerović',
+  'Kenan Mehić',
+  'Faruk Dizdar',
+  'Ljiljana Tošić',
+  'Mirjana Đaković',
+  'Sanja Vukić',
+  'Danijela Brkić',
+  'Biljana Cvijić',
+  'Aleksandra Đorđević',
+  'Sandra Janković',
+  'Martina Šimunović',
+  'Ksenija Blagojević',
+  'Andrijana Crnković',
+  'Miloš Ristić',
+  'Nemanja Stojanović',
+  'Ognjen Tadić',
+  'Vuk Đukanović',
 ]
 
 const CLIENT_NOTES: Record<number, string> = {
@@ -172,13 +204,14 @@ const STAFF_WORK_HOURS: Record<
 const TODAY_START_OVERRIDE = '10:00'
 
 /**
- * The least a seeded day shows, Sunday included. Nothing before today is pre-booked: an
- * appointment is only ever created for a time that is still ahead, so today never opens with
- * invented morning history. Only a day that is still too thin is topped up, and the guest
- * bookings of an earlier seed are kept, so the demo replaces its own data and nobody else's.
+ * The least a seeded day shows, Sunday included. History is seeded as completed work, so
+ * statistics have a month to report on; today itself only starts at `TODAY_START_OVERRIDE`,
+ * so a late opening still shows work ahead rather than invented morning history. Only a day
+ * that is still too thin is topped up, and the guest bookings of an earlier seed are kept, so
+ * the demo replaces its own data and nobody else's.
  */
 export const MIN_SEED_APPOINTMENTS_PER_DAY = 10
-const SEED_PAST_DAYS = 7
+const SEED_PAST_DAYS = 30
 const SEED_FUTURE_DAYS = 20
 const SHORT_SERVICE_MINUTES = 45
 /**
@@ -224,7 +257,9 @@ function createClients(now: Date): Client[] {
       phoneOriginal: phone,
       phoneNormalized: normalizePhone(phone),
       notes: CLIENT_NOTES[index] ?? null,
-      createdAt: new Date(now.getTime() - (90 - index * 3) * 86_400_000).toISOString(),
+      // Every demo client existed before the seeded history starts, so a client is never
+      // shown as "new" on a day that is older than their record.
+      createdAt: new Date(now.getTime() - (180 - index * 2) * 86_400_000).toISOString(),
     }
   })
 }
@@ -357,8 +392,6 @@ function isSeedId(id: string): boolean {
 
 interface WalkResult {
   placed: number
-  /** Where the last appointment started: the day is only topped up after this time. */
-  lastStartMinute: number
 }
 
 /**
@@ -383,26 +416,24 @@ function startsWithWalk(
   )
   const start = Math.max(intervalStart, firstStart) + stagger
   let cursor = start
-  let lastStartMinute = start
   let placed = 0
   let slotIndex = 0
 
   while (cursor < intervalEnd && placed < WALK_MIN_APPOINTMENTS) {
-    // Short services first: they leave room for the day to fill, so it opens with a chain
-    // of real work instead of one long dye that leaves a column looking empty.
-    const added = addAppointment(slotIndex, cursor, true)
+    // The first two are short so the walk opens with a chain of real work; every fourth may be
+    // a long service, so the demo's six services all appear in the calendar and the statistics.
+    const added = addAppointment(slotIndex, cursor, placed < 2 || placed % 4 !== 3)
     if (added > 0) {
-      lastStartMinute = cursor
       placed += 1
       // Gaps are real: a client leaves, the seat is cleaned, the next one arrives.
       cursor += added + (placed < 4 ? 60 : placed < 8 ? 30 : 15)
     } else {
-      // Nothing short enough fits here: move on so a long service cannot stall the walk.
+      // Nothing fits here: move on so a long service cannot stall the walk.
       cursor += 15
     }
     slotIndex += 1
   }
-  return { placed, lastStartMinute }
+  return { placed }
 }
 
 function createAppointments(
@@ -519,7 +550,6 @@ function createAppointments(
       hairdresserIndex: number
       startMinute: number
       intervalEnd: number
-      lastStartMinute: number
     }> = []
 
     HAIRDRESSERS.forEach((hairdresser, hairdresserIndex) => {
@@ -558,18 +588,17 @@ function createAppointments(
         hairdresserIndex,
         startMinute: Math.max(intervalStart, firstStart),
         intervalEnd,
-        lastStartMinute: walk.lastStartMinute,
       })
     })
 
     // A day's walks keep room for a guest to book, so they are only topped up when the day
     // still has too few appointments to show. Gaps are searched from the end of the day
-    // backwards: a guest looks at the morning first, so that is where the room stays.
+    // backwards, so the morning keeps as much room as the floor allows.
     if (dayCount >= MIN_SEED_APPOINTMENTS_PER_DAY) continue
     for (const walk of walks.filter((entry) => entry.dateKey === dateKey)) {
       for (
         let minute = walk.intervalEnd - SHORT_SERVICE_MINUTES;
-        minute >= walk.lastStartMinute;
+        minute >= walk.startMinute;
         minute -= 15
       ) {
         if (dayCount >= MIN_SEED_APPOINTMENTS_PER_DAY) break

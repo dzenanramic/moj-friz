@@ -87,9 +87,19 @@ From the confirmation, open **Upravljaj terminom**.
 > „Link je privatni ključ. U pilotu će biti vezan samo za taj termin, sa rokom važenja i bez
 > prikazivanja internih podataka.“
 
-### 4:40 — Paket 1 / Paket 2 and price
+### 4:20 — Statistics (30 seconds)
 
-Use the package switch in the top bar.
+Open **Postavke → Statistika**.
+
+- Show the last 7 days, then switch to 30 days.
+- Point out revenue, no-shows, occupancy, staff and service breakdowns, and the busiest days/hours.
+
+> „Sve se računa iz termina u ovom pregledniku. Nema analitike treće strane i ništa se ne šalje
+> nigdje.“
+
+### 4:50 — Paket 1 / Paket 2 and price
+
+Use the package preview in **Postavke → Paket**.
 
 - Paket 2: public page exists.
 - Paket 1: public page shows an honest lock; the core calendar remains.
@@ -98,7 +108,7 @@ Show **Postavke → Paket** for the informative price: 19 KM or 29 KM per active
 the estimated monthly total. Explain that no charge happens in the demo and the pilot will be
 activated manually.
 
-### 5:00 — Reset and honesty
+### 5:10 — Reset and honesty
 
 Click **Resetuj demo** and confirm.
 

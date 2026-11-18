@@ -13,6 +13,7 @@ import { HairdressersPage } from '@/features/settings/HairdressersPage'
 import { PackagePage } from '@/features/settings/PackagePage'
 import { ServicesPage } from '@/features/settings/ServicesPage'
 import { SettingsLayout } from '@/features/settings/SettingsLayout'
+import { StatisticsPage } from '@/features/settings/StatisticsPage'
 import { WorkingHoursPage } from '@/features/settings/WorkingHoursPage'
 import { TodayPage } from '@/features/today/TodayPage'
 
@@ -35,6 +36,7 @@ export function App() {
               <Route path="/klijenti/:id" element={<ClientDetailPage />} />
               <Route path="/postavke" element={<SettingsLayout />}>
                 <Route index element={<PackagePage />} />
+                <Route path="statistika" element={<StatisticsPage />} />
                 <Route path="usluge" element={<ServicesPage />} />
                 <Route path="frizeri" element={<HairdressersPage />} />
                 <Route path="radno-vrijeme" element={<WorkingHoursPage />} />

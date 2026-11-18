@@ -19,7 +19,14 @@ import type {
   PublicSalonCatalog,
   SalonProfile,
   SalonService,
+  SalonStatistics,
+  StatisticsPeriod,
+  StatisticsQuery,
+  StatisticsServiceRow,
+  StatisticsStaffRow,
+  StatisticsWeekdayRow,
   TimeBlock,
+  Weekday,
   WorkingHoursInterval,
 } from '@/data/types'
 import type { SalonGateway } from '@/data/gateway'
@@ -32,6 +39,9 @@ import {
   dateKeyFromInstant,
   isValidDateKey,
   localDateTimeToInstant,
+  minutesFromTime,
+  minutesOfDayFromInstant,
+  rangeDateKeys,
   todayDateKey,
   weekdayIndexFromDateKey,
 } from '@/lib/time'
@@ -106,6 +116,19 @@ function getDefaultStorage(): StorageLike | null {
 
 function emptyAvailability(dateKey: string, isClosed: boolean): AvailabilityDay {
   return { dateKey, slots: [], isClosed, isFull: !isClosed }
+}
+
+const STATISTICS_DAYS: Record<StatisticsPeriod, number> = {
+  last_7_days: 7,
+  last_30_days: 30,
+}
+
+function overlapMinutes(startA: number, endA: number, startB: number, endB: number): number {
+  return Math.max(0, Math.min(endA, endB) - Math.max(startA, startB))
+}
+
+function ratio(part: number, whole: number): number {
+  return whole > 0 ? Math.min(1, part / whole) : 0
 }
 
 export class DemoGateway implements SalonGateway {
@@ -696,6 +719,203 @@ export class DemoGateway implements SalonGateway {
       .sort((left, right) => new Date(right.startsAt).getTime() - new Date(left.startsAt).getTime())
       .map((appointment) => this.appointmentView(appointment))
     return { client: { ...client }, appointments }
+  }
+
+  /**
+   * A read-only report over completed, no-show and cancelled appointments. The window ends
+   * yesterday: today is still being worked, and a partial day would read as a bad day. Revenue
+   * comes only from completed appointments; no-shows are reported as lost value, not income.
+   */
+  async getStatistics(query: StatisticsQuery): Promise<SalonStatistics> {
+    await this.simulate()
+    if (!isValidDateKey(query.today)) {
+      throw new GatewayError('INVALID_INPUT', 'Datum nije ispravan.')
+    }
+    const days = STATISTICS_DAYS[query.period]
+    if (!days) throw new GatewayError('INVALID_INPUT', 'Period nije ispravan.')
+
+    const to = addDaysToDateKey(query.today, -1)
+    const from = addDaysToDateKey(to, -(days - 1))
+    const dateKeys = rangeDateKeys(from, to)
+
+    const inRange = this.state.appointments.filter((appointment) => {
+      const dateKey = dateKeyFromInstant(appointment.startsAt)
+      return dateKey >= from && dateKey <= to
+    })
+    const realized = inRange.filter(
+      (appointment) => appointment.status === 'completed' || appointment.status === 'no_show',
+    )
+    const completed = realized.filter((appointment) => appointment.status === 'completed')
+    const noShows = realized.filter((appointment) => appointment.status === 'no_show')
+    const cancelled = inRange.filter((appointment) => appointment.status === 'cancelled')
+
+    const revenueMinor = completed.reduce(
+      (total, appointment) => total + (appointment.priceMinorSnapshot ?? 0),
+      0,
+    )
+    const lostRevenueMinor = noShows.reduce(
+      (total, appointment) => total + (appointment.priceMinorSnapshot ?? 0),
+      0,
+    )
+    const bookedMinutes = completed.reduce(
+      (total, appointment) => total + appointment.durationMinutesSnapshot,
+      0,
+    )
+    const onlineAppointments = realized.filter(
+      (appointment) => appointment.source === 'online',
+    ).length
+    const manualAppointments = realized.length - onlineAppointments
+
+    const clients = new Set<string>()
+    for (const appointment of realized) clients.add(appointment.clientId)
+    const uniqueClients = clients.size
+
+    // Working minutes for every active hairdresser on every day in the window, less the
+    // breaks and absences recorded for that day. Completed minutes are the numerator above.
+    const availableByStaff = new Map<string, number>()
+    for (const hairdresser of this.state.hairdressers) availableByStaff.set(hairdresser.id, 0)
+    for (const dateKey of dateKeys) {
+      const weekday = weekdayIndexFromDateKey(dateKey)
+      const dayBlocks = this.state.blocks.filter(
+        (block) => dateKeyFromInstant(block.startsAt) === dateKey,
+      )
+      for (const hairdresser of this.state.hairdressers) {
+        if (!hairdresser.isActive) continue
+        const intervals = this.state.workingHours.filter(
+          (interval) => interval.hairdresserId === hairdresser.id && interval.weekday === weekday,
+        )
+        const blocks = dayBlocks.filter((block) => block.hairdresserId === hairdresser.id)
+        let minutes = 0
+        for (const interval of intervals) {
+          const start = minutesFromTime(interval.start)
+          const end = minutesFromTime(interval.end)
+          if (start === null || end === null || end <= start) continue
+          const blocked = blocks.reduce(
+            (total, block) =>
+              total +
+              overlapMinutes(
+                start,
+                end,
+                minutesOfDayFromInstant(block.startsAt),
+                minutesOfDayFromInstant(block.endsAt),
+              ),
+            0,
+          )
+          minutes += Math.max(0, end - start - blocked)
+        }
+        availableByStaff.set(hairdresser.id, (availableByStaff.get(hairdresser.id) ?? 0) + minutes)
+      }
+    }
+    const availableMinutes = [...availableByStaff.values()].reduce(
+      (total, minutes) => total + minutes,
+      0,
+    )
+
+    const staff: StatisticsStaffRow[] = this.state.hairdressers
+      .map((hairdresser) => {
+        const staffRealized = realized.filter(
+          (appointment) => appointment.hairdresserId === hairdresser.id,
+        )
+        const staffCompleted = completed.filter(
+          (appointment) => appointment.hairdresserId === hairdresser.id,
+        )
+        const staffBookedMinutes = staffCompleted.reduce(
+          (total, appointment) => total + appointment.durationMinutesSnapshot,
+          0,
+        )
+        const staffAvailableMinutes = availableByStaff.get(hairdresser.id) ?? 0
+        return {
+          hairdresserId: hairdresser.id,
+          name: hairdresser.displayName,
+          colorKey: hairdresser.colorKey,
+          appointments: staffRealized.length,
+          revenueMinor: staffCompleted.reduce(
+            (total, appointment) => total + (appointment.priceMinorSnapshot ?? 0),
+            0,
+          ),
+          bookedMinutes: staffBookedMinutes,
+          availableMinutes: staffAvailableMinutes,
+          occupancy: ratio(staffBookedMinutes, staffAvailableMinutes),
+        }
+      })
+      .filter((row) => row.appointments > 0 || row.availableMinutes > 0)
+      .sort(
+        (left, right) =>
+          right.revenueMinor - left.revenueMinor ||
+          right.appointments - left.appointments ||
+          left.name.localeCompare(right.name, 'bs'),
+      )
+
+    const serviceRows = new Map<string, StatisticsServiceRow>()
+    for (const appointment of realized) {
+      const service = this.state.services.find(
+        (candidate) => candidate.id === appointment.serviceId,
+      )
+      const row = serviceRows.get(appointment.serviceId) ?? {
+        serviceId: appointment.serviceId,
+        name: service?.name ?? appointment.serviceNameSnapshot,
+        appointments: 0,
+        revenueMinor: 0,
+      }
+      row.appointments += 1
+      if (appointment.status === 'completed') {
+        row.revenueMinor += appointment.priceMinorSnapshot ?? 0
+      }
+      serviceRows.set(appointment.serviceId, row)
+    }
+    const services = [...serviceRows.values()].sort(
+      (left, right) =>
+        right.appointments - left.appointments ||
+        right.revenueMinor - left.revenueMinor ||
+        left.name.localeCompare(right.name, 'bs'),
+    )
+
+    const weekdayCounts = new Map<number, number>()
+    const hourCounts = new Map<number, number>()
+    for (const appointment of realized) {
+      const dateKey = dateKeyFromInstant(appointment.startsAt)
+      const weekday = weekdayIndexFromDateKey(dateKey)
+      weekdayCounts.set(weekday, (weekdayCounts.get(weekday) ?? 0) + 1)
+      const hour = Math.floor(minutesOfDayFromInstant(appointment.startsAt) / 60)
+      hourCounts.set(hour, (hourCounts.get(hour) ?? 0) + 1)
+    }
+    const weekdays: StatisticsWeekdayRow[] = Array.from({ length: 7 }, (_, weekday) => ({
+      weekday: weekday as Weekday,
+      appointments: weekdayCounts.get(weekday) ?? 0,
+    }))
+    const hours = [...hourCounts.entries()]
+      .map(([hour, appointments]) => ({ hour, appointments }))
+      .sort((left, right) => right.appointments - left.appointments || left.hour - right.hour)
+
+    const decided = realized.length + cancelled.length
+    return {
+      period: { from, to },
+      summary: {
+        appointments: realized.length,
+        completed: completed.length,
+        noShow: noShows.length,
+        cancelled: cancelled.length,
+        revenueMinor,
+        averageTicketMinor:
+          completed.length > 0 ? Math.round(revenueMinor / completed.length) : null,
+        lostRevenueMinor,
+        bookedMinutes,
+        availableMinutes,
+        onlineAppointments,
+        manualAppointments,
+        uniqueClients,
+      },
+      rates: {
+        occupancy: ratio(bookedMinutes, availableMinutes),
+        noShowRate: ratio(noShows.length, realized.length),
+        cancellationRate: ratio(cancelled.length, decided),
+        onlineShare: ratio(onlineAppointments, realized.length),
+      },
+      staff,
+      services,
+      weekdays,
+      hours,
+    }
   }
 
   async getPublicSalon(slug: string): Promise<PublicSalonCatalog> {

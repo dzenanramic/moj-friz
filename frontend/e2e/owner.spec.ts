@@ -95,6 +95,25 @@ test('owner adds, reschedules and cancels an appointment', async ({ page }) => {
   await expect(page.getByRole('button', { name: new RegExp(clientName) })).toHaveCount(0)
 })
 
+test('statistics reads the stored appointments and changes period', async ({ page }) => {
+  await resetDemoState(page)
+  await page.goto('/postavke/statistika')
+
+  await expect(page.getByRole('heading', { name: 'Statistika' })).toBeVisible()
+  await expect(page.getByText('Prihod', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Frizeri' })).toBeVisible()
+  const week = page.getByRole('button', { name: '7 dana' })
+  await expect(week).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByText(/Proteklih 7 punih dana/)).toBeVisible()
+
+  await page.getByRole('button', { name: '30 dana' }).click()
+  await expect(page.getByRole('button', { name: '30 dana' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByText(/Proteklih 30 punih dana/)).toBeVisible()
+})
+
 test('owner adds a break from the working hours page', async ({ page }) => {
   // Breaks are entered in Settings; the calendar only shows them. This test used to start
   // from a calendar button that no longer exists.

@@ -6,7 +6,9 @@ import {
   addDaysToDateKey,
   dateKeyFromInstant,
   dayRange,
+  endOfSalonDay,
   formatTime,
+  startOfSalonDay,
   todayDateKey,
   weekdayIndexFromDateKey,
 } from '@/lib/time'
@@ -309,5 +311,71 @@ describe('demo scheduling gateway', () => {
       expect(isGatewayError(error)).toBe(true)
       expect(gatewayErrorMessage(error)).toMatch(/pronađen/i)
     }
+  })
+})
+
+describe('demo statistics', () => {
+  it('reports full past days and keeps every breakdown in step with the summary', async () => {
+    const { gateway } = createGateway()
+    const stats = await gateway.getStatistics({ period: 'last_7_days', today })
+
+    // Today is still being worked, so the report ends yesterday.
+    expect(stats.period).toEqual({
+      from: addDaysToDateKey(today, -7),
+      to: addDaysToDateKey(today, -1),
+    })
+    expect(stats.summary.appointments).toBeGreaterThan(0)
+    expect(stats.summary.completed).toBeGreaterThan(0)
+    expect(stats.summary.revenueMinor).toBeGreaterThan(0)
+    expect(stats.summary.averageTicketMinor).not.toBeNull()
+    expect(stats.summary.completed + stats.summary.noShow).toBe(stats.summary.appointments)
+    expect(stats.summary.onlineAppointments + stats.summary.manualAppointments).toBe(
+      stats.summary.appointments,
+    )
+    expect(stats.summary.availableMinutes).toBeGreaterThan(0)
+    expect(stats.rates.occupancy).toBeGreaterThan(0)
+    expect(stats.rates.occupancy).toBeLessThanOrEqual(1)
+    expect(stats.summary.cancelled).toBe(0)
+    expect(stats.rates.cancellationRate).toBe(0)
+
+    expect(stats.staff.reduce((total, row) => total + row.appointments, 0)).toBe(
+      stats.summary.appointments,
+    )
+    expect(stats.services.reduce((total, row) => total + row.appointments, 0)).toBe(
+      stats.summary.appointments,
+    )
+    expect(stats.weekdays.reduce((total, row) => total + row.appointments, 0)).toBe(
+      stats.summary.appointments,
+    )
+    expect(stats.hours.reduce((total, row) => total + row.appointments, 0)).toBe(
+      stats.summary.appointments,
+    )
+  })
+
+  it('widens the window for the month and counts revenue only from completed work', async () => {
+    const { gateway } = createGateway()
+    const week = await gateway.getStatistics({ period: 'last_7_days', today })
+    const month = await gateway.getStatistics({ period: 'last_30_days', today })
+
+    expect(month.period).toEqual({
+      from: addDaysToDateKey(today, -30),
+      to: addDaysToDateKey(today, -1),
+    })
+    expect(month.summary.appointments).toBeGreaterThan(week.summary.appointments)
+
+    const appointments = await gateway.listAppointments({
+      from: startOfSalonDay(month.period.from),
+      to: endOfSalonDay(month.period.to),
+    })
+    expect(month.summary.revenueMinor).toBe(
+      appointments
+        .filter((entry) => entry.status === 'completed')
+        .reduce((total, entry) => total + (entry.priceMinorSnapshot ?? 0), 0),
+    )
+    expect(month.summary.lostRevenueMinor).toBe(
+      appointments
+        .filter((entry) => entry.status === 'no_show')
+        .reduce((total, entry) => total + (entry.priceMinorSnapshot ?? 0), 0),
+    )
   })
 })

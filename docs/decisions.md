@@ -21,6 +21,7 @@ pilot backend already exists.
 | 11  | Colour palette                 | **Ink blue + copper** on a paper-cream base; dark is a warm near-black blue. The green palette is dropped | Approved 15.11.2026     |
 | 12  | Demo seed                      | **Every day has work**: all seven weekdays are demo working days (Sunday opens later and shorter) and each day shows **at least 10 appointments** | Approved 15.11.2026     |
 | 13  | Visual direction               | **Print, not SaaS**: a display serif for the salon's voice, copper as a rule (never a button border or fill), hierarchy from hairlines and density rather than repeated rounded cards | Implemented 15.11.2026 |
+| 14  | Statistics                     | **Read-only report in Postavke**: last 7 or 30 full days, revenue from completed appointments only, occupancy net of breaks and absences, no new dependency and no third-party analytics | Implemented 16.11.2026 |
 
 ## Visual direction (decision 13)
 
@@ -98,16 +99,21 @@ never colours. Dark values live under `.dark`, not in a media query, so a stored
 
 ## Demo seed (decision 12)
 
-- The seed covers **seven days back and twenty ahead**, so the public date strip (30 days) and the
-  calendar strip (three weeks) both show busy days from the first paint.
+- The seed covers **thirty days back and twenty ahead**, so the statistics page has a month of
+  completed history while the public date strip (30 days) and the calendar strip (three weeks) both
+  show busy days from the first paint.
 - `frontend/src/demo/seed.ts` walks each hairdresser's day as a chain of services with real gaps
   rather than fixed slot blocks. When a day still has fewer than ten appointments after those
   walks, it is topped up from the end of the day backwards, so the morning keeps the room a guest
   is most likely to want. `MIN_SEED_APPOINTMENTS_PER_DAY` holds that floor and is asserted in
   `frontend/src/demo/gateway.test.ts` for every weekday.
-- Nothing is seeded in the past, nothing is cancelled, and no seeded day books a hairdresser
-  twice. A fresh seed leaves at least one free slot on every working hairdresser-day (checked over
-  120 sample days), because a demo nobody can book in is not a demo of booking.
+- Past days are seeded as completed work, with the occasional no-show, so the report is not empty.
+  Nothing is cancelled, and no seeded day books a hairdresser twice. A fresh seed leaves at least
+  one free slot on every working hairdresser-day (checked over 120 sample days), because a demo
+  nobody can book in is not a demo of booking.
+- Statistics are computed in the demo gateway from the stored appointments, working hours and time
+  blocks; they are not a separate seeded dataset. The report covers the last 7 or 30 **full** days
+  (today is excluded), and revenue counts completed appointments only.
 - Working hours are demo data and can be edited in the pilot; the seed's own hours are the only
   requirement that every day can reach ten appointments.
 - A stored state is reused while it was seeded **today**; opening it on a later day reseeds it,
@@ -147,7 +153,9 @@ never colours. Dark values live under `.dark`, not in a media query, so a stored
   plain CSS classes (`.picker-days`, `.picker-day`, `.picker-more`) so no utility generation stands
   between the component and its style.
 - A guest confirmation never says or implies that an SMS/email was sent.
-- No third-party analytics and no fabricated testimonials, charts or usage metrics.
+- No third-party analytics and no fabricated testimonials, charts or usage metrics. The statistics
+  page is computed from the demo's own appointments and draws its bars with plain CSS; no chart
+  library or external service is involved.
 
 ## Dependencies and tooling
 

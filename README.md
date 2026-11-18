@@ -44,6 +44,7 @@ If you need to open the demo on a phone in the same local network, run
 | `/kalendar`                | Day view, staff filter, breaks and quick entry            |
 | `/klijenti`                | Client search and basic history                           |
 | `/postavke`                | Package, services, hairdressers, working hours            |
+| `/postavke/statistika`     | Read-only report for the last 7 or 30 full days           |
 | `/rezervacija/studio-lana` | Guest-facing public booking (Paket 2)                     |
 | `/upravljanje`             | Private guest management link (token in the URL fragment) |
 
@@ -53,8 +54,12 @@ locked there. “Resetuj demo” restores the seed and returns to the access scr
 ## What works in this milestone
 
 - Fictional salon, three hairdressers, six services, fictional clients and appointments relative to
-  today: every weekday is a working day (Sunday included) and every day shows at least ten
-  appointments, for three weeks ahead.
+  today: every weekday is a working day (Sunday included), every day shows at least ten
+  appointments for three weeks ahead, and thirty days of completed history sit behind the
+  statistics page.
+- Statistics in Postavke: revenue, appointments, no-show and cancellation rates, occupancy,
+  clients, staff and service breakdowns, and the busiest days and hours, for the last 7 or 30 full
+  days.
 - Day calendar with staff columns, breaks, free/busy space, date navigation and hairdresser filter.
 - Add, edit, reschedule and cancel appointments; mark completed/no-show; conflict and working-hours
   messages.
@@ -101,6 +106,7 @@ scripts/        one-command demo launcher
 - [Product scope](docs/product-scope.md)
 - [Decisions](docs/decisions.md)
 - [Demo script](docs/demo-script.md)
+- [Outreach message for salons](docs/outreach.md)
 - [Known limitations](docs/known-limitations.md)
 - [Deployment notes](docs/deployment.md)
 - [Security notes](docs/security.md)

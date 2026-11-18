@@ -8,6 +8,7 @@ import { usePageTitle } from '@/lib/hooks'
 
 const TABS = [
   { to: '/postavke', label: 'Paket', end: true },
+  { to: '/postavke/statistika', label: 'Statistika', end: false },
   { to: '/postavke/usluge', label: 'Usluge', end: false },
   { to: '/postavke/frizeri', label: 'Frizeri', end: false },
   { to: '/postavke/radno-vrijeme', label: 'Radno vrijeme', end: false },
@@ -45,7 +46,7 @@ export function SettingsLayout() {
     <div>
       <PageHeader
         title="Postavke"
-        description="Paket, usluge, frizeri i radno vrijeme. Ove stranice su u demou samo prikaz; uređivanje dolazi uz pilot."
+        description="Statistika, paket, usluge, frizeri i radno vrijeme. Ove stranice su u demou uglavnom prikaz; uređivanje dolazi uz pilot."
       />
 
       <AppearanceSetting />

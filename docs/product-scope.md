@@ -38,8 +38,9 @@ Everything in Paket 1 plus:
 ## Milestone A — visual demo (current)
 
 Frontend only. Fictional salon and data, demo package switch, reset, public booking and private
-management flows, accessible responsive UI. State lives in localStorage. No backend, no accounts, no
-deployment. See [known-limitations.md](known-limitations.md).
+management flows, accessible responsive UI, and a read-only statistics report in Settings for the
+last 7 or 30 full days. State lives in localStorage. No backend, no accounts, no deployment. See
+[known-limitations.md](known-limitations.md).
 
 ## Milestone B — pilot backend
 

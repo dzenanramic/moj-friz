@@ -8,6 +8,7 @@ import type {
   PlanLevel,
   PublicAvailabilityQuery,
   PublicBookingInput,
+  StatisticsPeriod,
 } from './types'
 
 import { useGateway } from './DataProvider'
@@ -23,6 +24,7 @@ export const queryKeys = {
   clients: ['clients'] as const,
   client: ['client'] as const,
   ownerAvailability: ['owner-availability'] as const,
+  statistics: ['statistics'] as const,
   publicCatalog: ['public-catalog'] as const,
   publicAvailability: ['public-availability'] as const,
   management: ['management'] as const,
@@ -34,6 +36,7 @@ function invalidateSchedule(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: queryKeys.clients })
   void queryClient.invalidateQueries({ queryKey: queryKeys.client })
   void queryClient.invalidateQueries({ queryKey: queryKeys.ownerAvailability })
+  void queryClient.invalidateQueries({ queryKey: queryKeys.statistics })
   void queryClient.invalidateQueries({ queryKey: queryKeys.publicAvailability })
   void queryClient.invalidateQueries({ queryKey: queryKeys.management })
 }
@@ -95,6 +98,14 @@ export function useClient(id: string | undefined) {
     queryKey: [...queryKeys.client, id],
     queryFn: () => gateway.getClient(id!),
     enabled: Boolean(id),
+  })
+}
+
+export function useStatistics(period: StatisticsPeriod, today: string) {
+  const gateway = useGateway()
+  return useQuery({
+    queryKey: [...queryKeys.statistics, period, today],
+    queryFn: () => gateway.getStatistics({ period, today }),
   })
 }
 
