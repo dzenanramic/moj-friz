@@ -32,7 +32,7 @@ export function HappeningNow({
       className="relative overflow-hidden rounded-md border border-line bg-surface"
     >
       {/* The copper margin rule: the same mark as the sidebar's active screen, on the card. */}
-      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-accent-ui" />
+      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-accent-ui" />
       <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:gap-7 sm:px-7 sm:py-6">
         <div className="flex min-w-0 flex-1 items-center gap-5">
           {/* The clock is the one number on this screen; the range under it adds the end. */}

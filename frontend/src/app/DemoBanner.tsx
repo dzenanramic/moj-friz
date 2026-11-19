@@ -33,7 +33,7 @@ export function DemoBanner() {
           </div>
           <span
             aria-label="Demo · podaci nisu stvarni"
-            className="ml-1 inline-flex shrink-0 items-center rounded-full bg-accent-tint px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-accent-ui uppercase"
+            className="ml-1 inline-flex shrink-0 items-center rounded-full bg-accent-tint px-2 py-0.5 text-xs font-medium text-accent-ui"
           >
             Demo
           </span>

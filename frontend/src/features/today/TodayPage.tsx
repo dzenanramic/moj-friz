@@ -200,7 +200,7 @@ export function TodayPage() {
 function DaySectionHeading({ id, title, meta }: { id: string; title: string; meta?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
-      <h2 id={id} className="text-base font-semibold text-ink">
+      <h2 id={id} className="text-base font-medium text-ink">
         {title}
       </h2>
       {meta ? <span className="text-xs text-muted">{meta}</span> : null}

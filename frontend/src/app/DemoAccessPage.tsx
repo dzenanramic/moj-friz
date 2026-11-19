@@ -109,7 +109,7 @@ function PreviewRow({ appointment }: { appointment: AppointmentView }) {
       <span
         data-staff={appointment.hairdresserColorKey}
         aria-hidden="true"
-        className="staff-bar h-8 w-[3px] shrink-0 rounded-xs"
+        className="staff-bar h-8 w-1 shrink-0 rounded-xs"
       />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium text-ink">

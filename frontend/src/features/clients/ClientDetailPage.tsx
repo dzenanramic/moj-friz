@@ -180,7 +180,7 @@ export function ClientDetailPage() {
                   {years.map((year) => (
                     <li key={year}>
                       {showYearHeadings ? (
-                        <p className="px-3 pt-3 pb-1 text-[0.7rem] font-semibold tracking-wide text-muted uppercase sm:px-4">
+                        <p className="px-3 pt-3 pb-1 text-xs font-medium text-muted sm:px-4">
                           {year}
                         </p>
                       ) : null}
@@ -203,7 +203,7 @@ export function ClientDetailPage() {
 
         {person.notes ? (
           <aside className="lg:sticky lg:top-6">
-            <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">Napomena</h2>
+            <h2 className="text-xs font-medium text-muted">Napomena</h2>
             <p className="mt-2 rounded-lg bg-surface px-4 py-3 text-sm leading-relaxed text-ink">
               {person.notes}
             </p>

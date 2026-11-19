@@ -123,12 +123,12 @@ export function CalendarGrid({
                 className="px-2 pb-2 sm:px-3 sm:pb-3"
               >
                 <div className="flex items-center gap-2">
-                  <span aria-hidden="true" className="staff-bar h-3 w-[3px] rounded-xs" />
+                  <span aria-hidden="true" className="staff-bar h-3 w-1 rounded-xs" />
                   <p className="truncate text-sm font-semibold text-ink">
                     {hairdresser.displayName}
                   </p>
                 </div>
-                <p className="tabular mt-1 pl-[11px] text-xs text-muted">
+                <p className="tabular mt-1 pl-3 text-xs text-muted">
                   {intervals.length > 0
                     ? intervals.map((interval) => `${interval.start}–${interval.end}`).join(', ')
                     : 'Ne radi'}
@@ -279,7 +279,7 @@ export function CalendarGrid({
                        * tint is the card, so the card's own pair carries the second line.
                        */
                       className={cn(
-                        'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-[3px] px-2 text-left transition-colors',
+                        'staff-soft absolute inset-x-1 z-[3] overflow-hidden rounded-xs border-l-4 px-2 text-left transition-colors',
                         'hover:brightness-[0.96]',
                         tight ? 'py-0.5 pb-1' : 'py-1 pb-1.5',
                       )}

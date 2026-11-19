@@ -617,7 +617,7 @@ function StepTitle({
         id={id}
         ref={headingRef}
         tabIndex={-1}
-        className="text-xl font-semibold text-ink outline-none"
+        className="text-xl font-medium text-ink outline-none"
       >
         {title}
       </h2>

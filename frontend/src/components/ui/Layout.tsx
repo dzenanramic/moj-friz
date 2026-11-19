@@ -223,9 +223,7 @@ export function EmptyState({
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return (
-    <span aria-hidden="true" className={cn('block animate-pulse rounded bg-line', className)} />
-  )
+  return <span aria-hidden="true" className={cn('block rounded bg-line', className)} />
 }
 
 export function Avatar({

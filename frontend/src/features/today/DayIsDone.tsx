@@ -33,7 +33,7 @@ export function DayIsDone({
       aria-labelledby="day-done-heading"
       className="relative overflow-hidden rounded-md border border-line bg-surface"
     >
-      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-accent-ui" />
+      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-accent-ui" />
       <div className="flex flex-col gap-6 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div className="flex min-w-0 items-center gap-5">
           <div className="shrink-0">
